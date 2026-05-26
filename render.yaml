@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: nexora-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PERSISTENCE_BACKEND
+        value: mongodb
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: nexora
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: PUBLIC_APP_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: phi3:mini
+

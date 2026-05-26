@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply bg-nexora-bg text-nexora-dark font-sans min-h-screen;
+    background:
+      radial-gradient(circle at 14% 0%, rgba(147, 201, 152, 0.08), transparent 28rem),
+      radial-gradient(circle at 86% 10%, rgba(147, 201, 152, 0.06), transparent 24rem),
+      linear-gradient(180deg, #ffffff 0%, #fafaf9 44%, #f5f5f4 100%);
+  }
+
+  ::selection {
+    @apply bg-nexora-accent/20 text-nexora-dark;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/95 backdrop-blur-md border border-nexora-border rounded-2xl;
+    box-shadow: 0 8px 32px rgba(23, 21, 20, 0.08);
+  }
+
+  .glass-dark {
+    @apply bg-nexora-dark/95 backdrop-blur-md border border-nexora-border rounded-2xl;
+    box-shadow: 0 8px 32px rgba(23, 21, 20, 0.2);
+  }
+
+  .accent-glow {
+    @apply relative;
+    box-shadow: 0 0 30px rgba(147, 201, 152, 0.15);
+  }
+
+  .accent-glow:hover {
+    @apply shadow-glow-green;
+  }
+
+  .neon-text {
+    @apply bg-gradient-to-r from-nexora-accent via-nexora-accent-light to-nexora-accent bg-clip-text text-transparent;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           bg-nexora-accent text-white font-semibold
+           hover:bg-nexora-accent-dark hover:shadow-glow-green transition-all duration-300
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-nexora-accent focus:ring-offset-2;
+  }
+
+  .btn-primary-dark {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           bg-nexora-dark text-white font-semibold
+           hover:bg-nexora-dark-light hover:shadow-dark transition-all duration-300
+           active:scale-95 focus:outline-none focus:ring-2 focus:ring-nexora-dark focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-nexora-dark/60
+           hover:text-nexora-accent hover:bg-nexora-accent/5 transition-all duration-300;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           border-2 border-nexora-accent text-nexora-accent font-semibold
+           hover:bg-nexora-accent hover:text-white transition-all duration-300;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-nexora-dark to-nexora-accent bg-clip-text text-transparent;
+  }
+
+  /* Card with hover effect */
+  .card-interactive {
+    @apply p-6 rounded-2xl border border-nexora-border bg-white
+           hover:border-nexora-accent/50 hover:shadow-card transition-all duration-300;
+  }
+
+  .card-interactive-dark {
+    @apply p-6 rounded-2xl border border-nexora-border bg-nexora-dark/5
+           hover:border-nexora-accent hover:shadow-card transition-all duration-300;
+  }
+
+  /* Badge styles */
+  .badge-accent {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
+           bg-nexora-accent/10 text-nexora-accent border border-nexora-accent/30;
+  }
+
+  .badge-dark {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
+           bg-nexora-dark/10 text-nexora-dark border border-nexora-dark/30;
+  }
+
+  /* Fix native select dropdowns */
+  select {
+    @apply appearance-auto;
+    color-scheme: light;
+  }
+  select option {
+    @apply bg-white text-nexora-dark;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* Animated underline */
+  .underline-animate {
+    @apply relative inline-block;
+    background: linear-gradient(to right, currentColor, currentColor);
+    background-position: right bottom;
+    background-repeat: no-repeat;
+    background-size: 0% 2px;
+    transition: background-size 0.3s ease;
+  }
+
+  .underline-animate:hover {
+    background-size: 100% 2px;
+  }
+}

@@ -1,0 +1,158 @@
+import { motion } from "framer-motion";
+import {
+  Brain, Zap, BarChart3, MessageSquare, Shield, Cpu,
+  Upload, Target, Settings2, Trophy, Sparkles, FileDown,
+  ArrowRight, ChevronDown,
+} from "lucide-react";
+import NexoraLogo from "../components/NexoraLogo";
+import UploadZone from "../components/UploadZone";
+
+const FEATURES = [
+  { icon: Brain, title: "Dataset Intelligence", desc: "Automatic structural, statistical, and semantic understanding of your data.", accent: "bg-nexora-accent/10 text-nexora-accent border-nexora-accent/30" },
+  { icon: Zap, title: "Prediction Studio", desc: "Select trusted models, save them locally, and run reproducible predictions.", accent: "bg-nexora-accent/10 text-nexora-accent border-nexora-accent/30" },
+  { icon: BarChart3, title: "SHAP Explainability", desc: "Understand why your model makes predictions with feature importance.", accent: "bg-nexora-accent/10 text-nexora-accent border-nexora-accent/30" },
+  { icon: MessageSquare, title: "Learning Assistant", desc: "Use local AI to understand data and models while the backend computes results.", accent: "bg-nexora-dark/10 text-nexora-dark border-nexora-dark/30" },
+  { icon: Shield, title: "Auto Preprocessing", desc: "Missing values, encoding, scaling, and outlier handling — automatic.", accent: "bg-nexora-accent/10 text-nexora-accent border-nexora-accent/30" },
+  { icon: Cpu, title: "PDF Reports", desc: "Generate branded, exportable intelligence reports with one click.", accent: "bg-nexora-dark/10 text-nexora-dark border-nexora-dark/30" },
+];
+
+const STEPS = [
+  { icon: Upload, label: "Upload", desc: "Drop your CSV file. Nexora profiles it instantly.", num: "01" },
+  { icon: Target, label: "Target", desc: "Pick what to predict. AI auto-detects the problem type.", num: "02" },
+  { icon: Settings2, label: "Select Models", desc: "Choose one or several trained-model candidates.", num: "03" },
+  { icon: Trophy, label: "Predict", desc: "Run saved backend models with real input values.", num: "04" },
+  { icon: Sparkles, label: "Explain", desc: "SHAP analysis shows why the champion model wins.", num: "05" },
+  { icon: FileDown, label: "Report", desc: "Download a PDF with everything — data, models, charts.", num: "06" },
+];
+
+const TECH = ["Python", "FastAPI", "scikit-learn", "XGBoost", "LightGBM", "CatBoost", "SHAP", "React", "TypeScript", "Recharts"];
+
+const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen bg-nexora-bg">
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid bg-[size:48px_48px] opacity-30" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-nexora-accent/15 rounded-full blur-[120px] -translate-y-1/2" />
+
+        <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-20 text-center">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+            <NexoraLogo size="hero" className="mx-auto mb-8 text-nexora-dark" />
+          </motion.div>
+
+          <motion.p
+            className="text-lg md:text-xl text-nexora-dark/60 max-w-2xl mx-auto mb-10 leading-relaxed font-light"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            Upload a CSV. Select models, run backend-owned predictions, understand the result, and export a complete report.
+          </motion.p>
+
+          <motion.div className="flex justify-center gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, ease: [0.16, 1, 0.3, 1] }}>
+            <a href="#upload" className="btn-primary text-base px-8 py-3.5">
+              <Upload className="w-5 h-5" />
+              Start Analyzing
+            </a>
+            <a href="#how-it-works" className="btn-outline text-base px-6 py-3.5">
+              How It Works
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </motion.div>
+
+          <motion.a href="#how-it-works" className="inline-block mt-16 text-nexora-accent/50 hover:text-nexora-accent transition-colors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, ease: [0.16, 1, 0.3, 1] }}>
+            <ChevronDown className="w-6 h-6 animate-bounce" />
+          </motion.a>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-20 bg-white border-t border-b border-nexora-border">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div className="text-center mb-14" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <h2 className="font-display text-2xl md:text-3xl text-nexora-dark mb-3">How Nexora Works</h2>
+            <p className="text-nexora-dark/50">Six steps from raw data to actionable intelligence</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {STEPS.map((step, i) => (
+              <motion.div
+                key={step.num}
+                className="relative p-6 rounded-2xl bg-nexora-accent/5 border border-nexora-border hover:border-nexora-accent hover:shadow-card transition-all group"
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="font-mono text-xs text-nexora-accent bg-nexora-accent/10 px-2 py-1 rounded-md font-bold">{step.num}</span>
+                  <div className="w-9 h-9 rounded-lg bg-nexora-accent/10 border border-nexora-accent/30 flex items-center justify-center group-hover:bg-nexora-accent/20 transition-colors">
+                    <step.icon className="w-4 h-4 text-nexora-accent" />
+                  </div>
+                </div>
+                <h3 className="font-semibold text-nexora-dark mb-1">{step.label}</h3>
+                <p className="text-sm text-nexora-dark/50 leading-relaxed">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-20">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div className="text-center mb-14" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <h2 className="font-display text-2xl md:text-3xl text-nexora-dark mb-3">Built-in Intelligence</h2>
+            <p className="text-nexora-dark/50">Every feature you need — free, local, no API keys required</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                className="glass p-6 hover:shadow-lg transition-shadow group"
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+              >
+                <div className={`w-10 h-10 rounded-lg border flex items-center justify-center mb-4 ${f.accent}`}>
+                  <f.icon className="w-5 h-5" />
+                </div>
+                <h3 className="font-semibold text-nexora-dark mb-1">{f.title}</h3>
+                <p className="text-sm text-nexora-dark/60">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Upload */}
+      <section id="upload" className="py-20 bg-white border-t border-nexora-border">
+        <div className="max-w-5xl mx-auto px-6">
+          <motion.div className="text-center mb-10" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <h2 className="font-display text-2xl md:text-3xl text-nexora-dark mb-3">Start Now</h2>
+            <p className="text-nexora-dark/50">Upload a CSV and watch Nexora work its magic</p>
+          </motion.div>
+          <UploadZone />
+        </div>
+      </section>
+
+      {/* Tech Stack */}
+      <section className="py-16">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <p className="text-xs text-nexora-dark/40 uppercase tracking-widest mb-4">Powered By</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {TECH.map((t) => (
+              <span key={t} className="px-3 py-1.5 rounded-full text-xs font-mono text-nexora-dark/50 bg-nexora-accent/10 border border-nexora-accent/20">
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
