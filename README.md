@@ -48,7 +48,12 @@
 - **WebSocket Leaderboard** — Real-time training progress with interactive model comparison.
 - **Comparison Arena** — Champion dashboards with live metrics, visual charts, and latency statistics.
 
-### 4. Production Suite
+### 4. Interactive Data Visualization
+- **Multi-Chart Dashboard** — Line graphs (numeric distributions), area charts (categorical patterns), quality scorecards.
+- **Data Health Visualization** — Completeness, uniqueness, and validity metrics per column.
+- **Correlation Insights** — Top relationships and outlier detection with real-time updates.
+
+### 5. Production Suite
 - **API Endpoints** — Production-grade endpoints with API key authentication.
 - **Batch Processing** — Upload a file and download enriched datasets with targeted predictions.
 - **Drift Detection** — Automatic monitoring of feature and target distribution changes over time.
@@ -136,6 +141,47 @@ ollama pull phi3:mini
 ```
 
 When running locally, the chat assistant will use your local Ollama instance for advanced open-ended explanations. CSV fact queries and workflow guidance work without Ollama.
+
+#### Optimizing Ollama Performance
+
+Nexora-Helper uses a **150-second (2.5 minute) timeout** with **full quality settings** to ensure comprehensive, detailed responses. If it times out:
+
+**Default Configuration:**
+```ini
+OLLAMA_TIMEOUT=150        # 150 seconds (2.5 minutes) for full quality
+OLLAMA_MAX_TOKENS=256     # Full token budget for normal questions
+OLLAMA_MODEL=phi3:mini
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+```
+
+**Smart Detail Detection:**
+- When you ask "explain in detail", "walk me through", or request comprehensive analysis → Ollama generates **512 tokens** (2x capacity)
+- For normal questions → Ollama uses **256 tokens** (balanced quality/speed)
+- Context window is always **2048 tokens** for full dataset understanding
+
+**If Ollama Still Times Out:**
+```bash
+# 1. Verify Ollama is running
+curl http://127.0.0.1:11434/api/tags
+
+# 2. Check system resources
+# Ensure you have:
+# - At least 4GB free RAM
+# - CPU available (not maxed out)
+# - Stable network to localhost
+
+# 3. If using GPU (faster):
+# NVIDIA: Automatically detected
+# For other GPUs, see Ollama docs
+
+# 4. Restart Ollama if idle too long
+ollama pull phi3:mini
+```
+
+**Expected Response Times:**
+- Quick questions (rows/cols/missing values): **< 1 second** (grounded replies)
+- Normal questions (explain a concept): **15-40 seconds** (Ollama)
+- Detailed questions (full explanation): **30-90 seconds** (Ollama with 512 tokens)
 
 ---
 

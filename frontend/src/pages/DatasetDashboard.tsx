@@ -24,6 +24,9 @@ import ExplorationModesPanel from "../components/ExplorationModesPanel";
 import DatasetChat from "../components/DatasetChat";
 import AdvancedSettings, { DEFAULT_CONFIG, type AdvancedConfig } from "../components/AdvancedSettings";
 import PredictionStudio from "../components/PredictionStudio";
+import NumericTrendsChart from "../components/NumericTrendsChart";
+import CategoricalDistributionChart from "../components/CategoricalDistributionChart";
+import DataQualityChart from "../components/DataQualityChart";
 
 export default function DatasetDashboard() {
   const { datasetId } = useParams<{ datasetId: string }>();
@@ -148,6 +151,15 @@ export default function DatasetDashboard() {
           </motion.div>
 
           <DatasetCharts analysis={analysis} />
+
+          <motion.div className="grid lg:grid-cols-2 gap-6 mb-6">
+            <NumericTrendsChart analysis={analysis} />
+            <CategoricalDistributionChart analysis={analysis} />
+          </motion.div>
+
+          <motion.div className="mb-6">
+            <DataQualityChart analysis={analysis} />
+          </motion.div>
 
           <ExplorationModesPanel datasetId={datasetId} analysis={analysis} />
 

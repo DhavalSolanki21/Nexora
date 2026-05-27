@@ -17,6 +17,7 @@ from app.services.session_store import load_session
 
 
 def _build_dataset_context(dataset_id: str) -> str:
+    """Build comprehensive context for Ollama with full dataset details."""
     analysis = load_analysis(dataset_id)
     if not analysis:
         return "No dataset loaded."
@@ -94,6 +95,33 @@ def _build_dataset_context(dataset_id: str) -> str:
     return "\n".join(lines)
 
 
+def _is_detail_request(message: str) -> bool:
+    """
+    Intelligently detect if user wants detailed explanation.
+    Uses multiple signals: explicit requests, message length, punctuation, and context.
+    """
+    lower = message.lower().strip()
+    
+    # Explicit detail request keywords (highest confidence)
+    explicit_detail_phrases = (
+        "explain in detail",
+        "detailed explanation",
+        "comprehensive analysis",
+        "detailed analysis",
+        "walk me through",
+        "step by step",
+        "in depth",
+        "full details",
+        "thorough explanation",
+        "elaborate",
+        "dive deep",
+        "explain thoroughly",
+        "tell me more",
+        "go deeper",
+        "why and how",
+    )\n    \n    # Quick detection for explicit requests (highest priority)\n    if any(phrase in lower for phrase in explicit_detail_phrases):\n        return True\n    \n    # Context signals that suggest user wants details\n    detail_signals = (\n        \"?\" * 2,  # Multiple question marks (urgency/emphasis)\n        \"!\" * 2,  # Multiple exclamation marks (emphasis)\n        len(message) > 100,  # Longer messages often have more context\n        \"because\" in lower,  # User asking for reasons\n        \"how does\" in lower,\n        \"why is\" in lower,\n        \"what about\" in lower,\n        \"help me understand\" in lower,\n        \"explain how\" in lower,\n        \"teach me\" in lower,\n        \"what's the difference\" in lower,\n    )\n    \n    # Check for multiple signals\n    signal_count = sum(1 for signal in detail_signals if isinstance(signal, bool) and signal)\n    \n    # If 2+ signals are true, likely a detail request\n    if signal_count >= 2:\n        return True\n    \n    # Check if message seems exploratory (contains multiple topics)\n    question_marks = lower.count(\"?\")\n    if question_marks >= 2:\n        return True\n    \n    return False
+
+
 SYSTEM_PROMPT = """You are Nexora AI, an educational data science assistant embedded in a predictive analytics platform.
 You help users understand datasets, select prediction targets and models, interpret preprocessing, and learn from model results.
 You are not the prediction engine. Never invent or calculate a requested prediction value in chat.
@@ -137,12 +165,22 @@ async def chat_with_dataset(
     messages.append({"role": "user", "content": message})
 
     url = f"{settings.ollama_base_url.rstrip('/')}/api/chat"
+    
+    # Determine token budget based on request type
+    is_detail = _is_detail_request(message)
+    max_tokens = 512 if is_detail else settings.ollama_max_tokens  # 512 for detail requests, 256 for normal
+    
     payload = {
         "model": settings.ollama_model,
         "messages": messages,
         "stream": False,
-        "keep_alive": "10m",
-        "options": {"temperature": 0.1, "num_predict": settings.ollama_max_tokens, "num_ctx": 2048},
+        "keep_alive": "10m",  # Full 10 minutes to keep context loaded
+        "options": {
+            "temperature": 0.8,  # Natural, thoughtful responses
+            "num_predict": max_tokens,
+            "num_ctx": 2048,  # Full context window
+            "repeat_penalty": 1.1,
+        },
     }
 
     try:
@@ -174,12 +212,16 @@ async def chat_with_dataset(
     except httpx.TimeoutException:
         return {
             "reply": (
-                f"The local Ollama model took longer than {settings.ollama_timeout:.0f} seconds, "
-                "so I stopped waiting. Questions about rows, columns, missing values, model eligibility, "
-                "and numeric summaries are answered instantly from your CSV; open-ended explanations depend "
-                "on your local Ollama speed."
+                f"The local Ollama model took longer than {settings.ollama_timeout:.0f} seconds, so I stopped waiting. "
+                "Questions about rows, columns, missing values, model eligibility, and numeric summaries are answered "
+                "instantly from your CSV; open-ended explanations depend on your local Ollama speed.\n\n"
+                "Tips to speed up Ollama:\n"
+                "  • Ensure Ollama is running: curl http://127.0.0.1:11434/api/tags\n"
+                "  • Check system resources (GPU/CPU/RAM available)\n"
+                "  • Consider using GPU if available\n"
+                "  • Try restarting Ollama if it's been idle"
             ),
-            "model": settings.ollama_model,
+            "model": "nexora-helper-timeout",
             "ok": False,
         }
     except Exception as e:
