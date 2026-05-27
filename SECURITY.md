@@ -17,7 +17,7 @@ If you discover a security vulnerability in this project, please do not open a p
 
 Instead, please report the vulnerability confidentially by emailing the project maintainer:
 
-**Email**: jeet2005@users.noreply.github.com
+**Email**: jeetsavaliya1908@gmail.com
 
 ### Information to Include
 
