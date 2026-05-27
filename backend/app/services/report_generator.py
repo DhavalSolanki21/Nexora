@@ -409,12 +409,10 @@ def _generate_report(
                 label, f"{v:.4f}" if isinstance(v, float) else str(v), highlight=True
             )
 
-    out = pdf.output(dest="S")
-    if isinstance(out, bytes):
-        return out
+    out = pdf.output()
     if isinstance(out, bytearray):
         return bytes(out)
-    return str(out).encode("latin-1", "replace")
+    return out
 
 
 def generate_pdf_report(
