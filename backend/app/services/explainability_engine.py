@@ -36,8 +36,15 @@ GOOGLE_COLORS = ["#4285f4", "#34a853", "#fbbc05", "#ea4335", "#a142f4", "#00acc1
 def _fig_to_base64(fig: plt.Figure) -> str:
     """Convert a matplotlib figure to a base64-encoded PNG string."""
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=PLOT_DPI, bbox_inches="tight",
-                facecolor=PLOT_BG, edgecolor="none", transparent=False)
+    fig.savefig(
+        buf,
+        format="png",
+        dpi=PLOT_DPI,
+        bbox_inches="tight",
+        facecolor=PLOT_BG,
+        edgecolor="none",
+        transparent=False,
+    )
     buf.seek(0)
     b64 = base64.b64encode(buf.read()).decode("utf-8")
     plt.close(fig)
@@ -59,7 +66,9 @@ def _train_model(spec: ModelSpec, X_train: np.ndarray, y_train: np.ndarray):
     return model
 
 
-def _prepare_xy(df: pd.DataFrame, target_column: str) -> tuple[pd.DataFrame, np.ndarray, list[str]]:
+def _prepare_xy(
+    df: pd.DataFrame, target_column: str
+) -> tuple[pd.DataFrame, np.ndarray, list[str]]:
     """Build a numeric feature matrix so SHAP never receives object arrays."""
     feature_cols = [c for c in df.columns if c != target_column]
     X = df[feature_cols].copy()
@@ -91,7 +100,18 @@ def _compute_shap_values(
     X_explain = X_test[:explain_size]
 
     model_type = type(model).__name__.lower()
-    tree_types = ("forest", "tree", "gradient", "xgb", "lgbm", "catboost", "hist", "extra", "ada", "bagging")
+    tree_types = (
+        "forest",
+        "tree",
+        "gradient",
+        "xgb",
+        "lgbm",
+        "catboost",
+        "hist",
+        "extra",
+        "ada",
+        "bagging",
+    )
 
     try:
         if any(t in model_type for t in tree_types):
@@ -121,7 +141,9 @@ def _compute_shap_values(
 def _plot_shap_summary(sv: shap.Explanation, feature_names: list[str]) -> str:
     """Create a SHAP beeswarm/summary plot."""
     fig, ax = plt.subplots(figsize=(10, 6))
-    shap.summary_plot(sv, feature_names=feature_names, show=False, max_display=MAX_FEATURES_SHAP)
+    shap.summary_plot(
+        sv, feature_names=feature_names, show=False, max_display=MAX_FEATURES_SHAP
+    )
     ax = plt.gca()
     ax.set_facecolor(PLOT_BG)
     fig.patch.set_facecolor(PLOT_BG)
@@ -130,7 +152,9 @@ def _plot_shap_summary(sv: shap.Explanation, feature_names: list[str]) -> str:
     ax.tick_params(colors=MUTED)
     ax.xaxis.label.set_color(MUTED)
     ax.yaxis.label.set_color(MUTED)
-    ax.set_title("SHAP Feature Impact", color=TEXT, fontsize=14, fontweight="bold", pad=12)
+    ax.set_title(
+        "SHAP Feature Impact", color=TEXT, fontsize=14, fontweight="bold", pad=12
+    )
     return _fig_to_base64(fig)
 
 
@@ -146,11 +170,19 @@ def _plot_shap_bar(sv: shap.Explanation, feature_names: list[str]) -> str:
     ax.tick_params(colors=MUTED)
     ax.xaxis.label.set_color(MUTED)
     ax.yaxis.label.set_color(MUTED)
-    ax.set_title("Feature Importance (mean |SHAP|)", color=TEXT, fontsize=14, fontweight="bold", pad=12)
+    ax.set_title(
+        "Feature Importance (mean |SHAP|)",
+        color=TEXT,
+        fontsize=14,
+        fontweight="bold",
+        pad=12,
+    )
     return _fig_to_base64(fig)
 
 
-def _compute_feature_importance(sv: shap.Explanation, feature_names: list[str]) -> list[dict]:
+def _compute_feature_importance(
+    sv: shap.Explanation, feature_names: list[str]
+) -> list[dict]:
     """Extract ranked feature importance from SHAP values."""
     if hasattr(sv, "values"):
         vals = sv.values
@@ -197,12 +229,21 @@ def _plot_feature_importance_bar(importances: list[dict]) -> str:
     ax.tick_params(colors=MUTED, labelsize=10)
     ax.xaxis.label.set_color(MUTED)
     ax.set_xlabel("Importance", fontsize=11, color=MUTED)
-    ax.set_title("Top Feature Importance", color=TEXT, fontsize=14, fontweight="bold", pad=12)
+    ax.set_title(
+        "Top Feature Importance", color=TEXT, fontsize=14, fontweight="bold", pad=12
+    )
     ax.grid(axis="x", alpha=0.8, color=GRID)
 
     for bar, val in zip(bars, vals):
-        ax.text(bar.get_width() + max(vals) * 0.02, bar.get_y() + bar.get_height() / 2,
-                f"{val:.4f}", ha="left", va="center", color=MUTED, fontsize=9)
+        ax.text(
+            bar.get_width() + max(vals) * 0.02,
+            bar.get_y() + bar.get_height() / 2,
+            f"{val:.4f}",
+            ha="left",
+            va="center",
+            color=MUTED,
+            fontsize=9,
+        )
 
     plt.tight_layout()
     return _fig_to_base64(fig)
@@ -215,20 +256,41 @@ def _plot_prediction_distribution(y_test, y_pred, problem_type: str) -> str:
     if problem_type == "regression":
         ax.scatter(y_test, y_pred, alpha=0.72, s=18, c="#4285f4", edgecolors="none")
         lims = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
-        ax.plot(lims, lims, "--", color="#ea4335", alpha=0.8, linewidth=1.5, label="Perfect prediction")
+        ax.plot(
+            lims,
+            lims,
+            "--",
+            color="#ea4335",
+            alpha=0.8,
+            linewidth=1.5,
+            label="Perfect prediction",
+        )
         ax.set_xlabel("Actual", color=MUTED, fontsize=11)
         ax.set_ylabel("Predicted", color=MUTED, fontsize=11)
-        ax.set_title("Actual vs Predicted", color=TEXT, fontsize=14, fontweight="bold", pad=12)
+        ax.set_title(
+            "Actual vs Predicted", color=TEXT, fontsize=14, fontweight="bold", pad=12
+        )
         ax.legend(facecolor=PLOT_BG, edgecolor=GRID, labelcolor=MUTED)
     else:
         import seaborn as sns
         from sklearn.metrics import confusion_matrix
+
         cm = confusion_matrix(y_test, y_pred)
-        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax,
-                    linewidths=0.5, linecolor=GRID, cbar_kws={"shrink": 0.8})
+        sns.heatmap(
+            cm,
+            annot=True,
+            fmt="d",
+            cmap="Blues",
+            ax=ax,
+            linewidths=0.5,
+            linecolor=GRID,
+            cbar_kws={"shrink": 0.8},
+        )
         ax.set_xlabel("Predicted", color=MUTED, fontsize=11)
         ax.set_ylabel("Actual", color=MUTED, fontsize=11)
-        ax.set_title("Confusion Matrix", color=TEXT, fontsize=14, fontweight="bold", pad=12)
+        ax.set_title(
+            "Confusion Matrix", color=TEXT, fontsize=14, fontweight="bold", pad=12
+        )
         ax.tick_params(colors=MUTED)
 
     ax.set_facecolor(PLOT_BG)
@@ -274,7 +336,9 @@ def _plot_residuals(y_test, y_pred) -> str:
     return _fig_to_base64(fig)
 
 
-def _fallback_feature_importance(model, X_test: np.ndarray, y_test: np.ndarray, feature_names: list[str]) -> list[dict]:
+def _fallback_feature_importance(
+    model, X_test: np.ndarray, y_test: np.ndarray, feature_names: list[str]
+) -> list[dict]:
     """Return feature importances without SHAP when SHAP cannot handle a model/data combo."""
     if hasattr(model, "feature_importances_"):
         raw = np.asarray(model.feature_importances_, dtype=float)
@@ -300,7 +364,9 @@ def _fallback_feature_importance(model, X_test: np.ndarray, y_test: np.ndarray, 
         raw = np.resize(raw, len(feature_names))
 
     total = float(np.sum(np.abs(raw))) or 1.0
-    ranked = sorted(zip(feature_names, np.abs(raw)), key=lambda item: item[1], reverse=True)
+    ranked = sorted(
+        zip(feature_names, np.abs(raw)), key=lambda item: item[1], reverse=True
+    )
     return [
         {
             "feature": name,
@@ -320,13 +386,18 @@ def run_explainability(
     """Run full explainability pipeline for the best model."""
     spec = _get_best_model_spec(problem_type, model_id)
     if not spec:
-        raise ValueError(f"Model '{model_id}' not found in registry for {problem_type}.")
+        raise ValueError(
+            f"Model '{model_id}' not found in registry for {problem_type}."
+        )
 
     X_df, y, feature_cols = _prepare_xy(df, target_column)
     X = X_df.values
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=settings.train_test_split, random_state=42,
+        X,
+        y,
+        test_size=settings.train_test_split,
+        random_state=42,
     )
 
     # Train the specific model
@@ -358,7 +429,9 @@ def run_explainability(
     except Exception:
         pass
     try:
-        plots["prediction_distribution"] = _plot_prediction_distribution(y_test, y_pred, problem_type)
+        plots["prediction_distribution"] = _plot_prediction_distribution(
+            y_test, y_pred, problem_type
+        )
     except Exception:
         pass
     if problem_type == "regression":
@@ -380,7 +453,9 @@ def run_explainability(
     metrics: dict[str, float] = {}
     if problem_type == "classification":
         metrics["accuracy"] = round(float(accuracy_score(y_test, y_pred)), 4)
-        metrics["f1"] = round(float(f1_score(y_test, y_pred, average="weighted", zero_division=0)), 4)
+        metrics["f1"] = round(
+            float(f1_score(y_test, y_pred, average="weighted", zero_division=0)), 4
+        )
         try:
             if hasattr(model, "predict_proba") and len(np.unique(y_test)) == 2:
                 proba = model.predict_proba(X_test)[:, 1]

@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import {
   BarChart,
   Bar,
-  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,

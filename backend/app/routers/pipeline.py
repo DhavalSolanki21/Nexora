@@ -51,7 +51,9 @@ async def configure_target(dataset_id: str, body: ConfigureTargetRequest):
     analysis, df = _require_dataset(dataset_id)
 
     if body.target_column not in df.columns:
-        raise HTTPException(status_code=400, detail=f"Column '{body.target_column}' not found.")
+        raise HTTPException(
+            status_code=400, detail=f"Column '{body.target_column}' not found."
+        )
 
     detection_raw = detect_problem_type(df, body.target_column)
     problem_type = body.problem_type or detection_raw["problem_type"]
@@ -67,9 +69,7 @@ async def configure_target(dataset_id: str, body: ConfigureTargetRequest):
 
     features_raw = suggest_feature_columns(df, body.target_column)
     feature_cols = [
-        c
-        for c in features_raw["feature_columns"]
-        if c not in body.exclude_columns
+        c for c in features_raw["feature_columns"] if c not in body.exclude_columns
     ]
 
     detection = ProblemDetection(**detection_raw)
@@ -149,7 +149,9 @@ async def run_preprocess(dataset_id: str, body: PreprocessRequest | None = None)
         steps=[PreprocessStep(**s) for s in steps_raw],
         meta=PreprocessMeta(**meta_raw),
         insights=DatasetInsights(
-            top_correlations=[CorrelationInsight(**c) for c in insights_raw["top_correlations"]],
+            top_correlations=[
+                CorrelationInsight(**c) for c in insights_raw["top_correlations"]
+            ],
             class_balance=insights_raw["class_balance"],
             target_stats=insights_raw["target_stats"],
             quality_warnings=insights_raw["quality_warnings"],
@@ -170,7 +172,9 @@ async def run_preprocess(dataset_id: str, body: PreprocessRequest | None = None)
 async def processed_preview(dataset_id: str, limit: int = 30):
     session = load_session(dataset_id)
     if not session or session.status != "preprocessed":
-        raise HTTPException(status_code=400, detail="Dataset has not been preprocessed yet.")
+        raise HTTPException(
+            status_code=400, detail="Dataset has not been preprocessed yet."
+        )
 
     df = load_processed_df(dataset_id)
     if df is None:

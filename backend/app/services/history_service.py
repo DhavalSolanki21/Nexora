@@ -90,8 +90,12 @@ def history_item(dataset_id: str) -> DatasetHistoryItem | None:
         trained_model_count=trained_count,
         report_available=report_path.exists(),
         archived=_read_archived(dataset_id),
-        created_at=datetime.fromtimestamp(stat.st_ctime, UTC).isoformat() if stat else None,
-        updated_at=datetime.fromtimestamp(stat.st_mtime, UTC).isoformat() if stat else None,
+        created_at=datetime.fromtimestamp(stat.st_ctime, UTC).isoformat()
+        if stat
+        else None,
+        updated_at=datetime.fromtimestamp(stat.st_mtime, UTC).isoformat()
+        if stat
+        else None,
     )
     upsert("datasets", {"dataset_id": dataset_id}, item.model_dump())
     return item
@@ -100,6 +104,7 @@ def history_item(dataset_id: str) -> DatasetHistoryItem | None:
 def list_history(include_archived: bool = False) -> list[DatasetHistoryItem]:
     # Try MongoDB first
     from app.services.persistence_service import find
+
     db_items = find("datasets")
     if db_items:
         out = []
@@ -129,7 +134,6 @@ def list_history(include_archived: bool = False) -> list[DatasetHistoryItem]:
     return items
 
 
-
 def delete_dataset(dataset_id: str) -> None:
     if not load_analysis(dataset_id):
         raise ValueError("Dataset not found.")
@@ -144,4 +148,3 @@ def delete_dataset(dataset_id: str) -> None:
             shutil.rmtree(target)
         else:
             target.unlink(missing_ok=True)
-

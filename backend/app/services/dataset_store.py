@@ -21,13 +21,17 @@ def save_dataset(df: pd.DataFrame, filename: str, analysis: DatasetAnalysis) -> 
         analysis.model_dump_json(indent=2), encoding="utf-8"
     )
     from app.services.persistence_service import upsert
-    upsert("dataset_analyses", {"dataset_id": analysis.dataset_id}, analysis.model_dump())
+
+    upsert(
+        "dataset_analyses", {"dataset_id": analysis.dataset_id}, analysis.model_dump()
+    )
 
 
 def load_analysis(dataset_id: str) -> DatasetAnalysis | None:
     path = _meta_path(dataset_id)
     if not path.exists():
         from app.services.persistence_service import find
+
         db_items = find("dataset_analyses", {"dataset_id": dataset_id})
         if db_items:
             try:
@@ -43,7 +47,12 @@ def load_analysis(dataset_id: str) -> DatasetAnalysis | None:
             try:
                 path.write_text(analysis.model_dump_json(indent=2), encoding="utf-8")
                 from app.services.persistence_service import upsert
-                upsert("dataset_analyses", {"dataset_id": dataset_id}, analysis.model_dump())
+
+                upsert(
+                    "dataset_analyses",
+                    {"dataset_id": dataset_id},
+                    analysis.model_dump(),
+                )
             except OSError:
                 # Returning refreshed analysis is enough when legacy metadata storage is read-only.
                 pass

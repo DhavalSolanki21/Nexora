@@ -15,7 +15,9 @@ class Settings(BaseSettings):
         "https://nexoraprediction.netlify.app",
     ]
     # Bulletproof regex allowing the primary Netlify domain, all deploy previews, and localhost
-    cors_origin_regex: str | None = r"https://([a-z0-9]+--)?nexoraprediction\.netlify\.app|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?"
+    cors_origin_regex: str | None = (
+        r"https://([a-z0-9]+--)?nexoraprediction\.netlify\.app|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?"
+    )
 
     # Ollama
     ollama_base_url: str = "http://127.0.0.1:11434"

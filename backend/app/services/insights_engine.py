@@ -12,7 +12,13 @@ def _top_correlations(df: pd.DataFrame, target: str, limit: int = 8) -> list[dic
     if target not in numeric or len(numeric) < 2:
         return []
 
-    corr = df[numeric].corr()[target].drop(target, errors="ignore").abs().sort_values(ascending=False)
+    corr = (
+        df[numeric]
+        .corr()[target]
+        .drop(target, errors="ignore")
+        .abs()
+        .sort_values(ascending=False)
+    )
     return [
         {"feature": name, "correlation": round(float(val), 4)}
         for name, val in corr.head(limit).items()
@@ -37,7 +43,10 @@ def _target_stats(df: pd.DataFrame, target: str, problem_type: str) -> dict:
             "mean": _safe(s.mean()),
             "std": _safe(s.std()),
         }
-    return {"classes": int(s.nunique()), "most_common": str(s.mode().iloc[0]) if len(s.mode()) else None}
+    return {
+        "classes": int(s.nunique()),
+        "most_common": str(s.mode().iloc[0]) if len(s.mode()) else None,
+    }
 
 
 def _safe(v: Any) -> float | None:
@@ -48,31 +57,41 @@ def _safe(v: Any) -> float | None:
         return None
 
 
-def _quality_warnings(df: pd.DataFrame, target: str, feature_cols: list[str]) -> list[str]:
+def _quality_warnings(
+    df: pd.DataFrame, target: str, feature_cols: list[str]
+) -> list[str]:
     warnings: list[str] = []
     n = len(df)
 
     missing_target = df[target].isna().sum()
     if missing_target:
-        warnings.append(f"{missing_target} rows ({100*missing_target/n:.1f}%) have missing target values.")
+        warnings.append(
+            f"{missing_target} rows ({100 * missing_target / n:.1f}%) have missing target values."
+        )
 
     for col in feature_cols[:20]:
         if col not in df.columns:
             continue
         pct = df[col].isna().sum() / max(n, 1)
         if pct > 0.3:
-            warnings.append(f"Column '{col}' has {pct*100:.0f}% missing values — may hurt model performance.")
+            warnings.append(
+                f"Column '{col}' has {pct * 100:.0f}% missing values — may hurt model performance."
+            )
 
     if len(feature_cols) < 2:
         warnings.append("Very few features remain — model may underfit.")
 
     if len(feature_cols) > 100:
-        warnings.append(f"High dimensionality ({len(feature_cols)} features) — consider feature selection.")
+        warnings.append(
+            f"High dimensionality ({len(feature_cols)} features) — consider feature selection."
+        )
 
     return warnings
 
 
-def _difficulty_score(df: pd.DataFrame, target: str, problem_type: str, correlations: list[dict]) -> int:
+def _difficulty_score(
+    df: pd.DataFrame, target: str, problem_type: str, correlations: list[dict]
+) -> int:
     score = 70
     n = len(df)
 
@@ -106,9 +125,15 @@ def generate_insights(
     raw_feature_columns: list[str] | None = None,
 ) -> dict:
     correlations = _top_correlations(df, target_column)
-    class_balance = _class_balance(raw_df, target_column) if problem_type == "classification" else []
+    class_balance = (
+        _class_balance(raw_df, target_column)
+        if problem_type == "classification"
+        else []
+    )
     target_stats = _target_stats(raw_df, target_column, problem_type)
-    warnings = _quality_warnings(raw_df, target_column, raw_feature_columns or feature_columns)
+    warnings = _quality_warnings(
+        raw_df, target_column, raw_feature_columns or feature_columns
+    )
     difficulty = _difficulty_score(df, target_column, problem_type, correlations)
 
     narrative_parts = [
@@ -130,9 +155,13 @@ def generate_insights(
             )
 
     if difficulty >= 75:
-        narrative_parts.append("Dataset appears well-suited for automated model benchmarking.")
+        narrative_parts.append(
+            "Dataset appears well-suited for automated model benchmarking."
+        )
     elif difficulty < 50:
-        narrative_parts.append("Expect moderate challenge — consider more data or feature engineering.")
+        narrative_parts.append(
+            "Expect moderate challenge — consider more data or feature engineering."
+        )
 
     return {
         "top_correlations": correlations,

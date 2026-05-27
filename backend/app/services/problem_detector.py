@@ -26,7 +26,9 @@ def detect_problem_type(df: pd.DataFrame, target_column: str) -> dict:
     elif is_numeric and 2 <= nunique <= 20:
         problem_type = "classification"
         confidence = 0.85
-        hints.append(f"Numeric target with {nunique} discrete classes — treated as classification.")
+        hints.append(
+            f"Numeric target with {nunique} discrete classes — treated as classification."
+        )
     elif not is_numeric and nunique >= 2:
         problem_type = "classification"
         confidence = 0.92
@@ -36,9 +38,13 @@ def detect_problem_type(df: pd.DataFrame, target_column: str) -> dict:
         confidence = 0.5
         hints.append("Low cardinality target — verify this is the correct column.")
 
-    datetime_cols = [c for c in df.columns if c != target_column and _infer_datetime(df[c])]
+    datetime_cols = [
+        c for c in df.columns if c != target_column and _infer_datetime(df[c])
+    ]
     if datetime_cols and problem_type != "time_series":
-        hints.append(f"Datetime columns detected ({', '.join(datetime_cols[:3])}) — consider time-series mode.")
+        hints.append(
+            f"Datetime columns detected ({', '.join(datetime_cols[:3])}) — consider time-series mode."
+        )
 
     return {
         "problem_type": problem_type,

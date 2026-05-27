@@ -50,7 +50,9 @@ def _feature_frame(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     return work.fillna(work.median(numeric_only=True)).fillna(0)
 
 
-def run_clustering(dataset_id: str, n_clusters: int, feature_columns: list[str] | None = None) -> ClusteringResult:
+def run_clustering(
+    dataset_id: str, n_clusters: int, feature_columns: list[str] | None = None
+) -> ClusteringResult:
     df = load_dataframe(dataset_id)
     if df is None:
         raise ValueError("Dataset not found.")
@@ -62,7 +64,9 @@ def run_clustering(dataset_id: str, n_clusters: int, feature_columns: list[str] 
     ]
     columns = [column for column in columns if column in df.columns]
     if len(columns) < 1:
-        raise ValueError("At least one usable feature column is required for clustering.")
+        raise ValueError(
+            "At least one usable feature column is required for clustering."
+        )
     if len(df) < n_clusters:
         raise ValueError("Number of clusters cannot exceed the row count.")
 
@@ -71,9 +75,15 @@ def run_clustering(dataset_id: str, n_clusters: int, feature_columns: list[str] 
     model = KMeans(n_clusters=n_clusters, n_init=10, random_state=settings.random_seed)
     labels = model.fit_predict(X)
     pca = PCA(n_components=2, random_state=settings.random_seed)
-    coords = pca.fit_transform(X) if X.shape[1] >= 2 else np.c_[X[:, 0], np.zeros(len(X))]
+    coords = (
+        pca.fit_transform(X) if X.shape[1] >= 2 else np.c_[X[:, 0], np.zeros(len(X))]
+    )
 
-    silhouette = float(silhouette_score(X, labels)) if n_clusters > 1 and len(set(labels)) > 1 else 0.0
+    silhouette = (
+        float(silhouette_score(X, labels))
+        if n_clusters > 1 and len(set(labels)) > 1
+        else 0.0
+    )
     clusters: list[dict[str, Any]] = []
     labeled = df.copy()
     labeled["cluster"] = labels
@@ -83,7 +93,9 @@ def run_clustering(dataset_id: str, n_clusters: int, feature_columns: list[str] 
         for column in columns[:8]:
             series = part[column]
             if pd.api.types.is_numeric_dtype(series):
-                profile[column] = round(float(pd.to_numeric(series, errors="coerce").mean()), 4)
+                profile[column] = round(
+                    float(pd.to_numeric(series, errors="coerce").mean()), 4
+                )
             else:
                 mode = series.dropna().astype(str).mode()
                 profile[column] = str(mode.iloc[0]) if len(mode) else None
@@ -112,15 +124,24 @@ def run_clustering(dataset_id: str, n_clusters: int, feature_columns: list[str] 
             "inertia": round(float(model.inertia_), 4),
         },
         clusters=clusters,
-        preview=[{key: _json_ready(value) for key, value in row.items()} for row in preview_rows],
+        preview=[
+            {key: _json_ready(value) for key, value in row.items()}
+            for row in preview_rows
+        ],
         created_at=datetime.now(UTC).isoformat(),
     )
-    _result_path(dataset_id, "clustering").write_text(result.model_dump_json(indent=2), encoding="utf-8")
+    _result_path(dataset_id, "clustering").write_text(
+        result.model_dump_json(indent=2), encoding="utf-8"
+    )
     create_experiment(
         dataset_id,
         "clustering",
         "clustering",
-        config={"n_clusters": n_clusters, "feature_columns": columns, "seed": settings.random_seed},
+        config={
+            "n_clusters": n_clusters,
+            "feature_columns": columns,
+            "seed": settings.random_seed,
+        },
         metrics=result.metrics,
         artifact_refs={"result": str(_result_path(dataset_id, "clustering"))},
     )
@@ -156,20 +177,38 @@ def run_time_series(
         raise ValueError("Date and target columns must exist in the dataset.")
 
     series = df[[date_column, target_column]].copy()
-    series[date_column] = pd.to_datetime(series[date_column], errors="coerce", format="mixed")
+    series[date_column] = pd.to_datetime(
+        series[date_column], errors="coerce", format="mixed"
+    )
     series[target_column] = pd.to_numeric(series[target_column], errors="coerce")
     series = series.dropna().sort_values(date_column)
     if len(series) < 6:
-        raise ValueError("At least six dated numeric observations are required for forecasting.")
+        raise ValueError(
+            "At least six dated numeric observations are required for forecasting."
+        )
 
     if frequency == "D":
-        grouped = series.groupby(pd.Grouper(key=date_column, freq="D"))[target_column].mean().dropna()
+        grouped = (
+            series.groupby(pd.Grouper(key=date_column, freq="D"))[target_column]
+            .mean()
+            .dropna()
+        )
     elif frequency == "W":
-        grouped = series.groupby(pd.Grouper(key=date_column, freq="W"))[target_column].mean().dropna()
+        grouped = (
+            series.groupby(pd.Grouper(key=date_column, freq="W"))[target_column]
+            .mean()
+            .dropna()
+        )
     else:
-        grouped = series.groupby(pd.Grouper(key=date_column, freq="M"))[target_column].mean().dropna()
+        grouped = (
+            series.groupby(pd.Grouper(key=date_column, freq="M"))[target_column]
+            .mean()
+            .dropna()
+        )
     if len(grouped) < 6:
-        raise ValueError("Not enough observations remain after grouping by the selected frequency.")
+        raise ValueError(
+            "Not enough observations remain after grouping by the selected frequency."
+        )
 
     t = np.arange(len(grouped)).reshape(-1, 1)
     y = grouped.values.astype(float)
@@ -179,7 +218,9 @@ def run_time_series(
     pred_test = model.predict(t[-holdout:])
     metrics = {
         "mae": round(float(mean_absolute_error(y[-holdout:], pred_test)), 4),
-        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4) if holdout >= 2 else 0.0,
+        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4)
+        if holdout >= 2
+        else 0.0,
     }
 
     model.fit(t, y)
@@ -190,7 +231,9 @@ def run_time_series(
     forecast = []
     for value in future_values:
         current = current + offset
-        forecast.append({"date": current.date().isoformat(), "prediction": round(float(value), 4)})
+        forecast.append(
+            {"date": current.date().isoformat(), "prediction": round(float(value), 4)}
+        )
 
     history = [
         {"date": index.date().isoformat(), "value": round(float(value), 4)}
@@ -208,7 +251,9 @@ def run_time_series(
         forecast=forecast,
         created_at=datetime.now(UTC).isoformat(),
     )
-    _result_path(dataset_id, "time_series").write_text(result.model_dump_json(indent=2), encoding="utf-8")
+    _result_path(dataset_id, "time_series").write_text(
+        result.model_dump_json(indent=2), encoding="utf-8"
+    )
     create_experiment(
         dataset_id,
         "time_series",
@@ -226,4 +271,3 @@ def load_time_series(dataset_id: str) -> TimeSeriesResult | None:
     if not path.exists():
         return None
     return TimeSeriesResult.model_validate_json(path.read_text(encoding="utf-8"))
-

@@ -23,7 +23,9 @@ router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
 @router.get("", response_model=DatasetHistoryResponse)
 async def get_dataset_history(include_archived: bool = Query(False)):
-    return DatasetHistoryResponse(datasets=list_history(include_archived=include_archived))
+    return DatasetHistoryResponse(
+        datasets=list_history(include_archived=include_archived)
+    )
 
 
 @router.post(
@@ -39,7 +41,9 @@ async def upload_dataset(file: UploadFile = File(...)):
         content = await file.read()
     except Exception as e:
         logger.error(f"Failed to read file: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail=f"Failed to read file: {str(e)}") from e
+        raise HTTPException(
+            status_code=400, detail=f"Failed to read file: {str(e)}"
+        ) from e
 
     max_bytes = settings.max_upload_mb * 1024 * 1024
     if len(content) > max_bytes:
@@ -55,7 +59,9 @@ async def upload_dataset(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=e.message) from e
     except Exception as e:
         logger.error(f"Error processing file: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail=f"Error processing file: {str(e)}") from e
+        raise HTTPException(
+            status_code=400, detail=f"Error processing file: {str(e)}"
+        ) from e
 
     try:
         dataset_id = str(uuid.uuid4())

@@ -38,11 +38,11 @@ def _pdf_text(value: Any) -> str:
 class NexoraReport(FPDF):
     """Custom PDF with Nexora branding."""
 
-    BG = (250, 250, 249)          # #fafaf9 (nexora-bg)
-    TEXT = (23, 21, 20)           # #171514 (nexora-dark)
-    ACCENT = (147, 201, 152)      # #93C998 (nexora-accent)
-    SECONDARY = (122, 179, 127)   # #7ab37f (nexora-accent-dark)
-    MUTED = (120, 113, 108)       # #78716c (neutral warm gray)
+    BG = (250, 250, 249)  # #fafaf9 (nexora-bg)
+    TEXT = (23, 21, 20)  # #171514 (nexora-dark)
+    ACCENT = (147, 201, 152)  # #93C998 (nexora-accent)
+    SECONDARY = (122, 179, 127)  # #7ab37f (nexora-accent-dark)
+    MUTED = (120, 113, 108)  # #78716c (neutral warm gray)
     WHITE = (255, 255, 255)
     GREEN = (122, 179, 127)
     RED = (239, 68, 68)
@@ -60,7 +60,14 @@ class NexoraReport(FPDF):
         self.cell(0, 8, "NEXORA AI", align="L")
         self.set_text_color(*self.MUTED)
         self.set_font("Helvetica", "", 7)
-        self.cell(0, 8, f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}", align="R", new_x="LMARGIN", new_y="NEXT")
+        self.cell(
+            0,
+            8,
+            f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+            align="R",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
         self.set_draw_color(*self.ACCENT)
         self.set_line_width(0.3)
         self.line(10, self.get_y(), 200, self.get_y())
@@ -142,9 +149,34 @@ def _generate_report(
 
     pdf.set_font("Helvetica", "", 11)
     pdf.set_text_color(*NexoraReport.MUTED)
-    pdf.cell(0, 8, _pdf_text(f"Dataset: {dataset_info.get('filename', 'Unknown')}"), align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 7, _pdf_text(f"{dataset_info.get('rows', 0):,} rows x {dataset_info.get('columns', 0)} columns"), align="C", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 7, _pdf_text(f"Target: {dataset_info.get('target_column', 'N/A')} ({dataset_info.get('problem_type', 'N/A')})"), align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(
+        0,
+        8,
+        _pdf_text(f"Dataset: {dataset_info.get('filename', 'Unknown')}"),
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    pdf.cell(
+        0,
+        7,
+        _pdf_text(
+            f"{dataset_info.get('rows', 0):,} rows x {dataset_info.get('columns', 0)} columns"
+        ),
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
+    pdf.cell(
+        0,
+        7,
+        _pdf_text(
+            f"Target: {dataset_info.get('target_column', 'N/A')} ({dataset_info.get('problem_type', 'N/A')})"
+        ),
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
     pdf.ln(10)
 
     pdf.set_draw_color(*NexoraReport.ACCENT)
@@ -154,7 +186,14 @@ def _generate_report(
 
     pdf.set_font("Helvetica", "", 8)
     pdf.set_text_color(*NexoraReport.MUTED)
-    pdf.cell(0, 6, "Powered by Nexora AI - Autonomous Predictive Analytics Platform", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(
+        0,
+        6,
+        "Powered by Nexora AI - Autonomous Predictive Analytics Platform",
+        align="C",
+        new_x="LMARGIN",
+        new_y="NEXT",
+    )
 
     # ── Step-by-Step Guide (for beginners) ──
     pdf.add_page()
@@ -166,12 +205,30 @@ def _generate_report(
     )
 
     guide_steps = [
-        ("Step 1: Upload", "You uploaded a CSV/Excel file. Nexora instantly read your data, detected column types, found duplicates, and measured overall data quality."),
-        ("Step 2: Target Selection", "You selected a target column to predict. Nexora auto-detected whether this is a Classification problem (predicting categories) or Regression (predicting numbers)."),
-        ("Step 3: Preprocessing", "Nexora cleaned your data automatically - handling missing values, encoding text columns to numbers, removing outliers, and scaling features for optimal ML performance."),
-        ("Step 4: Model Arena", "100+ machine learning models competed on your data. Each model was trained and scored, then ranked on a leaderboard. The best-performing model became the Champion."),
-        ("Step 5: SHAP Explainability", "SHAP analysis explains WHY the champion model makes its predictions. It shows which features matter most and how each feature pushes the prediction up or down."),
-        ("Step 6: This Report", "Everything is compiled into this PDF - dataset stats, leaderboard, SHAP charts, and model metrics - so you can share results with your team."),
+        (
+            "Step 1: Upload",
+            "You uploaded a CSV/Excel file. Nexora instantly read your data, detected column types, found duplicates, and measured overall data quality.",
+        ),
+        (
+            "Step 2: Target Selection",
+            "You selected a target column to predict. Nexora auto-detected whether this is a Classification problem (predicting categories) or Regression (predicting numbers).",
+        ),
+        (
+            "Step 3: Preprocessing",
+            "Nexora cleaned your data automatically - handling missing values, encoding text columns to numbers, removing outliers, and scaling features for optimal ML performance.",
+        ),
+        (
+            "Step 4: Model Arena",
+            "100+ machine learning models competed on your data. Each model was trained and scored, then ranked on a leaderboard. The best-performing model became the Champion.",
+        ),
+        (
+            "Step 5: SHAP Explainability",
+            "SHAP analysis explains WHY the champion model makes its predictions. It shows which features matter most and how each feature pushes the prediction up or down.",
+        ),
+        (
+            "Step 6: This Report",
+            "Everything is compiled into this PDF - dataset stats, leaderboard, SHAP charts, and model metrics - so you can share results with your team.",
+        ),
     ]
 
     for title, desc in guide_steps:
@@ -206,15 +263,24 @@ def _generate_report(
             for w in insights["quality_warnings"]:
                 pdf.body_text(f"! {w}")
 
-        pdf.metric_row("Prediction Difficulty", f"{insights.get('estimated_difficulty', '?')} / 100")
+        pdf.metric_row(
+            "Prediction Difficulty",
+            f"{insights.get('estimated_difficulty', '?')} / 100",
+        )
 
     # ── Training Results ──
     pdf.add_page()
     pdf.section_title("2. Model Training Results")
     pdf.metric_row("Models Attempted", str(training_result.get("total_attempted", 0)))
-    pdf.metric_row("Models Completed", str(training_result.get("total_completed", 0)), highlight=True)
+    pdf.metric_row(
+        "Models Completed",
+        str(training_result.get("total_completed", 0)),
+        highlight=True,
+    )
     pdf.metric_row("Models Failed", str(training_result.get("total_failed", 0)))
-    pdf.metric_row("Registry Available", str(training_result.get("registry_available", 0)))
+    pdf.metric_row(
+        "Registry Available", str(training_result.get("registry_available", 0))
+    )
     pdf.metric_row("Primary Metric", training_result.get("primary_metric", "N/A"))
 
     best = training_result.get("best_model")
@@ -236,7 +302,11 @@ def _generate_report(
         pdf.sub_title("Top 20 Leaderboard")
 
         primary_metric = training_result.get("primary_metric", "accuracy")
-        metric_label = primary_metric.upper() if len(primary_metric) <= 4 else primary_metric.title()
+        metric_label = (
+            primary_metric.upper()
+            if len(primary_metric) <= 4
+            else primary_metric.title()
+        )
 
         # Table header
         pdf.set_font("Helvetica", "B", 8)
@@ -255,14 +325,29 @@ def _generate_report(
             if pdf.get_y() > 260:
                 pdf.add_page()
             pdf.set_font("Helvetica", "", 7)
-            pdf.set_text_color(*(NexoraReport.SECONDARY if i == 0 else NexoraReport.TEXT))
+            pdf.set_text_color(
+                *(NexoraReport.SECONDARY if i == 0 else NexoraReport.TEXT)
+            )
             pdf.cell(col_w[0], 5, str(i + 1), new_x="END")
-            pdf.cell(col_w[1], 5, _pdf_text(str(m.get("model_name", ""))[:35]), new_x="END")
+            pdf.cell(
+                col_w[1], 5, _pdf_text(str(m.get("model_name", ""))[:35]), new_x="END"
+            )
             pdf.cell(col_w[2], 5, _pdf_text(str(m.get("family", ""))), new_x="END")
             score = m.get("primary_score", 0)
-            pdf.cell(col_w[3], 5, f"{score:.4f}" if isinstance(score, float) else str(score), new_x="END")
+            pdf.cell(
+                col_w[3],
+                5,
+                f"{score:.4f}" if isinstance(score, float) else str(score),
+                new_x="END",
+            )
             pdf.cell(col_w[4], 5, f"{m.get('train_time_sec', 0)}s", new_x="END")
-            pdf.cell(col_w[5], 5, _pdf_text(str(m.get("speed", ""))), new_x="LMARGIN", new_y="NEXT")
+            pdf.cell(
+                col_w[5],
+                5,
+                _pdf_text(str(m.get("speed", ""))),
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
 
     # ── Explainability ──
     if explainability:
@@ -290,11 +375,15 @@ def _generate_report(
 
             for i, feat in enumerate(importances[:15]):
                 pdf.set_font("Helvetica", "", 7)
-                pdf.set_text_color(*(NexoraReport.GREEN if i < 3 else NexoraReport.TEXT))
+                pdf.set_text_color(
+                    *(NexoraReport.GREEN if i < 3 else NexoraReport.TEXT)
+                )
                 pdf.cell(10, 5, str(i + 1), new_x="END")
                 pdf.cell(70, 5, _pdf_text(str(feat["feature"])[:40]), new_x="END")
                 pdf.cell(40, 5, f"{feat['importance']:.6f}", new_x="END")
-                pdf.cell(30, 5, f"{feat['percentage']:.1f}%", new_x="LMARGIN", new_y="NEXT")
+                pdf.cell(
+                    30, 5, f"{feat['percentage']:.1f}%", new_x="LMARGIN", new_y="NEXT"
+                )
 
         # SHAP plots
         plots = explainability.get("plots", {})
@@ -316,7 +405,9 @@ def _generate_report(
         pdf.section_title("4. Final Model Metrics")
         for k, v in explainability["metrics"].items():
             label = k.upper() if len(k) <= 4 else k.title()
-            pdf.metric_row(label, f"{v:.4f}" if isinstance(v, float) else str(v), highlight=True)
+            pdf.metric_row(
+                label, f"{v:.4f}" if isinstance(v, float) else str(v), highlight=True
+            )
 
     out = pdf.output(dest="S")
     if isinstance(out, bytes):
@@ -333,7 +424,9 @@ def generate_pdf_report(
     insights: dict | None = None,
 ) -> str:
     """Generate a PDF report and return as base64-encoded string."""
-    pdf_bytes = _generate_report(dataset_info, training_result, explainability, insights)
+    pdf_bytes = _generate_report(
+        dataset_info, training_result, explainability, insights
+    )
     return base64.b64encode(pdf_bytes).decode("utf-8")
 
 
@@ -345,7 +438,9 @@ def save_pdf_report(
     insights: dict | None = None,
 ) -> Path:
     """Generate and save a PDF report to disk, return the file path."""
-    pdf_bytes = _generate_report(dataset_info, training_result, explainability, insights)
+    pdf_bytes = _generate_report(
+        dataset_info, training_result, explainability, insights
+    )
     path = settings.upload_dir / f"{dataset_id}_report.pdf"
     path.write_bytes(pdf_bytes)
     return path

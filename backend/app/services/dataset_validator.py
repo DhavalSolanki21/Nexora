@@ -27,14 +27,20 @@ def load_csv(content: bytes, filename: str) -> pd.DataFrame:
         except UnicodeDecodeError:
             continue
         except pd.errors.EmptyDataError:
-            raise DatasetValidationError("The CSV file contains no data.", "empty_dataset")
+            raise DatasetValidationError(
+                "The CSV file contains no data.", "empty_dataset"
+            )
         except pd.errors.ParserError as e:
             raise DatasetValidationError(f"Could not parse CSV: {e}", "parse_error")
     else:
-        raise DatasetValidationError("Unsupported or corrupted file encoding.", "encoding_error")
+        raise DatasetValidationError(
+            "Unsupported or corrupted file encoding.", "encoding_error"
+        )
 
     if df.empty or len(df.columns) == 0:
-        raise DatasetValidationError("The dataset has no rows or columns.", "empty_dataset")
+        raise DatasetValidationError(
+            "The dataset has no rows or columns.", "empty_dataset"
+        )
 
     if df.columns.duplicated().any():
         dupes = df.columns[df.columns.duplicated()].tolist()
@@ -45,7 +51,9 @@ def load_csv(content: bytes, filename: str) -> pd.DataFrame:
 
     unnamed = [c for c in df.columns if str(c).startswith("Unnamed")]
     if len(unnamed) == len(df.columns):
-        raise DatasetValidationError("CSV appears to lack a valid header row.", "invalid_headers")
+        raise DatasetValidationError(
+            "CSV appears to lack a valid header row.", "invalid_headers"
+        )
 
     if len(df) > MAX_ROWS:
         raise DatasetValidationError(

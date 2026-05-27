@@ -18,7 +18,9 @@ async def run_explainability(dataset_id: str, model_id: str | None = None):
     """Run SHAP explainability on the best (or specified) model."""
     session = load_session(dataset_id)
     if not session or session.status != "trained":
-        raise HTTPException(status_code=400, detail="Model training must be completed first.")
+        raise HTTPException(
+            status_code=400, detail="Model training must be completed first."
+        )
 
     training_result = load_training_result(dataset_id)
     if not training_result or not training_result.best_model:
@@ -38,12 +40,16 @@ async def run_explainability(dataset_id: str, model_id: str | None = None):
     try:
         result = await loop.run_in_executor(
             None,
-            lambda: _run_explain(df, session.target_column, problem_type, target_model_id),
+            lambda: _run_explain(
+                df, session.target_column, problem_type, target_model_id
+            ),
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Explainability failed: {str(e)[:300]}") from e
+        raise HTTPException(
+            status_code=500, detail=f"Explainability failed: {str(e)[:300]}"
+        ) from e
 
     return result
 
@@ -53,7 +59,9 @@ async def generate_report(dataset_id: str, include_shap: bool = True):
     """Generate a comprehensive PDF report for the dataset."""
     session = load_session(dataset_id)
     if not session or session.status != "trained":
-        raise HTTPException(status_code=400, detail="Complete training before generating a report.")
+        raise HTTPException(
+            status_code=400, detail="Complete training before generating a report."
+        )
 
     analysis = load_analysis(dataset_id)
     if not analysis:
@@ -89,6 +97,7 @@ async def generate_report(dataset_id: str, include_shap: bool = True):
             from app.services.explainability_engine import (
                 run_explainability as _run_explain,
             )
+
             loop = asyncio.get_event_loop()
             try:
                 explainability_dict = await loop.run_in_executor(
@@ -111,17 +120,26 @@ async def generate_report(dataset_id: str, include_shap: bool = True):
         pdf_path = await loop.run_in_executor(
             None,
             lambda: save_pdf_report(
-                dataset_id, dataset_info, training_dict, explainability_dict, insights_dict,
+                dataset_id,
+                dataset_info,
+                training_dict,
+                explainability_dict,
+                insights_dict,
             ),
         )
         pdf_b64 = await loop.run_in_executor(
             None,
             lambda: generate_pdf_report(
-                dataset_info, training_dict, explainability_dict, insights_dict,
+                dataset_info,
+                training_dict,
+                explainability_dict,
+                insights_dict,
             ),
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)[:300]}") from e
+        raise HTTPException(
+            status_code=500, detail=f"Report generation failed: {str(e)[:300]}"
+        ) from e
 
     return {
         "status": "ok",
@@ -135,7 +153,9 @@ async def download_report(dataset_id: str):
     """Download the generated PDF report."""
     path = settings.upload_dir / f"{dataset_id}_report.pdf"
     if not path.exists():
-        raise HTTPException(status_code=404, detail="Report not found. Generate it first.")
+        raise HTTPException(
+            status_code=404, detail="Report not found. Generate it first."
+        )
 
     analysis = load_analysis(dataset_id)
     filename = analysis.filename.rsplit(".", 1)[0] if analysis else "report"

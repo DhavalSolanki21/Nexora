@@ -57,7 +57,9 @@ def insert(collection_name: str, document: dict[str, Any]) -> None:
         return
 
 
-def find(collection_name: str, query: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def find(
+    collection_name: str, query: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     coll = collection(collection_name)
     if coll is None:
         return []
@@ -69,4 +71,3 @@ def find(collection_name: str, query: dict[str, Any] | None = None) -> list[dict
         return out
     except Exception:
         return []
-

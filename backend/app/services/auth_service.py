@@ -29,7 +29,9 @@ def _firebase_app():
         cred = credentials.Certificate(info)
         return firebase_admin.initialize_app(cred)
 
-    return firebase_admin.initialize_app(options={"projectId": settings.firebase_project_id})
+    return firebase_admin.initialize_app(
+        options={"projectId": settings.firebase_project_id}
+    )
 
 
 def verify_bearer_token(authorization: str | None) -> dict[str, Any] | None:
@@ -45,4 +47,3 @@ def verify_bearer_token(authorization: str | None) -> dict[str, Any] | None:
         return auth.verify_id_token(token, app=app)
     except Exception:
         return None
-

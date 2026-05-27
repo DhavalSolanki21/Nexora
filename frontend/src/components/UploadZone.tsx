@@ -32,9 +32,9 @@ export default function UploadZone() {
         
         if (err && typeof err === "object") {
           if ("detail" in err) {
-            errorMsg = (err as any).detail;
+            errorMsg = (err as { detail: string }).detail;
           } else if ("message" in err) {
-            errorMsg = (err as any).message;
+            errorMsg = (err as { message: string }).message;
           }
         } else if (err instanceof Error) {
           errorMsg = err.message;

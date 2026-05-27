@@ -23,7 +23,9 @@ def _training_path(dataset_id: str) -> Path:
 
 
 def save_training_result(dataset_id: str, result: TrainingResult) -> None:
-    _training_path(dataset_id).write_text(result.model_dump_json(indent=2), encoding="utf-8")
+    _training_path(dataset_id).write_text(
+        result.model_dump_json(indent=2), encoding="utf-8"
+    )
 
 
 def load_training_result(dataset_id: str) -> TrainingResult | None:
@@ -70,6 +72,7 @@ def _progress_handler(dataset_id: str):
                 if event.get("event") == "training_started":
                     job["total"] = event.get("total_models", 0)
         _broadcast_sync(dataset_id, event)
+
     return handler
 
 
@@ -87,7 +90,9 @@ def start_training(
 
     session = load_session(dataset_id)
     if not session or session.status != "preprocessed" or not session.target_column:
-        raise ValueError("Dataset must be preprocessed with a target column before training.")
+        raise ValueError(
+            "Dataset must be preprocessed with a target column before training."
+        )
 
     df = load_processed_df(dataset_id)
     if df is None:
@@ -160,7 +165,9 @@ def start_training(
                 _jobs[dataset_id]["status"] = "completed"
                 _jobs[dataset_id]["summary"] = summary
 
-            _broadcast_sync(dataset_id, {"event": "training_complete", "summary": summary})
+            _broadcast_sync(
+                dataset_id, {"event": "training_complete", "summary": summary}
+            )
         except Exception as e:
             with _lock:
                 _jobs[dataset_id]["status"] = "failed"

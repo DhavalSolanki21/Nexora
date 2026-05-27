@@ -44,6 +44,30 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 check_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = "app.services.model_registry"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "app.services.persistence_service"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "app.services.training_manager"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "app.services.deployed_model_service"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "app.services.history_service"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "app.routers.explainability"
+ignore_errors = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

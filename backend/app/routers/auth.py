@@ -23,6 +23,9 @@ async def auth_me(authorization: str | None = Header(default=None)):
         "authenticated": True,
         "uid": claims.get("uid"),
         "email": claims.get("email"),
-        "claims": {k: v for k, v in claims.items() if k not in {"firebase", "iat", "exp", "aud", "iss", "sub"}},
+        "claims": {
+            k: v
+            for k, v in claims.items()
+            if k not in {"firebase", "iat", "exp", "aud", "iss", "sub"}
+        },
     }
-

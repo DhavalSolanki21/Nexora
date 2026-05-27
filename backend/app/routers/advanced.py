@@ -46,4 +46,3 @@ async def start_time_series(dataset_id: str, body: TimeSeriesRequest):
 @router.get("/{dataset_id}/time-series", response_model=TimeSeriesResult | None)
 async def get_time_series(dataset_id: str):
     return load_time_series(dataset_id)
-

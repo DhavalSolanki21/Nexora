@@ -29,7 +29,9 @@ warnings.filterwarnings("ignore")
 ProgressCallback = Callable[[dict[str, Any]], None]
 
 
-def _prepare_xy(df: pd.DataFrame, target: str) -> tuple[np.ndarray, np.ndarray, list[str]]:
+def _prepare_xy(
+    df: pd.DataFrame, target: str
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
     if target not in df.columns:
         raise ValueError(f"Target '{target}' not in dataframe.")
     feature_cols = [c for c in df.columns if c != target]
@@ -69,7 +71,11 @@ def _score_model(
     mae = mean_absolute_error(y_test, pred)
     rmse = float(np.sqrt(mean_squared_error(y_test, pred)))
     r2 = r2_score(y_test, pred)
-    metrics = {"mae": round(float(mae), 4), "rmse": round(rmse, 4), "r2": round(float(r2), 4)}
+    metrics = {
+        "mae": round(float(mae), 4),
+        "rmse": round(rmse, 4),
+        "r2": round(float(r2), 4),
+    }
     metrics["primary"] = metrics["r2"]
     return metrics
 
@@ -90,7 +96,9 @@ def _train_one(
 
         if use_cv and len(y) >= 30:
             scoring = "accuracy" if problem_type == "classification" else "r2"
-            scores = cross_val_score(model, X, y, cv=min(cv_folds, 5), scoring=scoring, n_jobs=1)
+            scores = cross_val_score(
+                model, X, y, cv=min(cv_folds, 5), scoring=scoring, n_jobs=1
+            )
             primary = float(np.mean(scores))
             metrics = {scoring: round(primary, 4), "primary": round(primary, 4)}
             if problem_type == "classification":
@@ -99,9 +107,14 @@ def _train_one(
                 metrics["r2"] = metrics["primary"]
         else:
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=test_split, random_state=seed,
+                X,
+                y,
+                test_size=test_split,
+                random_state=seed,
             )
-            metrics = _score_model(model, X_train, X_test, y_train, y_test, problem_type)
+            metrics = _score_model(
+                model, X_train, X_test, y_train, y_test, problem_type
+            )
 
         elapsed = round(time.perf_counter() - t0, 3)
         speed_label = "fast" if elapsed < 2 else ("medium" if elapsed < 10 else "slow")
@@ -167,32 +180,38 @@ def run_training(
     seed = seed if seed is not None else settings.random_seed
 
     if on_progress:
-        on_progress({
-            "event": "training_started",
-            "total_models": total,
-            "registry_total": len(all_specs),
-            "problem_type": problem_type,
-            "config": {
-                "test_split": test_split,
-                "cv_folds": cv_folds,
-                "timeout_sec": timeout_sec,
-                "seed": seed,
-            },
-        })
+        on_progress(
+            {
+                "event": "training_started",
+                "total_models": total,
+                "registry_total": len(all_specs),
+                "problem_type": problem_type,
+                "config": {
+                    "test_split": test_split,
+                    "cv_folds": cv_folds,
+                    "timeout_sec": timeout_sec,
+                    "seed": seed,
+                },
+            }
+        )
 
     for i, spec in enumerate(specs):
         if on_progress:
-            on_progress({
-                "event": "model_started",
-                "index": i + 1,
-                "total": total,
-                "model_id": spec.id,
-                "model_name": spec.name,
-                "family": spec.family,
-            })
+            on_progress(
+                {
+                    "event": "model_started",
+                    "index": i + 1,
+                    "total": total,
+                    "model_id": spec.id,
+                    "model_name": spec.name,
+                    "family": spec.family,
+                }
+            )
 
         with ThreadPoolExecutor(max_workers=1) as ex:
-            future = ex.submit(_train_one, spec, X, y, problem_type, use_cv, test_split, cv_folds, seed)
+            future = ex.submit(
+                _train_one, spec, X, y, problem_type, use_cv, test_split, cv_folds, seed
+            )
             try:
                 result = future.result(timeout=timeout_sec)
             except FuturesTimeout:
@@ -211,18 +230,24 @@ def run_training(
         results.append(result)
 
         completed = [r for r in results if r["status"] == "completed"]
-        leaderboard = sorted(completed, key=lambda r: r["primary_score"], reverse=True)[:20]
+        leaderboard = sorted(completed, key=lambda r: r["primary_score"], reverse=True)[
+            :20
+        ]
 
         if on_progress:
-            on_progress({
-                "event": "model_completed",
-                "index": i + 1,
-                "total": total,
-                "result": result,
-                "leaderboard": leaderboard,
-                "completed_count": len(completed),
-                "failed_count": sum(1 for r in results if r["status"] != "completed"),
-            })
+            on_progress(
+                {
+                    "event": "model_completed",
+                    "index": i + 1,
+                    "total": total,
+                    "result": result,
+                    "leaderboard": leaderboard,
+                    "completed_count": len(completed),
+                    "failed_count": sum(
+                        1 for r in results if r["status"] != "completed"
+                    ),
+                }
+            )
 
     completed = [r for r in results if r["status"] == "completed"]
     failed = [r for r in results if r["status"] != "completed"]

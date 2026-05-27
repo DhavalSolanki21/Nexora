@@ -41,7 +41,7 @@ export async function uploadDataset(file: File, onProgress?: (pct: number) => vo
       },
     });
     return data;
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (error.response?.status === 400) {
       throw error.response.data;
     }

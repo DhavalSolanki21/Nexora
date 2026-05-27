@@ -87,73 +87,240 @@ def _classification_specs() -> list[ModelSpec]:
 
     # --- Linear ---
     for c in (0.001, 0.01, 0.1, 1.0, 10.0, 100.0):
-        add(f"lr_l2_c{c}", f"Logistic Regression (C={c})", "linear", lambda c=c: LogisticRegression(C=c, max_iter=2000), "fast")
+        add(
+            f"lr_l2_c{c}",
+            f"Logistic Regression (C={c})",
+            "linear",
+            lambda c=c: LogisticRegression(C=c, max_iter=2000),
+            "fast",
+        )
     for c in (0.1, 1.0, 10.0):
-        add(f"lr_l1_c{c}", f"Logistic Regression L1 (C={c})", "linear", lambda c=c: LogisticRegression(C=c, penalty="l1", solver="liblinear", max_iter=2000), "fast")
+        add(
+            f"lr_l1_c{c}",
+            f"Logistic Regression L1 (C={c})",
+            "linear",
+            lambda c=c: LogisticRegression(
+                C=c, penalty="l1", solver="liblinear", max_iter=2000
+            ),
+            "fast",
+        )
     for alpha in (0.0001, 0.001, 0.01, 0.1):
-        add(f"sgd_hinge_a{alpha}", f"SGD Hinge (α={alpha})", "linear", lambda a=alpha: SGDClassifier(loss="hinge", alpha=a, max_iter=1500), "fast")
+        add(
+            f"sgd_hinge_a{alpha}",
+            f"SGD Hinge (α={alpha})",
+            "linear",
+            lambda a=alpha: SGDClassifier(loss="hinge", alpha=a, max_iter=1500),
+            "fast",
+        )
     for alpha in (0.0001, 0.01, 0.1):
-        add(f"sgd_log_a{alpha}", f"SGD Log Loss (α={alpha})", "linear", lambda a=alpha: SGDClassifier(loss="log_loss", alpha=a, max_iter=1500), "fast")
+        add(
+            f"sgd_log_a{alpha}",
+            f"SGD Log Loss (α={alpha})",
+            "linear",
+            lambda a=alpha: SGDClassifier(loss="log_loss", alpha=a, max_iter=1500),
+            "fast",
+        )
     for c in (0.1, 1.0, 10.0):
-        add(f"ridge_c{c}", f"Ridge Classifier (α={c})", "linear", lambda c=c: RidgeClassifier(alpha=c), "fast")
+        add(
+            f"ridge_c{c}",
+            f"Ridge Classifier (α={c})",
+            "linear",
+            lambda c=c: RidgeClassifier(alpha=c),
+            "fast",
+        )
     for c in (0.1, 1.0, 10.0):
-        add(f"linearsvc_c{c}", f"Linear SVC (C={c})", "linear", lambda c=c: LinearSVC(C=c, max_iter=3000), "medium")
+        add(
+            f"linearsvc_c{c}",
+            f"Linear SVC (C={c})",
+            "linear",
+            lambda c=c: LinearSVC(C=c, max_iter=3000),
+            "medium",
+        )
     add("perceptron", "Perceptron", "linear", lambda: Perceptron(max_iter=1500), "fast")
     for c in (0.01, 0.1, 1.0):
-        add(f"passive_aggressive_c{c}", f"Passive Aggressive (C={c})", "linear", lambda c=c: PassiveAggressiveClassifier(C=c, max_iter=1500), "fast")
+        add(
+            f"passive_aggressive_c{c}",
+            f"Passive Aggressive (C={c})",
+            "linear",
+            lambda c=c: PassiveAggressiveClassifier(C=c, max_iter=1500),
+            "fast",
+        )
 
     # --- SVM ---
     for kernel in ("linear", "rbf", "poly"):
         for c in (0.1, 1.0, 10.0):
-            add(f"svc_{kernel}_c{c}", f"SVC {kernel} (C={c})", "svm", lambda k=kernel, c=c: SVC(kernel=k, C=c, probability=True), "slow", max_samples=50_000)
+            add(
+                f"svc_{kernel}_c{c}",
+                f"SVC {kernel} (C={c})",
+                "svm",
+                lambda k=kernel, c=c: SVC(kernel=k, C=c, probability=True),
+                "slow",
+                max_samples=50_000,
+            )
     for nu in (0.3, 0.5, 0.7):
-        add(f"nusvc_nu{nu}", f"Nu-SVC (ν={nu})", "svm", lambda n=nu: NuSVC(nu=n, probability=True), "slow", max_samples=30_000)
+        add(
+            f"nusvc_nu{nu}",
+            f"Nu-SVC (ν={nu})",
+            "svm",
+            lambda n=nu: NuSVC(nu=n, probability=True),
+            "slow",
+            max_samples=30_000,
+        )
 
     # --- Neighbors ---
     for k in (3, 5, 7, 9, 11, 15, 21):
-        add(f"knn_k{k}", f"KNN (k={k})", "neighbors", lambda k=k: KNeighborsClassifier(n_neighbors=k), "fast", max_samples=20_000)
-    add("radius_nn", "Radius Neighbors", "neighbors", lambda: RadiusNeighborsClassifier(), "medium", max_samples=10_000)
+        add(
+            f"knn_k{k}",
+            f"KNN (k={k})",
+            "neighbors",
+            lambda k=k: KNeighborsClassifier(n_neighbors=k),
+            "fast",
+            max_samples=20_000,
+        )
+    add(
+        "radius_nn",
+        "Radius Neighbors",
+        "neighbors",
+        lambda: RadiusNeighborsClassifier(),
+        "medium",
+        max_samples=10_000,
+    )
 
     # --- Trees ---
     for depth in (3, 5, 8, 12, 20, None):
         d = depth if depth else "None"
-        add(f"dt_depth{d}", f"Decision Tree (depth={d})", "tree", lambda dep=depth: DecisionTreeClassifier(max_depth=dep), "fast")
+        add(
+            f"dt_depth{d}",
+            f"Decision Tree (depth={d})",
+            "tree",
+            lambda dep=depth: DecisionTreeClassifier(max_depth=dep),
+            "fast",
+        )
     add("extra_tree", "Extra Tree", "tree", lambda: ExtraTreeClassifier(), "fast")
 
     for n in (50, 100, 200, 300):
         for depth in (5, 10, 20):
-            add(f"rf_{n}_d{depth}", f"Random Forest ({n}, d={depth})", "ensemble", lambda ne=n, dep=depth: RandomForestClassifier(n_estimators=ne, max_depth=dep, n_jobs=-1), "medium")
+            add(
+                f"rf_{n}_d{depth}",
+                f"Random Forest ({n}, d={depth})",
+                "ensemble",
+                lambda ne=n, dep=depth: RandomForestClassifier(
+                    n_estimators=ne, max_depth=dep, n_jobs=-1
+                ),
+                "medium",
+            )
     for n in (50, 100, 200):
-        add(f"et_{n}", f"Extra Trees ({n})", "ensemble", lambda ne=n: ExtraTreesClassifier(n_estimators=ne, n_jobs=-1), "medium")
+        add(
+            f"et_{n}",
+            f"Extra Trees ({n})",
+            "ensemble",
+            lambda ne=n: ExtraTreesClassifier(n_estimators=ne, n_jobs=-1),
+            "medium",
+        )
     for n in (50, 100, 150):
         for lr in (0.05, 0.1):
-            add(f"gb_{n}_lr{lr}", f"Gradient Boosting ({n}, lr={lr})", "boosting", lambda ne=n, r=lr: GradientBoostingClassifier(n_estimators=ne, learning_rate=r), "medium")
+            add(
+                f"gb_{n}_lr{lr}",
+                f"Gradient Boosting ({n}, lr={lr})",
+                "boosting",
+                lambda ne=n, r=lr: GradientBoostingClassifier(
+                    n_estimators=ne, learning_rate=r
+                ),
+                "medium",
+            )
     for n in (50, 100, 200):
-        add(f"hist_gb_{n}", f"Hist Gradient Boosting ({n})", "boosting", lambda ne=n: HistGradientBoostingClassifier(max_iter=ne), "medium")
+        add(
+            f"hist_gb_{n}",
+            f"Hist Gradient Boosting ({n})",
+            "boosting",
+            lambda ne=n: HistGradientBoostingClassifier(max_iter=ne),
+            "medium",
+        )
     for n in (50, 100):
-        add(f"ada_{n}", f"AdaBoost ({n})", "boosting", lambda ne=n: AdaBoostClassifier(n_estimators=ne), "medium")
+        add(
+            f"ada_{n}",
+            f"AdaBoost ({n})",
+            "boosting",
+            lambda ne=n: AdaBoostClassifier(n_estimators=ne),
+            "medium",
+        )
     for n in (20, 50):
-        add(f"bagging_{n}", f"Bagging ({n})", "ensemble", lambda ne=n: BaggingClassifier(n_estimators=ne, n_jobs=-1), "medium")
+        add(
+            f"bagging_{n}",
+            f"Bagging ({n})",
+            "ensemble",
+            lambda ne=n: BaggingClassifier(n_estimators=ne, n_jobs=-1),
+            "medium",
+        )
 
     # --- Naive Bayes ---
     add("gaussian_nb", "Gaussian Naive Bayes", "bayes", lambda: GaussianNB(), "fast")
     add("bernoulli_nb", "Bernoulli Naive Bayes", "bayes", lambda: BernoulliNB(), "fast")
-    add("multinomial_nb", "Multinomial Naive Bayes", "bayes", lambda: MultinomialNB(), "fast")
-    add("complement_nb", "Complement Naive Bayes", "bayes", lambda: ComplementNB(), "fast")
+    add(
+        "multinomial_nb",
+        "Multinomial Naive Bayes",
+        "bayes",
+        lambda: MultinomialNB(),
+        "fast",
+    )
+    add(
+        "complement_nb",
+        "Complement Naive Bayes",
+        "bayes",
+        lambda: ComplementNB(),
+        "fast",
+    )
 
     # --- Neural ---
     for h in ((32,), (64,), (64, 32), (128, 64), (128, 64, 32)):
         hid = "x".join(map(str, h))
-        add(f"mlp_{hid}", f"MLP ({hid})", "neural", lambda hidden=h: MLPClassifier(hidden_layer_sizes=hidden, max_iter=500), "medium", max_samples=50_000)
+        add(
+            f"mlp_{hid}",
+            f"MLP ({hid})",
+            "neural",
+            lambda hidden=h: MLPClassifier(hidden_layer_sizes=hidden, max_iter=500),
+            "medium",
+            max_samples=50_000,
+        )
 
     # --- Discriminant ---
-    add("lda", "Linear Discriminant Analysis", "discriminant", lambda: LinearDiscriminantAnalysis(), "fast")
-    add("qda", "Quadratic Discriminant Analysis", "discriminant", lambda: QuadraticDiscriminantAnalysis(), "fast")
+    add(
+        "lda",
+        "Linear Discriminant Analysis",
+        "discriminant",
+        lambda: LinearDiscriminantAnalysis(),
+        "fast",
+    )
+    add(
+        "qda",
+        "Quadratic Discriminant Analysis",
+        "discriminant",
+        lambda: QuadraticDiscriminantAnalysis(),
+        "fast",
+    )
 
     # --- Dummy / calibration ---
-    add("dummy_stratified", "Dummy (stratified)", "baseline", lambda: DummyClassifier(strategy="stratified"), "fast")
-    add("dummy_most_frequent", "Dummy (most frequent)", "baseline", lambda: DummyClassifier(strategy="most_frequent"), "fast")
-    add("calibrated_lr", "Calibrated Logistic", "calibration", lambda: CalibratedClassifierCV(LogisticRegression(max_iter=2000), cv=3), "medium")
+    add(
+        "dummy_stratified",
+        "Dummy (stratified)",
+        "baseline",
+        lambda: DummyClassifier(strategy="stratified"),
+        "fast",
+    )
+    add(
+        "dummy_most_frequent",
+        "Dummy (most frequent)",
+        "baseline",
+        lambda: DummyClassifier(strategy="most_frequent"),
+        "fast",
+    )
+    add(
+        "calibrated_lr",
+        "Calibrated Logistic",
+        "calibration",
+        lambda: CalibratedClassifierCV(LogisticRegression(max_iter=2000), cv=3),
+        "medium",
+    )
 
     # --- Voting ---
     add(
@@ -183,8 +350,12 @@ def _classification_specs() -> list[ModelSpec]:
                         f"XGBoost ({n}, d={depth}, lr={lr})",
                         "xgboost",
                         lambda ne=n, dep=depth, r=lr: XGBC(
-                            n_estimators=ne, max_depth=dep, learning_rate=r,
-                            eval_metric="logloss", verbosity=0, n_jobs=-1,
+                            n_estimators=ne,
+                            max_depth=dep,
+                            learning_rate=r,
+                            eval_metric="logloss",
+                            verbosity=0,
+                            n_jobs=-1,
                         ),
                         "medium",
                     )
@@ -201,7 +372,11 @@ def _classification_specs() -> list[ModelSpec]:
                         f"LightGBM ({n}, d={depth}, lr={lr})",
                         "lightgbm",
                         lambda ne=n, dep=depth, r=lr: LGBC(
-                            n_estimators=ne, max_depth=dep, learning_rate=r, verbose=-1, n_jobs=-1,
+                            n_estimators=ne,
+                            max_depth=dep,
+                            learning_rate=r,
+                            verbose=-1,
+                            n_jobs=-1,
                         ),
                         "medium",
                     )
@@ -272,55 +447,190 @@ def _regression_specs() -> list[ModelSpec]:
             )
         )
 
-    add("linear_regression", "Linear Regression", "linear", lambda: LinearRegression(n_jobs=-1), "fast")
+    add(
+        "linear_regression",
+        "Linear Regression",
+        "linear",
+        lambda: LinearRegression(n_jobs=-1),
+        "fast",
+    )
     for alpha in (0.01, 0.1, 1.0, 10.0):
-        add(f"ridge_a{alpha}", f"Ridge (α={alpha})", "linear", lambda a=alpha: Ridge(alpha=a), "fast")
+        add(
+            f"ridge_a{alpha}",
+            f"Ridge (α={alpha})",
+            "linear",
+            lambda a=alpha: Ridge(alpha=a),
+            "fast",
+        )
     for alpha in (0.001, 0.01, 0.1, 1.0):
-        add(f"lasso_a{alpha}", f"Lasso (α={alpha})", "linear", lambda a=alpha: Lasso(alpha=a, max_iter=3000), "fast")
+        add(
+            f"lasso_a{alpha}",
+            f"Lasso (α={alpha})",
+            "linear",
+            lambda a=alpha: Lasso(alpha=a, max_iter=3000),
+            "fast",
+        )
     for alpha in (0.01, 0.1, 1.0):
-        add(f"elastic_a{alpha}", f"ElasticNet (α={alpha})", "linear", lambda a=alpha: ElasticNet(alpha=a, max_iter=3000), "fast")
+        add(
+            f"elastic_a{alpha}",
+            f"ElasticNet (α={alpha})",
+            "linear",
+            lambda a=alpha: ElasticNet(alpha=a, max_iter=3000),
+            "fast",
+        )
     for alpha in (0.0001, 0.01, 0.1):
-        add(f"sgd_reg_a{alpha}", f"SGD Regressor (α={alpha})", "linear", lambda a=alpha: SGDRegressor(alpha=a, max_iter=2000), "fast")
+        add(
+            f"sgd_reg_a{alpha}",
+            f"SGD Regressor (α={alpha})",
+            "linear",
+            lambda a=alpha: SGDRegressor(alpha=a, max_iter=2000),
+            "fast",
+        )
     add("huber", "Huber Regressor", "linear", lambda: HuberRegressor(), "medium")
-    add("passive_aggressive_reg", "Passive Aggressive Regressor", "linear", lambda: PassiveAggressiveRegressor(max_iter=1500), "fast")
+    add(
+        "passive_aggressive_reg",
+        "Passive Aggressive Regressor",
+        "linear",
+        lambda: PassiveAggressiveRegressor(max_iter=1500),
+        "fast",
+    )
 
     for c in (0.1, 1.0, 10.0):
-        add(f"svr_rbf_c{c}", f"SVR RBF (C={c})", "svm", lambda c=c: SVR(kernel="rbf", C=c), "slow", max_samples=30_000)
+        add(
+            f"svr_rbf_c{c}",
+            f"SVR RBF (C={c})",
+            "svm",
+            lambda c=c: SVR(kernel="rbf", C=c),
+            "slow",
+            max_samples=30_000,
+        )
     for c in (0.1, 1.0):
-        add(f"svr_linear_c{c}", f"SVR Linear (C={c})", "svm", lambda c=c: SVR(kernel="linear", C=c), "slow", max_samples=30_000)
+        add(
+            f"svr_linear_c{c}",
+            f"SVR Linear (C={c})",
+            "svm",
+            lambda c=c: SVR(kernel="linear", C=c),
+            "slow",
+            max_samples=30_000,
+        )
     add("linearsvr", "Linear SVR", "svm", lambda: LinearSVR(max_iter=5000), "medium")
     for nu in (0.3, 0.5):
-        add(f"nusvr_nu{nu}", f"Nu-SVR (ν={nu})", "svm", lambda n=nu: NuSVR(nu=n), "slow", max_samples=20_000)
+        add(
+            f"nusvr_nu{nu}",
+            f"Nu-SVR (ν={nu})",
+            "svm",
+            lambda n=nu: NuSVR(nu=n),
+            "slow",
+            max_samples=20_000,
+        )
 
     for k in (3, 5, 7, 9, 11, 15):
-        add(f"knn_reg_k{k}", f"KNN Regressor (k={k})", "neighbors", lambda k=k: KNeighborsRegressor(n_neighbors=k), "fast", max_samples=20_000)
+        add(
+            f"knn_reg_k{k}",
+            f"KNN Regressor (k={k})",
+            "neighbors",
+            lambda k=k: KNeighborsRegressor(n_neighbors=k),
+            "fast",
+            max_samples=20_000,
+        )
 
     for depth in (3, 5, 8, 12, 20, None):
         d = depth if depth else "None"
-        add(f"dtr_depth{d}", f"Decision Tree Reg (depth={d})", "tree", lambda dep=depth: DecisionTreeRegressor(max_depth=dep), "fast")
-    add("extra_tree_reg", "Extra Tree Regressor", "tree", lambda: ExtraTreeRegressor(), "fast")
+        add(
+            f"dtr_depth{d}",
+            f"Decision Tree Reg (depth={d})",
+            "tree",
+            lambda dep=depth: DecisionTreeRegressor(max_depth=dep),
+            "fast",
+        )
+    add(
+        "extra_tree_reg",
+        "Extra Tree Regressor",
+        "tree",
+        lambda: ExtraTreeRegressor(),
+        "fast",
+    )
 
     for n in (50, 100, 200, 300):
         for depth in (5, 10, 20):
-            add(f"rfr_{n}_d{depth}", f"Random Forest Reg ({n}, d={depth})", "ensemble", lambda ne=n, dep=depth: RandomForestRegressor(n_estimators=ne, max_depth=dep, n_jobs=-1), "medium")
+            add(
+                f"rfr_{n}_d{depth}",
+                f"Random Forest Reg ({n}, d={depth})",
+                "ensemble",
+                lambda ne=n, dep=depth: RandomForestRegressor(
+                    n_estimators=ne, max_depth=dep, n_jobs=-1
+                ),
+                "medium",
+            )
     for n in (50, 100, 200):
-        add(f"etr_{n}", f"Extra Trees Reg ({n})", "ensemble", lambda ne=n: ExtraTreesRegressor(n_estimators=ne, n_jobs=-1), "medium")
+        add(
+            f"etr_{n}",
+            f"Extra Trees Reg ({n})",
+            "ensemble",
+            lambda ne=n: ExtraTreesRegressor(n_estimators=ne, n_jobs=-1),
+            "medium",
+        )
     for n in (50, 100, 150):
         for lr in (0.05, 0.1):
-            add(f"gbr_{n}_lr{lr}", f"Gradient Boosting Reg ({n}, lr={lr})", "boosting", lambda ne=n, r=lr: GradientBoostingRegressor(n_estimators=ne, learning_rate=r), "medium")
+            add(
+                f"gbr_{n}_lr{lr}",
+                f"Gradient Boosting Reg ({n}, lr={lr})",
+                "boosting",
+                lambda ne=n, r=lr: GradientBoostingRegressor(
+                    n_estimators=ne, learning_rate=r
+                ),
+                "medium",
+            )
     for n in (50, 100, 200):
-        add(f"hist_gbr_{n}", f"Hist GB Reg ({n})", "boosting", lambda ne=n: HistGradientBoostingRegressor(max_iter=ne), "medium")
+        add(
+            f"hist_gbr_{n}",
+            f"Hist GB Reg ({n})",
+            "boosting",
+            lambda ne=n: HistGradientBoostingRegressor(max_iter=ne),
+            "medium",
+        )
     for n in (50, 100):
-        add(f"ada_reg_{n}", f"AdaBoost Reg ({n})", "boosting", lambda ne=n: AdaBoostRegressor(n_estimators=ne), "medium")
+        add(
+            f"ada_reg_{n}",
+            f"AdaBoost Reg ({n})",
+            "boosting",
+            lambda ne=n: AdaBoostRegressor(n_estimators=ne),
+            "medium",
+        )
     for n in (20, 50):
-        add(f"bagging_reg_{n}", f"Bagging Reg ({n})", "ensemble", lambda ne=n: BaggingRegressor(n_estimators=ne, n_jobs=-1), "medium")
+        add(
+            f"bagging_reg_{n}",
+            f"Bagging Reg ({n})",
+            "ensemble",
+            lambda ne=n: BaggingRegressor(n_estimators=ne, n_jobs=-1),
+            "medium",
+        )
 
     for h in ((32,), (64,), (64, 32), (128, 64)):
         hid = "x".join(map(str, h))
-        add(f"mlp_reg_{hid}", f"MLP Reg ({hid})", "neural", lambda hidden=h: MLPRegressor(hidden_layer_sizes=hidden, max_iter=500), "medium", max_samples=50_000)
+        add(
+            f"mlp_reg_{hid}",
+            f"MLP Reg ({hid})",
+            "neural",
+            lambda hidden=h: MLPRegressor(hidden_layer_sizes=hidden, max_iter=500),
+            "medium",
+            max_samples=50_000,
+        )
 
-    add("dummy_mean", "Dummy (mean)", "baseline", lambda: DummyRegressor(strategy="mean"), "fast")
-    add("dummy_median", "Dummy (median)", "baseline", lambda: DummyRegressor(strategy="median"), "fast")
+    add(
+        "dummy_mean",
+        "Dummy (mean)",
+        "baseline",
+        lambda: DummyRegressor(strategy="mean"),
+        "fast",
+    )
+    add(
+        "dummy_median",
+        "Dummy (median)",
+        "baseline",
+        lambda: DummyRegressor(strategy="median"),
+        "fast",
+    )
 
     add(
         "voting_reg",
@@ -347,7 +657,11 @@ def _regression_specs() -> list[ModelSpec]:
                         f"XGBoost Reg ({n}, d={depth}, lr={lr})",
                         "xgboost",
                         lambda ne=n, dep=depth, r=lr: XGBR(
-                            n_estimators=ne, max_depth=dep, learning_rate=r, verbosity=0, n_jobs=-1,
+                            n_estimators=ne,
+                            max_depth=dep,
+                            learning_rate=r,
+                            verbosity=0,
+                            n_jobs=-1,
                         ),
                         "medium",
                     )
@@ -361,7 +675,9 @@ def _regression_specs() -> list[ModelSpec]:
                     f"lgbmr_{n}_d{depth}",
                     f"LightGBM Reg ({n}, d={depth})",
                     "lightgbm",
-                    lambda ne=n, dep=depth: LGBR(n_estimators=ne, max_depth=dep, verbose=-1, n_jobs=-1),
+                    lambda ne=n, dep=depth: LGBR(
+                        n_estimators=ne, max_depth=dep, verbose=-1, n_jobs=-1
+                    ),
                     "medium",
                 )
 

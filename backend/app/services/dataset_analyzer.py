@@ -174,7 +174,10 @@ def _suggest_predictions(
             continue
 
         col_lower = p.name.lower()
-        if any(k in col_lower for k in ("churn", "fraud", "default", "spam", "target", "label")):
+        if any(
+            k in col_lower
+            for k in ("churn", "fraud", "default", "spam", "target", "label")
+        ):
             suggestions.append(
                 PredictionSuggestion(
                     target_column=p.name,
@@ -240,8 +243,18 @@ def _model_eligibility(
 
     findings: list[ModelEligibilityFinding] = []
     for task, examples in (
-        ("classification", ["Logistic Regression", "Random Forest", "Gradient Boosting"]),
-        ("regression", ["Linear Regression", "Random Forest Regressor", "Gradient Boosting Regressor"]),
+        (
+            "classification",
+            ["Logistic Regression", "Random Forest", "Gradient Boosting"],
+        ),
+        (
+            "regression",
+            [
+                "Linear Regression",
+                "Random Forest Regressor",
+                "Gradient Boosting Regressor",
+            ],
+        ),
     ):
         targets = candidate_map[task]
         eligible = enough_rows and enough_columns and bool(targets)
@@ -296,7 +309,9 @@ def _semantic_summary(df: pd.DataFrame, profiles: list[ColumnProfile]) -> str:
         themes.append("customer behavior")
     if any("price" in n or "amount" in n or "revenue" in n for n in names):
         themes.append("financial transactions")
-    if any("date" in n or "time" in n for n in names) or any(p.is_datetime for p in profiles):
+    if any("date" in n or "time" in n for n in names) or any(
+        p.is_datetime for p in profiles
+    ):
         themes.append("temporal patterns")
     if any("age" in n or "gender" in n or "income" in n for n in names):
         themes.append("demographic attributes")
@@ -319,7 +334,9 @@ def _semantic_summary(df: pd.DataFrame, profiles: list[ColumnProfile]) -> str:
     )
 
 
-def analyze_dataset(df: pd.DataFrame, filename: str, dataset_id: str | None = None) -> DatasetAnalysis:
+def analyze_dataset(
+    df: pd.DataFrame, filename: str, dataset_id: str | None = None
+) -> DatasetAnalysis:
     dataset_id = dataset_id or str(uuid.uuid4())
     profiles = _profile_columns(df)
     stats = _compute_stats(df, profiles)

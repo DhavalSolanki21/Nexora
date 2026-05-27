@@ -61,7 +61,9 @@ def _build_dataset_context(dataset_id: str) -> str:
             lines.append(f"  - {finding.task}: {state}. {finding.reason}")
 
     if session and session.target_column:
-        lines.append(f"\nConfigured target: {session.target_column} ({session.problem_type})")
+        lines.append(
+            f"\nConfigured target: {session.target_column} ({session.problem_type})"
+        )
 
     if session and session.preprocess_result:
         pr = session.preprocess_result
@@ -84,7 +86,9 @@ def _build_dataset_context(dataset_id: str) -> str:
     if deployed and deployed.models:
         lines.append("\nPrediction Studio models:")
         for model in deployed.models:
-            lines.append(f"  - {model.model_name} ({model.family}), score={model.primary_score}")
+            lines.append(
+                f"  - {model.model_name} ({model.family}), score={model.primary_score}"
+            )
         fields = ", ".join(field.name for field in deployed.input_fields)
         lines.append(f"Prediction Studio input fields: {fields}")
 
@@ -103,7 +107,7 @@ def _is_detail_request(message: str) -> bool:
     Uses multiple signals: explicit requests, message length, punctuation, and context.
     """
     lower = message.lower().strip()
-    
+
     # Explicit detail request keywords (highest confidence)
     explicit_detail_phrases = (
         "explain in detail",
@@ -122,11 +126,11 @@ def _is_detail_request(message: str) -> bool:
         "go deeper",
         "why and how",
     )
-    
+
     # Quick detection for explicit requests (highest priority)
     if any(phrase in lower for phrase in explicit_detail_phrases):
         return True
-    
+
     # Context signals that suggest user wants details
     detail_signals = (
         "?" * 2 in lower,  # Multiple question marks (urgency/emphasis)
@@ -141,19 +145,21 @@ def _is_detail_request(message: str) -> bool:
         "teach me" in lower,
         "what's the difference" in lower,
     )
-    
+
     # Check for multiple signals
-    signal_count = sum(1 for signal in detail_signals if isinstance(signal, bool) and signal)
-    
+    signal_count = sum(
+        1 for signal in detail_signals if isinstance(signal, bool) and signal
+    )
+
     # If 2+ signals are true, likely a detail request
     if signal_count >= 2:
         return True
-    
+
     # Check if message seems exploratory (contains multiple topics)
     question_marks = lower.count("?")
     if question_marks >= 2:
         return True
-    
+
     return False
 
 
@@ -190,7 +196,10 @@ async def chat_with_dataset(
             "role": "user",
             "content": f"=== CURRENT DATASET CONTEXT ===\n{context}\n=== END CONTEXT ===",
         },
-        {"role": "assistant", "content": "I have reviewed your dataset context. How can I help you analyze or predict with this data?"},
+        {
+            "role": "assistant",
+            "content": "I have reviewed your dataset context. How can I help you analyze or predict with this data?",
+        },
     ]
 
     for h in history[-10:]:
@@ -200,11 +209,13 @@ async def chat_with_dataset(
     messages.append({"role": "user", "content": message})
 
     url = f"{settings.ollama_base_url.rstrip('/')}/api/chat"
-    
+
     # Determine token budget based on request type
     is_detail = _is_detail_request(message)
-    max_tokens = 512 if is_detail else settings.ollama_max_tokens  # 512 for detail requests, 256 for normal
-    
+    max_tokens = (
+        512 if is_detail else settings.ollama_max_tokens
+    )  # 512 for detail requests, 256 for normal
+
     payload = {
         "model": settings.ollama_model,
         "messages": messages,
@@ -269,9 +280,26 @@ async def chat_with_dataset(
 
 def _is_prediction_request(message: str) -> bool:
     lower = message.lower()
-    if any(text in lower for text in ("what can i predict", "what should i predict", "teach me", "explain")):
+    if any(
+        text in lower
+        for text in (
+            "what can i predict",
+            "what should i predict",
+            "teach me",
+            "explain",
+        )
+    ):
         return False
-    return any(text in lower for text in ("predict ", "forecast ", "estimate ", "what will ", "how much will "))
+    return any(
+        text in lower
+        for text in (
+            "predict ",
+            "forecast ",
+            "estimate ",
+            "what will ",
+            "how much will ",
+        )
+    )
 
 
 def _grounded_reply(dataset_id: str, message: str) -> str | None:
@@ -288,14 +316,29 @@ def _grounded_reply(dataset_id: str, message: str) -> str | None:
             "which models are eligible, or about missing values."
         )
 
-    if any(phrase in lower for phrase in ("can you access", "can ollama access", "read my csv", "access my csv")):
+    if any(
+        phrase in lower
+        for phrase in (
+            "can you access",
+            "can ollama access",
+            "read my csv",
+            "access my csv",
+        )
+    ):
         return (
             "Nexora's backend reads your uploaded CSV and gives chat grounded facts such as columns, "
             "quality, model eligibility, and calculated summaries. Ollama receives a compact analyzed "
             "context for explanations, not permission to invent values or calculate predictions."
         )
 
-    if any(phrase in lower for phrase in ("what can i predict", "what should i predict", "prediction target")):
+    if any(
+        phrase in lower
+        for phrase in (
+            "what can i predict",
+            "what should i predict",
+            "prediction target",
+        )
+    ):
         if not analysis.prediction_suggestions:
             return (
                 "No strong target was detected automatically. Open Target and select the column you want "
@@ -307,9 +350,22 @@ def _grounded_reply(dataset_id: str, message: str) -> str | None:
         ]
         return "Suggested prediction targets from your CSV: " + ", ".join(items) + "."
 
-    if any(token in lower for token in ("eligible model", "eligible for", "which model", "models can", "model should")):
+    if any(
+        token in lower
+        for token in (
+            "eligible model",
+            "eligible for",
+            "which model",
+            "models can",
+            "model should",
+        )
+    ):
         session = load_session(dataset_id)
-        if session and session.target_column and session.problem_type in ("classification", "regression"):
+        if (
+            session
+            and session.target_column
+            and session.problem_type in ("classification", "regression")
+        ):
             choices = list_deployable_models(dataset_id)
             recommended = [
                 model.model_name
@@ -339,11 +395,18 @@ def _grounded_reply(dataset_id: str, message: str) -> str | None:
             else "Columns with missing values: " + ", ".join(missing[:12]) + "."
         )
 
-    if any(phrase in lower for phrase in ("how many rows", "row count", "rows and columns", "dataset size")):
+    if any(
+        phrase in lower
+        for phrase in ("how many rows", "row count", "rows and columns", "dataset size")
+    ):
         return f"`{analysis.filename}` has {analysis.rows:,} rows and {analysis.columns} columns."
 
-    if any(phrase in lower for phrase in ("what columns", "list columns", "column names")):
-        columns = ", ".join(f"`{profile.name}`" for profile in analysis.column_profiles[:30])
+    if any(
+        phrase in lower for phrase in ("what columns", "list columns", "column names")
+    ):
+        columns = ", ".join(
+            f"`{profile.name}`" for profile in analysis.column_profiles[:30]
+        )
         suffix = " ..." if len(analysis.column_profiles) > 30 else ""
         return f"Columns in this CSV: {columns}{suffix}"
 
@@ -365,7 +428,17 @@ def _aggregate_reply(df: pd.DataFrame, message: str) -> str | None:
     operation = next(
         (
             name
-            for name in ("average", "mean", "median", "minimum", "min", "maximum", "max", "sum", "total")
+            for name in (
+                "average",
+                "mean",
+                "median",
+                "minimum",
+                "min",
+                "maximum",
+                "max",
+                "sum",
+                "total",
+            )
             if re.search(rf"\b{name}\b", lower)
         ),
         None,
@@ -390,7 +463,9 @@ def _aggregate_reply(df: pd.DataFrame, message: str) -> str | None:
         "sum": values.sum,
         "total": values.sum,
     }[operation]
-    label = {"mean": "average", "min": "minimum", "max": "maximum", "total": "sum"}.get(operation, operation)
+    label = {"mean": "average", "min": "minimum", "max": "maximum", "total": "sum"}.get(
+        operation, operation
+    )
     return f"The {label} of `{column}` is {float(calculation()):,.4f}, calculated directly from {len(values):,} non-empty CSV rows."
 
 
@@ -442,4 +517,9 @@ async def check_ollama_status() -> dict[str, Any]:
                 or any(settings.ollama_model in m for m in models),
             }
     except Exception:
-        return {"available": False, "models": [], "configured_model": settings.ollama_model, "model_ready": False}
+        return {
+            "available": False,
+            "models": [],
+            "configured_model": settings.ollama_model,
+            "model_ready": False,
+        }

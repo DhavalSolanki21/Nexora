@@ -33,7 +33,7 @@ const GRADIENT_COLORS = [
   "#34d399", "#2dd4bf", "#14b8a6", "#06b6d4", "#0891b2",
 ];
 
-const cleanError = (message: string) => message.replace(/\x1b\[[0-9;]*m/g, "").slice(0, 260);
+const cleanError = (message: string) => message.replace(/\x1b\[[0-9;]*m/g, "").slice(0, 260); // eslint-disable-line no-control-regex
 
 interface Props {
   datasetId: string;
@@ -386,11 +386,11 @@ export default function ExplainabilityPanel({
         >
           <Brain className="w-10 h-10 text-emerald-300 mx-auto mb-3" />
           <p className="text-gray-500 text-sm">
-            Click <span className="text-emerald-600 font-medium">"Run SHAP Analysis"</span> to understand
+            Click <span className="text-emerald-600 font-medium">&quot;Run SHAP Analysis&quot;</span> to understand
             why your champion model makes the predictions it does.
           </p>
           <p className="text-gray-400 text-xs mt-2">
-            SHAP (SHapley Additive exPlanations) reveals each feature's contribution.
+            SHAP (SHapley Additive exPlanations) reveals each feature&apos;s contribution.
           </p>
         </motion.div>
       )}

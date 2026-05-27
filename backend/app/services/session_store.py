@@ -38,7 +38,9 @@ def load_processed_df(dataset_id: str) -> pd.DataFrame | None:
     return pd.read_csv(path, low_memory=False)
 
 
-def update_session_preprocess(dataset_id: str, result: PreprocessResult) -> DatasetSession:
+def update_session_preprocess(
+    dataset_id: str, result: PreprocessResult
+) -> DatasetSession:
     session = load_session(dataset_id)
     if not session:
         raise ValueError("Session not found. Configure target first.")

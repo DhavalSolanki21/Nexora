@@ -64,7 +64,9 @@ async def get_registry_stats():
     return RegistryStatsResponse(**registry_stats())
 
 
-@router.get("/datasets/{dataset_id}/production/models", response_model=ProductionModelsResponse)
+@router.get(
+    "/datasets/{dataset_id}/production/models", response_model=ProductionModelsResponse
+)
 async def get_deployable_models(dataset_id: str):
     try:
         return ProductionModelsResponse(**list_deployable_models(dataset_id))
@@ -72,7 +74,9 @@ async def get_deployable_models(dataset_id: str):
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@router.get("/datasets/{dataset_id}/production/status", response_model=ProductionStatus | None)
+@router.get(
+    "/datasets/{dataset_id}/production/status", response_model=ProductionStatus | None
+)
 async def get_production_status(dataset_id: str):
     return load_production_status(dataset_id)
 
@@ -89,7 +93,9 @@ async def train_production_models(dataset_id: str, body: ProductionTrainRequest)
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@router.post("/datasets/{dataset_id}/production/predict", response_model=PredictionReceipt)
+@router.post(
+    "/datasets/{dataset_id}/production/predict", response_model=PredictionReceipt
+)
 async def predict_from_trained_models(dataset_id: str, body: PredictionRunRequest):
     try:
         return run_saved_prediction(dataset_id, body.inputs, body.model_ids)
@@ -97,7 +103,10 @@ async def predict_from_trained_models(dataset_id: str, body: PredictionRunReques
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@router.post("/datasets/{dataset_id}/production/batch-predict", response_model=BatchPredictionSummary)
+@router.post(
+    "/datasets/{dataset_id}/production/batch-predict",
+    response_model=BatchPredictionSummary,
+)
 async def batch_predict(
     dataset_id: str,
     file: UploadFile = File(...),
@@ -106,12 +115,19 @@ async def batch_predict(
     try:
         content = await file.read()
         selected = [item.strip() for item in model_ids.split(",") if item.strip()]
-        return BatchPredictionSummary(**run_batch_prediction(dataset_id, content, file.filename or "batch.csv", selected or None))
+        return BatchPredictionSummary(
+            **run_batch_prediction(
+                dataset_id, content, file.filename or "batch.csv", selected or None
+            )
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@router.get("/datasets/{dataset_id}/production/batches", response_model=BatchPredictionListResponse)
+@router.get(
+    "/datasets/{dataset_id}/production/batches",
+    response_model=BatchPredictionListResponse,
+)
 async def get_batches(dataset_id: str):
     return BatchPredictionListResponse(
         batches=[BatchPredictionSummary(**item) for item in list_batches(dataset_id)]
@@ -131,7 +147,10 @@ async def download_batch_predictions(dataset_id: str, batch_id: str):
     )
 
 
-@router.post("/datasets/{dataset_id}/production/explain-prediction", response_model=PredictionExplainResponse)
+@router.post(
+    "/datasets/{dataset_id}/production/explain-prediction",
+    response_model=PredictionExplainResponse,
+)
 async def explain_prediction(dataset_id: str, body: PredictionExplainRequest):
     try:
         return explain_saved_prediction(dataset_id, body.inputs, body.model_id)
@@ -144,7 +163,9 @@ async def get_deployments(dataset_id: str):
     return DeploymentListResponse(deployments=list_deployments(dataset_id))
 
 
-@router.post("/datasets/{dataset_id}/deployments", response_model=CreateDeploymentResponse)
+@router.post(
+    "/datasets/{dataset_id}/deployments", response_model=CreateDeploymentResponse
+)
 async def create_prediction_deployment(dataset_id: str, body: CreateDeploymentRequest):
     try:
         deployment, api_key = create_deployment(dataset_id, body.name, body.model_ids)
@@ -161,7 +182,11 @@ async def deactivate_prediction_deployment(dataset_id: str, deployment_id: str):
         raise HTTPException(status_code=404, detail=str(e)) from e
 
 
-@router.post("/predict/{deployment_id}", response_model=PredictionReceipt, tags=["public-prediction"])
+@router.post(
+    "/predict/{deployment_id}",
+    response_model=PredictionReceipt,
+    tags=["public-prediction"],
+)
 async def public_prediction(
     deployment_id: str,
     body: PredictionRunRequest,
@@ -170,7 +195,9 @@ async def public_prediction(
     if not x_nexora_key:
         raise HTTPException(status_code=401, detail="X-Nexora-Key header is required.")
     try:
-        return predict_deployment(deployment_id, x_nexora_key, body.inputs, body.model_ids)
+        return predict_deployment(
+            deployment_id, x_nexora_key, body.inputs, body.model_ids
+        )
     except PermissionError as e:
         raise HTTPException(status_code=401, detail=str(e)) from e
     except ValueError as e:
@@ -186,7 +213,9 @@ async def public_prediction_root(
     if not x_nexora_key:
         raise HTTPException(status_code=401, detail="X-Nexora-Key header is required.")
     try:
-        return predict_deployment(deployment_id, x_nexora_key, body.inputs, body.model_ids)
+        return predict_deployment(
+            deployment_id, x_nexora_key, body.inputs, body.model_ids
+        )
     except PermissionError as e:
         raise HTTPException(status_code=401, detail=str(e)) from e
     except ValueError as e:
@@ -198,7 +227,10 @@ async def get_experiments(dataset_id: str):
     return ExperimentsResponse(experiments=list_experiments(dataset_id))
 
 
-@router.get("/datasets/{dataset_id}/experiments/compare", response_model=ExperimentCompareResponse)
+@router.get(
+    "/datasets/{dataset_id}/experiments/compare",
+    response_model=ExperimentCompareResponse,
+)
 async def compare_dataset_experiments(dataset_id: str):
     return ExperimentCompareResponse(**compare_experiments(dataset_id))
 
@@ -237,11 +269,15 @@ async def training_websocket(websocket: WebSocket, dataset_id: str):
 
     session = load_session(dataset_id)
     if session and session.training_result:
-        await websocket.send_json({
-            "event": "snapshot",
-            "leaderboard": [r.model_dump() for r in session.training_result.leaderboard],
-            "summary": session.training_result.model_dump(),
-        })
+        await websocket.send_json(
+            {
+                "event": "snapshot",
+                "leaderboard": [
+                    r.model_dump() for r in session.training_result.leaderboard
+                ],
+                "summary": session.training_result.model_dump(),
+            }
+        )
 
     job = get_job(dataset_id)
     if job:

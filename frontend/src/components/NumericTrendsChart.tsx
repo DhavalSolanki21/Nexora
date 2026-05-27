@@ -33,7 +33,7 @@ export default function NumericTrendsChart({ analysis }: Props) {
     ...Object.fromEntries(
       numericCols.map((col) => {
         // Synthetic but realistic: percentile * column's avg/scale
-        const avg = col.stats?.mean || 100;
+        const avg = analysis.stats?.mean?.[col.name] || 100;
         const value = (p / 50) * avg;
         return [col.name, Math.round(value * 100) / 100];
       })

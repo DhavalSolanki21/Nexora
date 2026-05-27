@@ -18,6 +18,7 @@ def _path(dataset_id: str) -> Path:
 def list_experiments(dataset_id: str) -> list[ExperimentRecord]:
     # Try MongoDB first
     from app.services.persistence_service import find
+
     db_items = find("experiments", {"dataset_id": dataset_id})
     if db_items:
         out = []
@@ -40,7 +41,6 @@ def list_experiments(dataset_id: str) -> list[ExperimentRecord]:
     except (OSError, ValueError):
         return []
     return [ExperimentRecord(**item) for item in raw]
-
 
 
 def save_experiment(record: ExperimentRecord) -> ExperimentRecord:
@@ -106,4 +106,3 @@ def compare_experiments(dataset_id: str) -> dict[str, Any]:
             row[metric] = best_metrics.get(metric, record.metrics.get(metric))
         rows.append(row)
     return {"dataset_id": dataset_id, "metric_names": metric_names, "rows": rows}
-

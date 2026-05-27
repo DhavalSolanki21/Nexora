@@ -44,10 +44,18 @@ def preprocess(
 
     # --- Drop ID columns ---
     if config.drop_id_columns:
-        id_cols = [c for c in work.columns if c != target_column and _is_id_like(work[c])]
+        id_cols = [
+            c for c in work.columns if c != target_column and _is_id_like(work[c])
+        ]
         if id_cols:
             work = work.drop(columns=id_cols)
-            steps.append(_step("drop_id_columns", f"Removed ID-like columns: {', '.join(id_cols)}", len(id_cols)))
+            steps.append(
+                _step(
+                    "drop_id_columns",
+                    f"Removed ID-like columns: {', '.join(id_cols)}",
+                    len(id_cols),
+                )
+            )
 
     # --- Remove duplicates ---
     if config.remove_duplicates:
@@ -55,7 +63,9 @@ def preprocess(
         work = work.drop_duplicates()
         removed = before - len(work)
         if removed:
-            steps.append(_step("remove_duplicates", f"Removed {removed} duplicate rows", removed))
+            steps.append(
+                _step("remove_duplicates", f"Removed {removed} duplicate rows", removed)
+            )
 
     # --- Remove constant columns ---
     if config.remove_constant:
@@ -66,14 +76,26 @@ def preprocess(
         ]
         if constant:
             work = work.drop(columns=constant)
-            steps.append(_step("remove_constant", f"Dropped constant columns: {', '.join(constant)}", len(constant)))
+            steps.append(
+                _step(
+                    "remove_constant",
+                    f"Dropped constant columns: {', '.join(constant)}",
+                    len(constant),
+                )
+            )
 
     # --- Datetime columns → drop for now (Phase 3 will use them) ---
-    dt_cols = [c for c in work.columns if c != target_column and _infer_datetime(work[c])]
+    dt_cols = [
+        c for c in work.columns if c != target_column and _infer_datetime(work[c])
+    ]
     if dt_cols:
         work = work.drop(columns=dt_cols)
         steps.append(
-            _step("drop_datetime", f"Set aside datetime columns for time-series phase: {', '.join(dt_cols)}", len(dt_cols))
+            _step(
+                "drop_datetime",
+                f"Set aside datetime columns for time-series phase: {', '.join(dt_cols)}",
+                len(dt_cols),
+            )
         )
 
     feature_cols = [c for c in work.columns if c != target_column]
@@ -87,17 +109,38 @@ def preprocess(
         if col == target_column:
             before = len(work)
             work = work.dropna(subset=[target_column])
-            steps.append(_step("drop_missing_target", f"Dropped {before - len(work)} rows with missing target", before - len(work)))
+            steps.append(
+                _step(
+                    "drop_missing_target",
+                    f"Dropped {before - len(work)} rows with missing target",
+                    before - len(work),
+                )
+            )
             continue
 
-        if work[col].dtype in ("object", "category") or work[col].nunique(dropna=True) < 20:
+        if (
+            work[col].dtype in ("object", "category")
+            or work[col].nunique(dropna=True) < 20
+        ):
             mode_val = work[col].mode()
             fill = mode_val.iloc[0] if len(mode_val) else "unknown"
             work[col] = work[col].fillna(fill)
-            steps.append(_step("fill_missing", f"Filled {missing} missing in '{col}' with mode", missing))
+            steps.append(
+                _step(
+                    "fill_missing",
+                    f"Filled {missing} missing in '{col}' with mode",
+                    missing,
+                )
+            )
         else:
             work[col] = work[col].fillna(work[col].median())
-            steps.append(_step("fill_missing", f"Filled {missing} missing in '{col}' with median", missing))
+            steps.append(
+                _step(
+                    "fill_missing",
+                    f"Filled {missing} missing in '{col}' with median",
+                    missing,
+                )
+            )
 
     # --- Outlier capping (numeric features only) ---
     if config.outlier_method == "iqr_cap":
@@ -113,7 +156,13 @@ def preprocess(
             capped = ((s < low) | (s > high)).sum()
             if capped:
                 work[col] = s.clip(low, high)
-                steps.append(_step("outlier_cap", f"Capped {capped} outliers in '{col}' (IQR)", int(capped)))
+                steps.append(
+                    _step(
+                        "outlier_cap",
+                        f"Capped {capped} outliers in '{col}' (IQR)",
+                        int(capped),
+                    )
+                )
 
     # --- Encode categoricals ---
     if config.encode_categorical:
@@ -127,33 +176,61 @@ def preprocess(
                 le = LabelEncoder()
                 work[col] = le.fit_transform(work[col].astype(str))
                 encoders[col] = "label"
-                steps.append(_step("label_encode", f"Label-encoded binary column '{col}'", nunique))
+                steps.append(
+                    _step(
+                        "label_encode", f"Label-encoded binary column '{col}'", nunique
+                    )
+                )
             else:
-                dummies = pd.get_dummies(work[col].astype(str), prefix=col, drop_first=True)
+                dummies = pd.get_dummies(
+                    work[col].astype(str), prefix=col, drop_first=True
+                )
                 dummies.columns = [str(c).replace(" ", "_") for c in dummies.columns]
                 work = work.drop(columns=[col])
                 work = pd.concat([work, dummies], axis=1)
                 encoders[col] = "onehot"
-                steps.append(_step("onehot_encode", f"One-hot encoded '{col}' → {len(dummies.columns)} columns", len(dummies.columns)))
+                steps.append(
+                    _step(
+                        "onehot_encode",
+                        f"One-hot encoded '{col}' → {len(dummies.columns)} columns",
+                        len(dummies.columns),
+                    )
+                )
 
     # Recompute feature cols after encoding
     feature_cols = [c for c in work.columns if c != target_column]
-    numeric_features = [c for c in feature_cols if pd.api.types.is_numeric_dtype(work[c])]
+    numeric_features = [
+        c for c in feature_cols if pd.api.types.is_numeric_dtype(work[c])
+    ]
 
     # --- Scale numeric features ---
     if config.scaling == "standard" and numeric_features:
         scaler = StandardScaler()
         work[numeric_features] = scaler.fit_transform(work[numeric_features])
         scalers["features"] = "standard"
-        steps.append(_step("scale", f"StandardScaler applied to {len(numeric_features)} features", len(numeric_features)))
+        steps.append(
+            _step(
+                "scale",
+                f"StandardScaler applied to {len(numeric_features)} features",
+                len(numeric_features),
+            )
+        )
     elif config.scaling == "minmax" and numeric_features:
         scaler = MinMaxScaler()
         work[numeric_features] = scaler.fit_transform(work[numeric_features])
         scalers["features"] = "minmax"
-        steps.append(_step("scale", f"MinMaxScaler applied to {len(numeric_features)} features", len(numeric_features)))
+        steps.append(
+            _step(
+                "scale",
+                f"MinMaxScaler applied to {len(numeric_features)} features",
+                len(numeric_features),
+            )
+        )
 
     if not steps:
-        steps.append(_step("no_changes", "Dataset required no preprocessing transformations", 0))
+        steps.append(
+            _step("no_changes", "Dataset required no preprocessing transformations", 0)
+        )
 
     meta = {
         "rows_before": len(df),
