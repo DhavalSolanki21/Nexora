@@ -1,264 +1,240 @@
 # Nexora
 
-<div align="center">
-  <img src="https://img.shields.io/badge/License-MIT-emerald.svg" alt="MIT License">
-  <img src="https://img.shields.io/badge/PRs-welcome-emerald.svg" alt="PRs Welcome">
-  <img src="https://img.shields.io/badge/FastAPI-0.110.0-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/React-18.3-61DAFB.svg?logo=react&logoColor=white" alt="React">
-  <img src="https://img.shields.io/badge/TailwindCSS-3.4-38B2AC.svg?logo=tailwind-css&logoColor=white" alt="Tailwind">
-</div>
+An autonomous predictive analytics platform that profiles datasets, builds optimized preprocessing pipelines, trains reproducible model registries, runs batch predictions, monitors feature drift, and provides grounded AI educational interactive chats from a single CSV upload.
 
-<br>
+---
 
-<p align="center">
-  <b>An autonomous predictive analytics platform</b> that profiles datasets, builds optimized preprocessing pipelines, trains reproducible model registries, runs batch predictions, monitors feature drift, and provides grounded AI educational interactive chats — all from a single CSV upload.
-</p>
+[![Backend CI](https://github.com/jeet2005/Nexora/actions/workflows/ci-backend.yml/badge.svg)](https://github.com/jeet2005/Nexora/actions/workflows/ci-backend.yml)
+[![Frontend CI](https://github.com/jeet2005/Nexora/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/jeet2005/Nexora/actions/workflows/ci-frontend.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Made with FastAPI](https://img.shields.io/badge/Made%20with-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/Frontend-React-61dafb?logo=react&logoColor=white)](https://reactjs.org/)
+
+---
+
+## Why Nexora?
+
+Data scientists and developers often spend hours writing repetitive code for data profiling, exploratory analysis, preprocessing, model benchmarking, and production endpoint deployments. Nexora bridges this gap by serving as a unified prediction engine. 
+
+By uploading a single CSV dataset, developers can instantly audit dataset health, clean features, benchmark leading machine learning models side-by-side, analyze SHAP explainability insights, download compiled PDF reports, converse with a grounded AI dataset assistant, and deploy production-ready prediction API endpoints secured by unique API keys.
 
 ---
 
 ## Live Deployments
 
-| Component | URL | Host |
+| Component | URL | Host Provider |
 | :--- | :--- | :--- |
 | **Frontend Web App** | [nexoraprediction.netlify.app](https://nexoraprediction.netlify.app/) | Netlify |
 | **Backend API** | [nexora-360r.onrender.com](https://nexora-360r.onrender.com/) | Render |
 | **API Documentation** | [nexora-360r.onrender.com/docs](https://nexora-360r.onrender.com/docs) | Render |
 
-> **Note:** The backend API runs on Render's free tier and spins down after inactivity. Allow 30-60 seconds for the initial cold start when first loading or uploading data.
+*Note: The backend API runs on Render's free tier and spins down after periods of inactivity. Please allow 30 to 60 seconds for the initial cold start when first accessing the application.*
 
-> **Note:** The Nexora-Helper (Ollama-powered learning assistant) requires a local Ollama instance and is only available when running the application locally. See [Local Development](#local-development) below for setup instructions.
+*Note: The educational assistant (Ollama integration) requires a local Ollama instance and is only active when running the application locally. See local setup guidelines below.*
 
 ---
 
-## Features
+## System Architecture
+
+The diagram below outlines the end-to-end data flow, processing components, and communication layers in Nexora:
+
+```mermaid
+graph TD
+    subgraph Client Layer
+        A[React Frontend]
+    end
+
+    subgraph Service API Layer
+        B[FastAPI Backend Gateway]
+        C[Dataset Analyzer & Validator]
+        D[Preprocessing Engine]
+        E[Training Manager & Registry]
+        F[SHAP Explainability Engine]
+        G[Grounded Chat Agent]
+        H[API Key Deployment Manager]
+    end
+
+    subgraph Storage & Compute
+        I[(Local Uploads / MongoDB)]
+        J[Local Ollama / Phi-3 Mini]
+        K[ML Models: XGBoost, CatBoost, LightGBM, Scikit-Learn]
+    end
+
+    A -->|Upload CSV & Configuration| B
+    B --> C
+    B --> D
+    B --> E
+    B --> F
+    B --> G
+    B --> H
+
+    C <-->|Read / Write Datasets| I
+    D <-->|Save Clean Pipelines| I
+    E <-->|Real-time Socket Updates| A
+    E <-->|Benchmark & Serialize| K
+    F -->|Render Report| I
+    G <-->|Dataset Context Queries| J
+    H <-->|Authorize Keys & Serves| K
+```
+
+---
+
+## Core Features
 
 ### 1. Dataset Intelligence Engine
-- **Automated CSV Validation** — Format checks, size limits, and file integrity verification.
-- **Health Profiling** — Structural, statistical, and column-level quality scores generated automatically.
-- **Preview and Distributions** — Real-time descriptive statistics and data balance diagnostics.
+* **Automated CSV Validation** - Formats columns, assesses size boundaries, and verifies tabular file integrity.
+* **Health Profiling** - Evaluates structural completeness, statistical anomalies, and generates per-column scorecards.
+* **Preview and Distributions** - Offers statistical summaries, skew metrics, and categorical balance diagnostics.
 
 ### 2. Dynamic Preprocessing Pipelines
-- **Type Parsing** — Automatic distinction between numeric, categorical, datetime, and ID columns.
-- **Intelligent Preprocessing** — Handles missing values, scaling, encoding, outlier detection, and duplicate removal.
-- **Interactive Configuration** — Flexible controls to change prediction targets and override pipeline steps.
+* **Type Parsing** - Separates numerical parameters, categorical labels, datetimes, and identifier variables.
+* **Intelligent Preprocessing** - Implements missing values imputation, standard scaling, target-label encoding, outlier detection, and duplicate record cleaning.
+* **Interactive Configuration** - Provides controls to select prediction targets and customize individual preprocessing steps.
 
 ### 3. Prediction Studio and Benchmarking
-- **256+ Model Registry** — Ensemble suite powered by Scikit-Learn, CatBoost, LightGBM, and XGBoost.
-- **Training Pipeline** — Advanced cross-validation, train-test splitting, and hyperparameter scoring.
-- **WebSocket Leaderboard** — Real-time training progress with interactive model comparison.
-- **Comparison Arena** — Champion dashboards with live metrics, visual charts, and latency statistics.
+* **Model Registry** - Supports multiple algorithms including XGBoost, CatBoost, LightGBM, and Scikit-Learn ensembles.
+* **Training Pipeline** - Executes cross-validation splits, train-test isolation, and hyperparameter parameter sweeps.
+* **WebSocket Leaderboard** - Streams active model training metrics and charts real-time scores directly to the UI.
+* **Comparison Arena** - Visualizes metrics, prediction drift charts, and latency histograms of trained models.
 
 ### 4. Interactive Data Visualization
-- **Multi-Chart Dashboard** — Line graphs (numeric distributions), area charts (categorical patterns), quality scorecards.
-- **Data Health Visualization** — Completeness, uniqueness, and validity metrics per column.
-- **Correlation Insights** — Top relationships and outlier detection with real-time updates.
+* **Multi-Chart Dashboard** - Displays numerical trends, categorical patterns, and completeness heatmaps.
+* **Data Health Visualization** - Compiles data quality stats, missing records rates, and unique features counts.
+* **Correlation Insights** - Flags linear dependencies, high associations, and outlier counts.
 
 ### 5. Production Suite
-- **API Endpoints** — Production-grade endpoints with API key authentication.
-- **Batch Processing** — Upload a file and download enriched datasets with targeted predictions.
-- **Drift Detection** — Automatic monitoring of feature and target distribution changes over time.
-- **Local LLM Chat** — Educational assistant powered by Ollama and Phi-3 Mini, answering questions grounded in the dataset context.
+* **API Endpoints** - Deploys production-grade prediction endpoints secured by custom API keys.
+* **Batch Processing** - Enables bulk uploads to retrieve fully enriched output prediction sheets.
+* **Drift Detection** - Compares historical prediction request signatures to highlight potential target concept drift.
+* **Grounded LLM Chat** - Integrates local Ollama models (Phi-3 Mini) to act as a database context tutor answering questions regarding data distribution trends.
 
 ---
 
-## Tech Stack
+## Technical Stack
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Framer Motion, Recharts, Axios, Lucide Icons |
-| **Backend** | Python, FastAPI, Uvicorn, Pydantic, Pandas, NumPy, Scikit-learn, CatBoost, LightGBM, XGBoost |
-| **Database** | MongoDB Atlas |
-| **Local LLM** | Ollama Engine (Phi-3 Mini) |
-| **Infrastructure** | Netlify (Frontend), Render (Backend) |
+| **Frontend Web App** | React 18, Vite, TypeScript, Tailwind CSS, Framer Motion, Recharts, Axios, Lucide Icons |
+| **Backend Service API** | Python 3.11, FastAPI, Uvicorn, Pydantic, Pandas, NumPy, Scikit-learn, CatBoost, LightGBM, XGBoost |
+| **Data Persistence** | MongoDB Atlas / Local File Storage |
+| **Local LLM Integration** | Ollama Engine (Phi-3 Mini) |
+| **Infrastructure Platforms** | Netlify (Frontend), Render (Backend) |
 
 ---
 
 ## Local Development
 
-### Prerequisites
+### Installation Prerequisites
 
-| Requirement | Version |
+| Dependency | Minimum Version |
 | :--- | :--- |
-| Python | 3.10 or higher |
-| Node.js | 18 or higher |
-| Ollama | Latest *(optional, for educational chat)* |
+| Python | 3.11 or higher |
+| Node.js | 20 or higher |
+| npm | 10 or higher |
+| Ollama | Latest (optional, for grounded Q&A) |
 
-### 1. Clone the Repository
+### Development Option 1: Standard Installation
 
+#### 1. Clone the Project
 ```bash
 git clone https://github.com/jeet2005/Nexora.git
 cd Nexora
 ```
 
-### 2. Backend Setup
-
+#### 2. Configure Backend Service
 ```bash
 cd backend
-
-# Create and activate a virtual environment
 python -m venv .venv
 
-# Windows
+# Activate Virtual Environment (Windows)
 .venv\Scripts\activate
 
-# macOS / Linux
+# Activate Virtual Environment (macOS / Linux)
 source .venv/bin/activate
 
-# Install Python dependencies
+# Install dependencies and setup configuration
 pip install -r requirements.txt
+cp .env.example .env
 
-# Start the backend server
+# Run development server
 python run.py
 ```
+The backend service will be available at `http://localhost:8000`. You can test endpoints on Swagger UI at `http://localhost:8000/docs`.
 
-The API will be available at `http://127.0.0.1:8000` with interactive documentation at `http://127.0.0.1:8000/docs`.
-
-### 3. Frontend Setup
-
+#### 3. Configure Frontend Application
 ```bash
-cd frontend
-
-# Install Node dependencies
+cd ../frontend
 npm install
+cp .env.example .env.local
 
-# Start the Vite development server
+# Run development server
 npm run dev
 ```
+The React frontend application will be active at `http://localhost:5173`.
 
-The React frontend will be available at `http://localhost:5173`.
+---
 
-### 4. Ollama Setup (Optional)
+### Development Option 2: Docker Compose Setup
 
-To enable the Nexora-Helper learning assistant:
+Run the entire stack (FastAPI, React, and MongoDB) with a single command:
 
 ```bash
-# Install Ollama from https://ollama.ai/
-
-# Pull the Phi-3 Mini model
-ollama pull phi3:mini
-
-# Ollama runs automatically on http://127.0.0.1:11434
+docker compose up --build
 ```
 
-When running locally, the chat assistant will use your local Ollama instance for advanced open-ended explanations. CSV fact queries and workflow guidance work without Ollama.
-
-#### Optimizing Ollama Performance
-
-Nexora-Helper uses a **150-second (2.5 minute) timeout** with **full quality settings** to ensure comprehensive, detailed responses. If it times out:
-
-**Default Configuration:**
-```ini
-OLLAMA_TIMEOUT=150        # 150 seconds (2.5 minutes) for full quality
-OLLAMA_MAX_TOKENS=256     # Full token budget for normal questions
-OLLAMA_MODEL=phi3:mini
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-```
-
-**Smart Detail Detection:**
-- When you ask "explain in detail", "walk me through", or request comprehensive analysis → Ollama generates **512 tokens** (2x capacity)
-- For normal questions → Ollama uses **256 tokens** (balanced quality/speed)
-- Context window is always **2048 tokens** for full dataset understanding
-
-**If Ollama Still Times Out:**
-```bash
-# 1. Verify Ollama is running
-curl http://127.0.0.1:11434/api/tags
-
-# 2. Check system resources
-# Ensure you have:
-# - At least 4GB free RAM
-# - CPU available (not maxed out)
-# - Stable network to localhost
-
-# 3. If using GPU (faster):
-# NVIDIA: Automatically detected
-# For other GPUs, see Ollama docs
-
-# 4. Restart Ollama if idle too long
-ollama pull phi3:mini
-```
-
-**Expected Response Times:**
-- Quick questions (rows/cols/missing values): **< 1 second** (grounded replies)
-- Normal questions (explain a concept): **15-40 seconds** (Ollama)
-- Detailed questions (full explanation): **30-90 seconds** (Ollama with 512 tokens)
+* **Frontend Web App**: Access at `http://localhost:3000`
+* **Backend API**: Access at `http://localhost:8000`
+* **MongoDB Instance**: Running on port `27017`
 
 ---
 
-## Production Configuration
+### Development Option 3: Makefile Shortcuts
 
-### Netlify (Frontend)
+If you have Make installed, you can orchestrate development commands directly from the project root:
 
-Set the following environment variable in the Netlify dashboard or in `netlify.toml`:
-
-```ini
-VITE_API_BASE_URL=https://nexora-360r.onrender.com/api
-```
-
-### Render (Backend)
-
-Set the following environment variables in the Render Web Service configuration:
-
-```ini
-PUBLIC_API_URL=https://nexora-360r.onrender.com
-PUBLIC_APP_URL=https://nexoraprediction.netlify.app
-CORS_ORIGINS=["https://nexoraprediction.netlify.app"]
-OLLAMA_BASE_URL=http://127.0.0.1:11434
-OLLAMA_MODEL=phi3:mini
-PERSISTENCE_BACKEND=mongodb
-MONGODB_URI=<your_mongodb_connection_string>
-```
+* Install all package dependencies: `make install`
+* Launch backend locally: `make dev-backend`
+* Launch frontend locally: `make dev-frontend`
+* Run backend pytest suite: `make test`
+* Format all file types: `make format`
+* Spin up Docker containers: `make docker-up`
+* Spin down Docker containers: `make docker-down`
 
 ---
 
-## Project Structure
+## Grounded Q&A Assistant Setup (Optional)
 
-```text
-nexora/
-├── backend/                  # FastAPI application
-│   ├── app/
-│   │   ├── models/           # Database schemas and ML pipeline definitions
-│   │   ├── routers/          # API route controllers
-│   │   ├── services/         # ML engine logic and data processing
-│   │   ├── config.py         # Application configuration
-│   │   └── main.py           # Application entrypoint
-│   ├── requirements.txt      # Python dependencies
-│   └── run.py                # Server launch script
-├── frontend/                 # React frontend application
-│   ├── src/
-│   │   ├── api/              # Axios API clients and WebSocket handlers
-│   │   ├── components/       # Reusable UI components
-│   │   ├── pages/            # Page-level view components
-│   │   └── index.css         # Global styles and design tokens
-│   ├── netlify.toml          # Netlify deployment configuration
-│   └── package.json          # Node dependencies and scripts
-├── sample-data/              # Example CSV datasets for testing
-├── render.yaml               # Render deployment configuration
-├── netlify.toml              # Root Netlify configuration
-└── LICENSE                   # MIT License
-```
+To enable the dataset assistant using a local LLM instance:
+
+1. Download and install [Ollama](https://ollama.com/).
+2. Pull the default micro-LLM model in your terminal:
+   ```bash
+   ollama pull phi3:mini
+   ```
+3. Keep Ollama active in the background. The assistant will detect local hosting at `http://localhost:11434` and enable custom educational conversations.
 
 ---
 
-## Contributing
+## Repository Roadmap
 
-Contributions are welcome. To get started:
+- [ ] Add Pytest code coverage reports in the Backend CI pipeline.
+- [ ] Implement multi-file comparison dashboards within the Frontend page.
+- [ ] Add support for automated time-series forecasting hyperparameter tuning.
+- [ ] Integrate PostgreSQL database schema mappings for enterprise persistence layers.
+- [ ] Add REST API key rotation options inside the Production UI.
+- [ ] Create automated end-to-end integration tests using Playwright.
 
-1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/your-feature-name`.
-3. Commit changes with clear, descriptive messages.
-4. Push to your fork and open a pull request.
+---
 
-Please ensure all changes pass the existing build process before submitting.
+## Contributing and Governance
+
+Contributions are welcome. Please read our [Contributing Guidelines](CONTRIBUTING.md) to understand branch conventions, pull request structures, and developer standards. Ensure all contributions align with our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+For vulnerability notifications, refer to our [Security Policy](SECURITY.md).
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for the full license text.
-
----
-
-<p align="center">
-  Built by <a href="https://github.com/jeet2005">Jeet Patel</a> and open-source contributors.
-</p>
+Nexora is open-source software licensed under the [MIT License](LICENSE).

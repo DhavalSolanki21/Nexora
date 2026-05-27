@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Database Service (MongoDB)
+  mongo:
+    image: mongo:6.0
+    container_name: nexora-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - nexora-network
+    restart: unless-stopped
+
+  # Backend Service (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexora-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - PORT=8000
+      - PERSISTENCE_BACKEND=mongodb
+      - MONGODB_URI=mongodb://mongo:27017
+      - MONGODB_DB=nexora
+      - CORS_ORIGINS=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173"]
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    depends_on:
+      - mongo
+    volumes:
+      - ./backend/uploads:/backend/uploads
+    networks:
+      - nexora-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Frontend Service (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://localhost:8000/api
+    container_name: nexora-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - nexora-network
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+
+networks:
+  nexora-network:
+    driver: bridge

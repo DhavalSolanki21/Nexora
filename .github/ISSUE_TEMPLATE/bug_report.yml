@@ -1,0 +1,60 @@
+name: Bug Report
+description: Create a structured report to help us find and reproduce a bug
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug. Please fill in the details below to help us investigate.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Provide a clear and concise description of the bug.
+      placeholder: Describe what happens...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Provide detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Upload dataset CSV 'example.csv'
+        2. Set Target to 'target_col'
+        3. Click 'Run Preprocessing'
+        4. See error message in the console
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Provide a clear and concise description of what you expected to happen.
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: Provide a clear and concise description of what actually happened.
+      placeholder: What occurred instead?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Mention the operating system, browser name, Python version, Node version, or MongoDB configuration.
+      placeholder: e.g. Windows 11, Chrome 124, Python 3.11.8, Node 20.12
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, error logs, or screenshots about the problem here.
+      placeholder: Copy-paste error stacktraces, API log files, or details...
+    validations:
+      required: false

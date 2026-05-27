@@ -1,0 +1,40 @@
+name: Feature Request
+description: Propose a new feature, model addition, or capability for Nexora
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an improvement or feature. We appreciate your ideas!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: Provide a clear and concise description of the limitation or problem you are encountering.
+      placeholder: I currently have difficulty doing X because of Y...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Provide a clear and concise description of the feature or functionality you want added.
+      placeholder: Introduce a new UI panel to choose hyperparameter search algorithms...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Mention any alternative solutions or workarounds you have considered or currently use.
+      placeholder: I tried to achieve this by using scripts/test_workflow.py, but...
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockup screenshots, or structural outlines about the feature request here.
+      placeholder: Provide mockup screenshots, architectural graphs, or references...
+    validations:
+      required: false

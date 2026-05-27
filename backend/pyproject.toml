@@ -1,0 +1,64 @@
+[tool.ruff]
+# Target Python version
+target-version = "py311"
+line-length = 88
+
+# Rules enabled
+# E/W: pycodestyle errors and warnings
+# F: Pyflakes
+# I: isort (imports grouping)
+# UP: pyupgrade (modern Python syntax suggestions)
+# B: flake8-bugbear (common code design bugs)
+# C90: mccabe (complexity checks)
+select = ["E", "F", "I", "UP", "B", "C90"]
+
+# Exclude list
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "uploads"
+]
+
+[tool.ruff.mccabe]
+max-complexity = 12
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.ruff_cache
+  | \.venv
+  | venv
+  | _build
+  | dist
+  | uploads
+)/
+'''
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+ignore_missing_imports = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+python_classes = ["Test*"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning"
+]

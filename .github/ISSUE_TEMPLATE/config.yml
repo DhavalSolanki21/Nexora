@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/jeet2005/Nexora/discussions
+    about: For support, usage questions, or general discussions, please open a thread in GitHub Discussions.
