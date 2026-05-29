@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Nexora. This document outlines the guidelines and workflows for contributing to this project. Following these instructions helps ensure a smooth collaboration process.
 
-For more detailed guidance, see the [contribution guide](nexora-contribution-guide.html).
+For more detailed guidance, see the [contribution guide](nexora-contribution-guide.pdf).
 
 ## Code of Conduct
 
