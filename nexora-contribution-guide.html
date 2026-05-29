@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nexora — Code Contribution Guide</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #fff;
+    color: #111;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 48px 80px;
+  }
+
+  /* Header */
+  .doc-header {
+    text-align: center;
+    border-bottom: 2px solid #111;
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+  .doc-header img {
+    height: 52px;
+    width: auto;
+    margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    filter: invert(1);
+  }
+  .doc-title {
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+  }
+  .doc-subtitle {
+    font-size: 14px;
+    color: #444;
+    font-style: italic;
+  }
+  .doc-meta {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #555;
+  }
+
+  /* Section headings */
+  h2 {
+    font-size: 17px;
+    font-weight: bold;
+    margin-top: 44px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: bold;
+    margin-top: 28px;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin-bottom: 14px;
+    color: #222;
+  }
+
+  /* Code blocks */
+  pre {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-left: 3px solid #888;
+    padding: 14px 16px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    color: #222;
+  }
+
+  code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    background: #f0f0f0;
+    padding: 1px 5px;
+    border: 1px solid #ddd;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0 24px;
+  }
+  th {
+    text-align: left;
+    border-bottom: 2px solid #111;
+    padding: 8px 10px;
+    font-weight: bold;
+    background: #f9f9f9;
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* Note / callout */
+  .note {
+    border-left: 3px solid #888;
+    background: #f9f9f9;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #333;
+    margin: 16px 0;
+  }
+  .note strong { font-weight: bold; color: #111; }
+
+  /* Ordered / unordered lists */
+  ol, ul {
+    margin: 10px 0 16px 24px;
+    color: #222;
+  }
+  li { margin-bottom: 6px; }
+
+  /* Workflow step numbers */
+  .step-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #666;
+    margin-bottom: 2px;
+    display: block;
+  }
+
+  /* Checklist */
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 7px 0; border-bottom: 1px solid #eee;
+    cursor: pointer; font-size: 14px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 16px; height: 16px; border: 1px solid #555;
+    flex-shrink: 0; margin-top: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .checklist li.done .check-box::after { content: 'x'; font-weight: bold; }
+  .checklist li.done > span { text-decoration: line-through; color: #999; }
+
+  /* Divider */
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 36px 0;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 60px;
+    border-top: 1px solid #ccc;
+    padding-top: 18px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .page { padding: 32px 20px 60px; }
+    pre { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <img src="data:image/png;base64,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" alt="Nexora"/>
+    <div class="doc-title">Code Contribution Guide</div>
+    <div class="doc-subtitle">Fork-and-Pull Workflow for Contributors</div>
+    <div class="doc-meta">github.com/jeet2005/Nexora &nbsp;·&nbsp; MIT License</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <h2>Overview</h2>
+  <p>
+    Nexora follows a standard <strong>fork-and-pull</strong> workflow for all code contributions.
+    Contributors work on their own copy of the repository and submit changes back via a pull request.
+    This ensures the main branch remains stable and all changes pass review before merging.
+  </p>
+  <p>The complete workflow consists of eight steps:</p>
+  <ol>
+    <li>Fork the repository on GitHub</li>
+    <li>Clone your fork locally</li>
+    <li>Create a feature branch from <code>main</code></li>
+    <li>Make your modifications</li>
+    <li>Verify changes with tests, linting, and formatting</li>
+    <li>Commit your changes using Conventional Commits</li>
+    <li>Push the branch to your fork</li>
+    <li>Submit a Pull Request targeting the <code>main</code> branch of the upstream repository</li>
+  </ol>
+
+  <hr/>
+
+  <!-- STEP 1 -->
+  <h2>1. Fork the Repository</h2>
+  <p>
+    Navigate to the Nexora repository on GitHub and click <strong>Fork</strong> in the top-right corner.
+    This creates a personal copy of the repository under your GitHub account. All development work
+    happens in your fork — the upstream repository remains unchanged until a pull request is merged.
+  </p>
+
+  <!-- STEP 2 -->
+  <h2>2. Clone Your Fork Locally</h2>
+  <p>
+    Clone your fork to your local machine, then add the upstream remote so you can
+    pull future changes from the main project.
+  </p>
+<pre># Clone your fork (replace YOUR_USERNAME with your GitHub handle)
+$ git clone https://github.com/YOUR_USERNAME/Nexora.git
+$ cd Nexora
+
+# Add the upstream remote
+$ git remote add upstream https://github.com/jeet2005/Nexora.git
+
+# Verify remotes
+$ git remote -v
+# origin    https://github.com/YOUR_USERNAME/Nexora.git  (fetch)
+# origin    https://github.com/YOUR_USERNAME/Nexora.git  (push)
+# upstream  https://github.com/jeet2005/Nexora.git       (fetch)
+# upstream  https://github.com/jeet2005/Nexora.git       (push)</pre>
+
+  <div class="note">
+    <strong>Keeping your fork in sync.</strong> Before starting any new work, pull the latest
+    changes from upstream into your local <code>main</code> branch to avoid conflicts.
+  </div>
+
+<pre># Sync your fork with upstream before new work
+$ git checkout main
+$ git fetch upstream
+$ git merge upstream/main
+$ git push origin main</pre>
+
+  <!-- STEP 3 -->
+  <h2>3. Create a Feature Branch</h2>
+  <p>
+    All changes must be made on a dedicated branch created from <code>main</code>.
+    Never commit directly to <code>main</code>. Branches should be short-lived and
+    focused on a single concern — one feature or one fix per branch.
+  </p>
+<pre># Always branch from an up-to-date main
+$ git checkout main
+$ git pull upstream main
+
+# Create your branch
+$ git checkout -b feature/your-feature-name</pre>
+
+  <h3>Branch Naming Conventions</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Prefix</th>
+        <th>When to use</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>feature/</code></td>
+        <td>New functionality, UI additions, new endpoints</td>
+        <td><code>feature/add-csv-export</code></td>
+      </tr>
+      <tr>
+        <td><code>fix/</code></td>
+        <td>Bug fixes, regressions, crash patches</td>
+        <td><code>fix/auth-token-expiry</code></td>
+      </tr>
+      <tr>
+        <td><code>docs/</code></td>
+        <td>Documentation only — README, guides, comments</td>
+        <td><code>docs/update-setup-guide</code></td>
+      </tr>
+      <tr>
+        <td><code>refactor/</code></td>
+        <td>Code restructuring with no behavior change</td>
+        <td><code>refactor/model-service-layer</code></td>
+      </tr>
+      <tr>
+        <td><code>chore/</code></td>
+        <td>Config changes, CI tweaks, dependency bumps</td>
+        <td><code>chore/upgrade-fastapi-0.110</code></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note">
+    Branch names use lowercase kebab-case only. No spaces, no uppercase, no special characters
+    except hyphens. Keep them under 40 characters.
+  </div>
+
+  <!-- STEP 4 -->
+  <h2>4. Make Your Modifications</h2>
+  <p>
+    Implement your changes within the scope of the branch. Keep changes focused — avoid mixing
+    unrelated fixes or features into the same branch. If you discover an unrelated bug while
+    working, open a separate issue or branch for it.
+  </p>
+
+  <!-- STEP 5 -->
+  <h2>5. Verify Changes</h2>
+  <p>
+    Before committing, run the full quality suite: tests, linting, and formatting. All checks
+    must pass locally before pushing. GitHub Actions CI will run the same checks on your pull
+    request and will block merging if any fail.
+  </p>
+
+  <h3>Backend (Python / FastAPI)</h3>
+<pre># From /backend
+$ pytest tests/ -v          # run tests
+$ ruff check .              # lint
+$ ruff format .             # format (auto-fixes in place)
+$ mypy app/                 # optional: type check</pre>
+
+  <h3>Frontend (React / Vite)</h3>
+<pre># From /frontend
+$ npx vitest run            # run tests
+$ npx eslint src/           # lint
+$ npx prettier --write src/ # format
+$ npm run build             # catch TypeScript errors</pre>
+
+  <h3>Pre-commit Checklist</h3>
+  <ul class="checklist" id="checklist">
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>All tests pass locally with no failures</span></li>
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>No linting errors (<code>ruff check .</code> / <code>eslint src/</code> return zero issues)</span></li>
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Code is formatted (<code>ruff format .</code> / <code>prettier --write .</code> ran)</span></li>
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>New logic has corresponding unit or integration tests</span></li>
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>No debug statements (<code>print()</code> / <code>console.log()</code>) left in code</span></li>
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>No hardcoded secrets, API keys, or local file paths</span></li>
+    <li onclick="toggleCheck(this)"><div class="check-box"></div><span>Existing tests still pass — no regressions introduced</span></li>
+  </ul>
+
+  <!-- STEP 6 -->
+  <h2>6. Commit Using Conventional Commits</h2>
+  <p>
+    Nexora follows the <strong>Conventional Commits</strong> specification. Every commit message
+    must use the format: <code>type(scope): description</code>. The type describes the kind of
+    change; the scope is optional but recommended. The description should be present-tense,
+    lowercase, and under 72 characters.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Type</th><th>When to use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>feat</code></td><td>A new feature or user-visible addition</td></tr>
+      <tr><td><code>fix</code></td><td>A bug fix</td></tr>
+      <tr><td><code>docs</code></td><td>Documentation changes only</td></tr>
+      <tr><td><code>test</code></td><td>Adding or updating tests</td></tr>
+      <tr><td><code>refactor</code></td><td>Code restructuring with no behavior change</td></tr>
+      <tr><td><code>chore</code></td><td>Build, config, or dependency changes</td></tr>
+      <tr><td><code>style</code></td><td>Formatting only, no logic change</td></tr>
+    </tbody>
+  </table>
+
+<pre># Examples of valid commit messages
+feat(api): add CSV export endpoint for predictions
+fix(dashboard): resolve null pointer on empty model list
+docs: update local setup instructions in README
+test(auth): add unit tests for JWT refresh flow
+refactor: extract model loading into dedicated service
+chore: upgrade fastapi to 0.110.0
+
+# For breaking changes — add ! and a footer
+feat(api)!: rename /predict to /inference
+# BREAKING CHANGE: /predict endpoint has been renamed to /inference</pre>
+
+  <!-- STEP 7 -->
+  <h2>7. Push the Branch to Your Fork</h2>
+<pre># Stage and commit
+$ git add .
+$ git commit -m "feat(dashboard): add real-time prediction confidence chart"
+
+# Push to your fork
+$ git push origin feature/your-feature-name</pre>
+
+  <!-- STEP 8 -->
+  <h2>8. Submit a Pull Request</h2>
+  <p>
+    After pushing your branch, GitHub will display a prompt to open a pull request.
+    The PR must target the <code>main</code> branch of <code>jeet2005/Nexora</code> — not
+    your fork's main. Never target a release or development branch unless a maintainer
+    specifically requests it.
+  </p>
+
+  <h3>Steps to Open a PR</h3>
+  <ol>
+    <li>Go to your fork on GitHub after pushing. Click the <strong>Compare &amp; pull request</strong> banner, or navigate to Pull Requests and click <strong>New Pull Request</strong>.</li>
+    <li>Set the base repository to <code>jeet2005/Nexora</code> and the base branch to <code>main</code>.</li>
+    <li>Write a clear description: what changed, why it changed, and how to test it. Link the related issue with <code>Closes #123</code> if applicable.</li>
+    <li>Attach screenshots for any visual or UI changes.</li>
+    <li>Submit and wait for CI to complete. A maintainer will review and may request changes. Push fixes to the same branch — the PR updates automatically.</li>
+  </ol>
+
+  <h3>PR Description Template</h3>
+<pre>## What does this PR do?
+Brief summary of the change and the motivation behind it.
+
+## Related issue
+Closes #ISSUE_NUMBER  (remove line if no related issue)
+
+## How to test
+1. Run docker-compose up
+2. Navigate to /dashboard
+3. Verify the export button appears and downloads correctly
+
+## Screenshots (if UI changes)
+Before: [screenshot]
+After:  [screenshot]
+
+## Checklist
+- [ ] Tests pass locally
+- [ ] No linting errors
+- [ ] Code is formatted
+- [ ] PR targets the main branch of jeet2005/Nexora</pre>
+
+  <div class="note">
+    <strong>First-time contributors:</strong> A welcome message will appear automatically on your
+    first PR. If you are unsure about anything, open a Draft PR early and ask questions in the
+    description. Maintainers are here to help.
+  </div>
+
+  <hr/>
+
+  <footer>
+    Nexora — Autonomous AI Predictive Analytics Platform<br/>
+    github.com/jeet2005/Nexora &nbsp;·&nbsp; MIT License
+  </footer>
+
+</div>
+
+<script>
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+  }
+</script>
+</body>
+</html>
