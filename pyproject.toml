@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nexora"
+name = "nexora-prediction"
 version = "0.1.0"
 description = "Autonomous predictive analytics from CSV to trained model and runnable code."
 readme = "README.md"
