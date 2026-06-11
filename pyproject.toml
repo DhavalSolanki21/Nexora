@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nexora-prediction"
-version = "0.1.0"
+version = "0.1.1"
 description = "Autonomous predictive analytics from CSV to trained model and runnable code."
 readme = "README.md"
 license = "MIT"
@@ -49,6 +49,7 @@ dependencies = [
   "sentence-transformers>=2.2.0",
   "umap-learn>=0.5.0",
   "dvc>=3.0.0",
+  "fpdf2>=2.7.0",
 ]
 
 [project.optional-dependencies]

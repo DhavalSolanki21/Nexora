@@ -35,7 +35,7 @@ def load_source(
         return LoadedData(
             dataframe=source.copy(),
             source_path=None,
-            source_name="dataframe",
+            source_name="DataFrame",
         )
 
     if isinstance(source, np.ndarray):
@@ -50,19 +50,36 @@ def load_source(
     path = Path(source).expanduser().resolve()
     if not path.exists():
         raise FileNotFoundError(f"Dataset path does not exist: {path}")
-    if path.suffix.lower() != ".csv":
+    suffix = path.suffix.lower()
+    if suffix == ".csv":
+        df = _read_csv(path)
+    elif suffix in {".xlsx", ".xls"}:
+        df = pd.read_excel(path)
+    elif suffix == ".parquet":
+        df = pd.read_parquet(path)
+    elif suffix in {".json", ".jsonl", ".ndjson"}:
+        df = _read_json(path, suffix)
+    else:
         raise ValueError(
-            f"Nexora v0.1.0 supports CSV files for package entry. Got: {path.suffix}"
+            "Unsupported dataset format. Nexora accepts CSV, Excel, Parquet, and JSON files."
         )
-
-    try:
-        import duckdb
-        df = duckdb.query(f"SELECT * FROM '{path.as_posix()}'").df()
-    except ImportError:
-        # Fallback if duckdb is somehow not installed
-        df = pd.read_csv(path, low_memory=False)
 
     if df.empty:
         raise ValueError(f"Dataset is empty: {path}")
     return LoadedData(dataframe=df, source_path=path, source_name=path.name)
 
+
+def _read_csv(path: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(path, sep=None, engine="python")
+    except Exception:
+        return pd.read_csv(path, low_memory=False)
+
+
+def _read_json(path: Path, suffix: str) -> pd.DataFrame:
+    if suffix in {".jsonl", ".ndjson"}:
+        return pd.read_json(path, lines=True)
+    try:
+        return pd.read_json(path)
+    except ValueError:
+        return pd.read_json(path, orient="records")

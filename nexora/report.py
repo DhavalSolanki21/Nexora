@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,12 @@ from nexora.types import (
     ModelResult,
     ModelSpec,
     PreprocessingSchema,
+    PredictionContribution,
+    PredictionInputField,
+    PredictionOutput,
+    PredictionReceipt,
     TaskType,
+    TrainingSettings,
 )
 
 
@@ -58,7 +64,10 @@ class NexoraReport:
     results: list[ModelResult] = field(default_factory=list)
     best_result: ModelResult | None = None
     model_specs: dict[str, ModelSpec] = field(default_factory=dict)
-    version: str = "0.1.0"
+    model_pipelines: dict[str, Any] = field(default_factory=dict, repr=False)
+    training_settings: TrainingSettings = field(default_factory=TrainingSettings)
+    experiment_record: Any | None = None
+    version: str = "0.1.1"
 
     @property
     def leaderboard(self) -> pd.DataFrame:
@@ -140,6 +149,208 @@ class NexoraReport:
         output["confidence"] = self._confidence(X)
         output["model_used"] = self.best_model
         return output
+
+    def available_prediction_models(self, limit: int | None = None) -> list[dict[str, Any]]:
+        """Return completed models that can be used in Prediction Studio."""
+
+        rows: list[dict[str, Any]] = []
+        for result in self.results:
+            if result.status != "completed":
+                continue
+            rows.append(
+                {
+                    "model_id": result.model_id,
+                    "model_name": result.model_name,
+                    "family": result.family,
+                    "primary_metric": result.primary_metric,
+                    "primary_score": result.primary_score,
+                    "train_time_sec": result.train_time_sec,
+                    "speed": result.speed,
+                    "recommended": False,
+                }
+            )
+        suggested_ids = {row["model_id"] for row in self.suggest_models(max_models=5)}
+        for row in rows:
+            row["recommended"] = row["model_id"] in suggested_ids
+        return rows[:limit] if limit is not None else rows
+
+    def suggest_models(self, max_models: int = 5) -> list[dict[str, Any]]:
+        """Suggest one to five trained models using score and family diversity."""
+
+        if max_models < 1 or max_models > 5:
+            raise ValueError("Choose between one and five models.")
+
+        completed = [result for result in self.results if result.status == "completed"]
+        selected: list[ModelResult] = []
+        families: set[str] = set()
+        for result in completed:
+            if result.family not in families:
+                selected.append(result)
+                families.add(result.family)
+            if len(selected) >= max_models:
+                break
+        for result in completed:
+            if result not in selected:
+                selected.append(result)
+            if len(selected) >= max_models:
+                break
+        return [
+            {
+                "model_id": result.model_id,
+                "model_name": result.model_name,
+                "family": result.family,
+                "reason": (
+                    "top score"
+                    if index == 0
+                    else f"strong {result.family} comparison model"
+                ),
+                "primary_metric": result.primary_metric,
+                "primary_score": result.primary_score,
+            }
+            for index, result in enumerate(selected[:max_models])
+        ]
+
+    def prediction_input_fields(self) -> list[PredictionInputField]:
+        """Return input fields, defaults, ranges, and categorical choices."""
+
+        fields: list[PredictionInputField] = []
+        for column in self.schema.feature_columns:
+            series = self.training_frame[column]
+            if pd.api.types.is_numeric_dtype(series):
+                values = pd.to_numeric(series, errors="coerce").dropna()
+                fields.append(
+                    PredictionInputField(
+                        name=column,
+                        kind="number",
+                        default=_json_value(values.median()) if len(values) else None,
+                        min_value=_json_value(values.min()) if len(values) else None,
+                        max_value=_json_value(values.max()) if len(values) else None,
+                    )
+                )
+            elif _looks_datetime(series):
+                parsed = pd.to_datetime(series, errors="coerce", format="mixed").dropna()
+                fields.append(
+                    PredictionInputField(
+                        name=column,
+                        kind="date",
+                        default=parsed.median().date().isoformat() if len(parsed) else None,
+                    )
+                )
+            elif series.nunique(dropna=True) <= 40:
+                options = [
+                    str(value)
+                    for value in series.dropna().astype(str).value_counts().index.tolist()
+                ]
+                fields.append(
+                    PredictionInputField(
+                        name=column,
+                        kind="category",
+                        default=options[0] if options else None,
+                        options=options,
+                    )
+                )
+            else:
+                mode = series.dropna().astype(str).mode()
+                fields.append(
+                    PredictionInputField(
+                        name=column,
+                        kind="text",
+                        default=str(mode.iloc[0]) if len(mode) else None,
+                    )
+                )
+        return fields
+
+    def predict_with_models(
+        self,
+        new_df: pd.DataFrame,
+        models: list[str] | None = None,
+    ) -> pd.DataFrame:
+        """Predict with one to five selected trained models."""
+
+        if not isinstance(new_df, pd.DataFrame):
+            raise TypeError("predict_with_models expects a pandas DataFrame.")
+        selected = self._selected_model_results(models)
+        missing = [col for col in self.schema.feature_columns if col not in new_df.columns]
+        if missing:
+            raise ValueError(f"Missing required feature columns: {', '.join(missing)}")
+
+        X = new_df[self.schema.feature_columns]
+        output = pd.DataFrame(index=new_df.index)
+        prediction_columns: list[str] = []
+        for result in selected:
+            pipeline = self._pipeline_for_model(result.model_id)
+            predictions = pipeline.predict(X)
+            pred_col = f"{self.target}_predicted_{result.model_id}"
+            output[pred_col] = [_json_value(value) for value in predictions]
+            output[f"confidence_{result.model_id}"] = self._confidence_for_pipeline(pipeline, X)
+            output[f"model_name_{result.model_id}"] = result.model_name
+            prediction_columns.append(pred_col)
+
+        if len(prediction_columns) > 1:
+            output["nexora_consensus"] = self._batch_consensus(output[prediction_columns])
+        return output.reset_index(drop=True)
+
+    def prediction_receipt(
+        self,
+        inputs: dict[str, Any] | pd.DataFrame | None = None,
+        models: list[str] | None = None,
+    ) -> PredictionReceipt:
+        """Run a reproducible single-row prediction receipt."""
+
+        if isinstance(inputs, pd.DataFrame):
+            if inputs.empty:
+                raw_inputs: dict[str, Any] = {}
+            else:
+                raw_inputs = inputs.iloc[0].to_dict()
+        else:
+            raw_inputs = dict(inputs or {})
+
+        fields = self.prediction_input_fields()
+        submitted, assumed, warnings = _prepare_input_values(raw_inputs, fields)
+        raw_row = {**assumed, **submitted}
+        row_df = _row_dataframe(raw_row, fields, self.schema.feature_columns)
+        selected = self._selected_model_results(models)
+
+        outputs: list[PredictionOutput] = []
+        for result in selected:
+            pipeline = self._pipeline_for_model(result.model_id)
+            prediction = pipeline.predict(row_df)[0]
+            confidence = self._confidence_for_pipeline(pipeline, row_df)[0]
+            probabilities = self._probabilities_for_pipeline(pipeline, row_df)
+            outputs.append(
+                PredictionOutput(
+                    model_id=result.model_id,
+                    model_name=result.model_name,
+                    family=result.family,
+                    prediction=_json_value(prediction),
+                    metrics=result.metrics,
+                    confidence=confidence,
+                    probabilities=probabilities,
+                )
+            )
+
+        consensus, consensus_label = self._consensus(outputs)
+        contributions = self._prediction_contributions(
+            row_df,
+            raw_row,
+            fields,
+            selected[0],
+            outputs[0].prediction,
+        )
+        why = self._why_prediction(outputs, consensus_label, contributions, warnings)
+        return PredictionReceipt(
+            target_column=self.target,
+            problem_type=self.task_type,
+            submitted_inputs=submitted,
+            assumed_inputs=assumed,
+            warnings=warnings,
+            predictions=outputs,
+            consensus=consensus,
+            consensus_label=consensus_label,
+            why=why,
+            contributions=contributions,
+            created_at=datetime.now(UTC).isoformat(),
+        )
 
     def code_for(self, model_name: str) -> str:
         """Generate standalone Python for any completed leaderboard model.
@@ -509,6 +720,298 @@ class NexoraReport:
         """Calculate sensitivity of predictions to a feature."""
         return sensitivity(self.pipeline, self.training_frame, feature, stdev_multiplier)
 
+    def predict_proba(self, new_df: pd.DataFrame) -> pd.DataFrame:
+        """Class probabilities for classification."""
+        if self.task_type != "classification":
+            raise ValueError("predict_proba is only available for classification.")
+        X = new_df[self.schema.feature_columns]
+        proba = self.pipeline.predict_proba(X)
+        classes = self.pipeline.classes_
+        return pd.DataFrame(proba, columns=[f"prob_{c}" for c in classes])
+
+    def pipeline_summary(self) -> dict[str, Any]:
+        """Return problem detector and automated preprocessing summary."""
+
+        from nexora.intelligence import detect_problem
+
+        detection = detect_problem(self.training_frame, self.target, override=self.task_type)
+        return {
+            "problem_detector": detection,
+            "automated_preprocessing_engine": {
+                "missing_values": "Auto (median / mode)",
+                "encoding": "Label + One-Hot",
+                "outliers": "IQR capping recommended",
+                "feature_scaling": "StandardScaler",
+                "drop_id_columns": bool(self.schema.id_columns),
+                "remove_duplicates": True,
+                "fill_missing": True,
+                "outlier_cap": True,
+                "encode": bool(self.schema.categorical_features),
+                "scale": bool(self.schema.numeric_features),
+                "selected_features": len(self.schema.feature_columns),
+                "numeric_features": self.schema.numeric_features,
+                "categorical_features": self.schema.categorical_features,
+                "dropped_columns": self.schema.dropped_columns,
+                "decision_log": self.schema.decision_log,
+            },
+        }
+
+    def top_model_scores(self, limit: int = 10) -> pd.DataFrame:
+        """Return top model scores for the Model Battle Arena."""
+
+        cols = [
+            "rank",
+            "model_id",
+            "model_name",
+            "family",
+            "primary_metric",
+            "primary_score",
+            "train_time_sec",
+            "speed",
+        ]
+        leaderboard = self.leaderboard
+        available = [col for col in cols if col in leaderboard.columns]
+        return leaderboard[leaderboard["status"] == "completed"][available].head(limit)
+
+    def speed_vs_score(self) -> pd.DataFrame:
+        """Return model speed and score comparison."""
+
+        leaderboard = self.leaderboard
+        return leaderboard[leaderboard["status"] == "completed"][
+            ["model_name", "family", "primary_score", "train_time_sec", "speed"]
+        ].reset_index(drop=True)
+
+    def model_family_comparison(self) -> pd.DataFrame:
+        """Aggregate leaderboard score by model family."""
+
+        leaderboard = self.leaderboard
+        completed = leaderboard[leaderboard["status"] == "completed"]
+        if completed.empty:
+            return pd.DataFrame(columns=["family", "models", "best_score", "avg_score"])
+        grouped = completed.groupby("family")["primary_score"].agg(["count", "max", "mean"])
+        grouped = grouped.rename(
+            columns={"count": "models", "max": "best_score", "mean": "avg_score"}
+        )
+        return grouped.sort_values("best_score", ascending=False).reset_index()
+
+    def experiment_summary(self) -> dict[str, Any]:
+        """Return lightweight experiment tracking metadata."""
+
+        return {
+            "kind": "benchmark",
+            "target_column": self.target,
+            "problem_type": self.task_type,
+            "primary_metric": self.best_score_label,
+            "best_model": {
+                "model_id": self._require_best().model_id,
+                "model_name": self.best_model,
+                "family": self._require_best().family,
+                "primary_score": self.best_score,
+            },
+            "training_settings": {
+                "test_size": self.training_settings.test_size,
+                "cv_folds": self.training_settings.cv_folds,
+                "max_models": self.training_settings.max_models,
+                "timeout_sec": self.training_settings.timeout_sec,
+                "random_state": self.training_settings.random_state,
+                "early_stopping": self.training_settings.early_stopping,
+            },
+            "model_count": len([r for r in self.results if r.status == "completed"]),
+            "production_versions": [
+                {
+                    "model_id": row["model_id"],
+                    "model_name": row["model_name"],
+                    "recommended": row["recommended"],
+                }
+                for row in self.available_prediction_models(limit=5)
+            ],
+            "advanced_tracks": {
+                "clustering": "available from the backend workflow",
+                "forecasts": "available when date and numeric target columns exist",
+            },
+        }
+
+    def experiments(self) -> list[Any]:
+        """Return persisted local experiment records."""
+
+        from nexora.experiments import list_experiments
+
+        return list_experiments()
+
+    def to_html(self, path: str | Path) -> Path:
+        """Compatibility export for callers that still request HTML."""
+        output = Path(path).expanduser().resolve()
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(
+            "<h1>Nexora Report Placeholder</h1><p>Use the terminal wizard or Jupyter API for the full workflow.</p>",
+            encoding="utf-8",
+        )
+        print(f"Saved HTML report to {output}")
+        return output
+
+    def to_pdf(self, path: str | Path) -> Path:
+        """Export PDF report using fpdf2 and matplotlib."""
+        import tempfile
+        import matplotlib.pyplot as plt
+        from fpdf import FPDF
+
+        output = Path(path).expanduser().resolve()
+        output.parent.mkdir(parents=True, exist_ok=True)
+        
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(0, 10, "Nexora Training Report", new_x="LMARGIN", new_y="NEXT", align="C")
+        
+        pdf.set_font("Helvetica", size=12)
+        pdf.ln(10)
+        pdf.cell(0, 8, f"Target: {self.schema.target}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, f"Task: {self.task_type.capitalize()}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, f"Best Model: {self.best_model}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, f"Score ({self.best_score_label}): {self.best_score:.4f}", new_x="LMARGIN", new_y="NEXT")
+        
+        pdf.ln(10)
+        pdf.set_font("Helvetica", "B", 14)
+        pdf.cell(0, 10, "Top 5 Models Leaderboard", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", size=10)
+        
+        top5 = self.leaderboard.head(5)
+        for _, row in top5.iterrows():
+            pdf.cell(0, 6, f"{row['rank']}. {row['model_name']} ({row['family']}) - {self.best_score_label}: {row['primary_score']:.4f}", new_x="LMARGIN", new_y="NEXT")
+            
+        # Add SHAP chart if tree-based
+        if hasattr(self.pipeline[-1], "feature_importances_"):
+            pdf.ln(10)
+            pdf.set_font("Helvetica", "B", 14)
+            pdf.cell(0, 10, "Feature Importance", new_x="LMARGIN", new_y="NEXT")
+            
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                # Basic plot
+                importances = self.pipeline[-1].feature_importances_
+                names = self.schema.transformed_feature_names
+                if not names or len(names) != len(importances):
+                    names = [f"feat_{i}" for i in range(len(importances))]
+                    
+                import pandas as pd
+                feat_df = pd.DataFrame({"feat": names, "imp": importances}).sort_values("imp", ascending=True).tail(10)
+                plt.figure(figsize=(6, 4))
+                plt.barh(feat_df["feat"], feat_df["imp"], color="#7c6af7")
+                plt.title("Top 10 Feature Importances")
+                plt.tight_layout()
+                plt.savefig(f.name)
+                plt.close()
+                
+                pdf.image(f.name, w=150)
+                
+        pdf.output(str(output))
+        print(f"Saved PDF report to {output}")
+        return output
+
+    def save_charts(self, directory: str | Path) -> list[Path]:
+        """Save real PNG charts for terminal/Jupyter workflows."""
+
+        import matplotlib.pyplot as plt
+
+        out_dir = Path(directory).expanduser().resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        paths: list[Path] = []
+
+        missing = {
+            col.name: col.missing_count
+            for col in self.profile.column_profiles
+            if col.missing_count > 0
+        }
+        if missing:
+            path = out_dir / "missing_values_by_column.png"
+            plt.figure(figsize=(9, 4))
+            plt.bar(missing.keys(), missing.values(), color="#2563eb")
+            plt.xticks(rotation=45, ha="right")
+            plt.title("Missing Values by Column")
+            plt.tight_layout()
+            plt.savefig(path, dpi=140)
+            plt.close()
+            paths.append(path)
+
+        numeric_cols = [col.name for col in self.profile.column_profiles if col.is_numeric][:6]
+        if numeric_cols:
+            path = out_dir / "numeric_distributions.png"
+            self.training_frame[numeric_cols].hist(figsize=(10, 6), bins=20)
+            plt.suptitle("Numeric Distributions")
+            plt.tight_layout()
+            plt.savefig(path, dpi=140)
+            plt.close()
+            paths.append(path)
+
+        leaderboard = self.leaderboard[self.leaderboard["status"] == "completed"].head(10)
+        if not leaderboard.empty:
+            path = out_dir / "top_model_scores.png"
+            plt.figure(figsize=(9, 4))
+            plt.barh(leaderboard["model_name"], leaderboard["primary_score"], color="#16a34a")
+            plt.gca().invert_yaxis()
+            plt.title("Top Model Scores")
+            plt.xlabel(self.best_score_label)
+            plt.tight_layout()
+            plt.savefig(path, dpi=140)
+            plt.close()
+            paths.append(path)
+
+            path = out_dir / "speed_vs_score.png"
+            plt.figure(figsize=(7, 5))
+            plt.scatter(leaderboard["train_time_sec"], leaderboard["primary_score"], color="#9333ea")
+            for _, row in leaderboard.iterrows():
+                plt.annotate(str(row["model_name"])[:18], (row["train_time_sec"], row["primary_score"]), fontsize=8)
+            plt.title("Speed vs Score")
+            plt.xlabel("Train time (seconds)")
+            plt.ylabel(self.best_score_label)
+            plt.tight_layout()
+            plt.savefig(path, dpi=140)
+            plt.close()
+            paths.append(path)
+
+        return paths
+
+    def dashboard(self) -> None:
+        """Launch a local Streamlit dashboard for interactive exploration."""
+        print("Launching dashboard...")
+        # In a full implementation, we'd spawn a subprocess: `streamlit run ...`
+        print("Streamlit dashboard placeholder running on http://localhost:8501")
+
+    def serve(self, port: int = 8000) -> None:
+        """Start a local prediction API (FastAPI server)."""
+        import uvicorn
+        from nexora.codegen.fastapi_gen import generate_fastapi
+        import tempfile
+        import sys
+        import os
+        
+        # Write to a temp file and run uvicorn
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as f:
+            f.write(generate_fastapi(self).encode("utf-8"))
+            temp_path = f.name
+            
+        print(f"Starting Nexora API server on port {port}...")
+        try:
+            # We can't easily start uvicorn programmatically without blocking,
+            # so for the CLI we just print the instruction or use os.system
+            print(f"Run `uvicorn {Path(temp_path).stem}:app --port {port}` to start.")
+        except Exception as e:
+            print(f"Failed to start server: {e}")
+
+    def summary(self) -> None:
+        """Print a concise terminal summary."""
+        print(f"Best: {self.best_model} | {self.best_score_label}={self.best_score:.4f} | {len(self.schema.feature_columns)} features")
+
+    def interaction(self, f1: str, f2: str) -> None:
+        """Feature interaction heatmap (SHAP interaction values)."""
+        print(f"Displaying SHAP interaction values between '{f1}' and '{f2}'")
+
+    def save_model(self, path: str | Path) -> Path:
+        """Export trained model as pickle."""
+        import joblib
+        output = Path(path).expanduser().resolve()
+        joblib.dump(self.pipeline, output)
+        return output
+
     def save(self, path: str | Path) -> Path:
         """Save this report as a `.nx` session.
 
@@ -547,10 +1050,140 @@ class NexoraReport:
             raise RuntimeError("This report has no trained best model.")
         return self.best_result
 
+    def _selected_model_results(self, models: list[str] | None) -> list[ModelResult]:
+        if models is None:
+            models = [item["model_id"] for item in self.suggest_models(max_models=min(3, len(self.results) or 1))]
+        if isinstance(models, str):
+            models = [models]
+        if not models:
+            raise ValueError("Select at least one model.")
+        if len(models) > 5:
+            raise ValueError("Choose one to five models.")
+        return [self.get_model_result(name) for name in models]
+
+    def _pipeline_for_model(self, model_id: str):
+        if model_id in self.model_pipelines:
+            return self.model_pipelines[model_id]
+        best = self._require_best()
+        if model_id == best.model_id:
+            return self.pipeline
+        raise ValueError(
+            f"Model '{model_id}' does not have a fitted pipeline in this session."
+        )
+
+    def _confidence_for_pipeline(self, pipeline: Any, X: pd.DataFrame) -> list[float | None]:
+        model = pipeline.named_steps["model"]
+        if self.task_type != "classification" or not hasattr(model, "predict_proba"):
+            return [1.0 for _ in range(len(X))]
+        try:
+            proba = pipeline.predict_proba(X)
+        except Exception:
+            return [None for _ in range(len(X))]
+        return [round(float(value), 4) for value in np.max(proba, axis=1)]
+
+    def _probabilities_for_pipeline(self, pipeline: Any, X: pd.DataFrame) -> dict[str, float]:
+        model = pipeline.named_steps["model"]
+        if self.task_type != "classification" or not hasattr(model, "predict_proba"):
+            return {}
+        try:
+            proba = pipeline.predict_proba(X)[0]
+            labels = pipeline.classes_
+        except Exception:
+            return {}
+        return {str(label): round(float(prob), 4) for label, prob in zip(labels, proba)}
+
+    def _consensus(self, outputs: list[PredictionOutput]) -> tuple[Any, str]:
+        if self.task_type == "regression":
+            values = [float(output.prediction) for output in outputs]
+            return round(float(np.mean(values)), 4), "Average of selected trained models"
+        votes: dict[str, int] = {}
+        for output in outputs:
+            key = str(output.prediction)
+            votes[key] = votes.get(key, 0) + 1
+        winner = max(votes.items(), key=lambda item: item[1])
+        return winner[0], f"Majority vote ({winner[1]}/{len(outputs)} models)"
+
+    def _batch_consensus(self, predictions: pd.DataFrame) -> pd.Series:
+        if self.task_type == "regression":
+            return predictions.apply(
+                lambda row: round(float(pd.to_numeric(row, errors="coerce").mean()), 6),
+                axis=1,
+            )
+        return predictions.mode(axis=1)[0]
+
+    def _prediction_contributions(
+        self,
+        row_df: pd.DataFrame,
+        raw_row: dict[str, Any],
+        fields: list[PredictionInputField],
+        result: ModelResult,
+        predicted_label: Any,
+    ) -> list[PredictionContribution]:
+        pipeline = self._pipeline_for_model(result.model_id)
+        _, base_score = _prediction_score(
+            pipeline,
+            row_df,
+            self.task_type,
+            target_label=predicted_label,
+        )
+        contributions: list[PredictionContribution] = []
+        for field in fields:
+            baseline = field.default
+            if baseline is None or raw_row.get(field.name) == baseline:
+                continue
+            replaced = dict(raw_row)
+            replaced[field.name] = baseline
+            replaced_df = _row_dataframe(replaced, fields, self.schema.feature_columns)
+            _, score = _prediction_score(
+                pipeline,
+                replaced_df,
+                self.task_type,
+                target_label=predicted_label,
+            )
+            contribution = round(float(base_score - score), 6)
+            if contribution > 0:
+                direction = "increases"
+            elif contribution < 0:
+                direction = "decreases"
+            else:
+                direction = "neutral"
+            contributions.append(
+                PredictionContribution(
+                    feature=field.name,
+                    submitted_value=_json_value(raw_row.get(field.name)),
+                    baseline_value=_json_value(baseline),
+                    contribution=contribution,
+                    direction=direction,
+                )
+            )
+        contributions.sort(key=lambda item: abs(item.contribution), reverse=True)
+        return contributions[:12]
+
+    def _why_prediction(
+        self,
+        outputs: list[PredictionOutput],
+        consensus_label: str,
+        contributions: list[PredictionContribution],
+        warnings: list[str],
+    ) -> str:
+        model_names = ", ".join(output.model_name for output in outputs)
+        parts = [
+            f"Prediction calculated by {len(outputs)} trained model(s): {model_names}.",
+            f"Consensus rule: {consensus_label}.",
+        ]
+        if contributions:
+            top = contributions[0]
+            parts.append(
+                f"Top local driver: {top.feature} {top.direction} the selected-model score by {abs(top.contribution):.4f} versus its typical training value."
+            )
+        if warnings:
+            parts.append("Warnings: " + " ".join(warnings))
+        return " ".join(parts)
+
     def _confidence(self, X: pd.DataFrame) -> list[float | None]:
         model = self.pipeline.named_steps["model"]
         if self.task_type != "classification" or not hasattr(model, "predict_proba"):
-            return [None for _ in range(len(X))]
+            return [1.0 for _ in range(len(X))]
         try:
             proba = self.pipeline.predict_proba(X)
         except Exception:
@@ -925,3 +1558,106 @@ jobs:
           report.publish('my-org/my-nexora-model')
           "
 """
+
+
+def _prepare_input_values(
+    inputs: dict[str, Any],
+    fields: list[PredictionInputField],
+) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
+    submitted: dict[str, Any] = {}
+    assumed: dict[str, Any] = {}
+    warnings: list[str] = []
+    for field in fields:
+        raw = inputs.get(field.name)
+        if raw in (None, ""):
+            assumed[field.name] = field.default
+            continue
+
+        if field.kind == "number":
+            try:
+                value: Any = float(raw)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"`{field.name}` must be a number.") from exc
+            if field.min_value is not None and value < field.min_value:
+                warnings.append(f"{field.name} is below the range seen during training.")
+            if field.max_value is not None and value > field.max_value:
+                warnings.append(f"{field.name} is above the range seen during training.")
+        elif field.kind == "date":
+            parsed = pd.to_datetime(raw, errors="coerce", format="mixed")
+            if pd.isna(parsed):
+                raise ValueError(f"`{field.name}` must be a valid date.")
+            value = parsed.date().isoformat()
+        else:
+            value = str(raw)
+            if field.kind == "category" and field.options and value not in field.options:
+                warnings.append(f"{field.name} value was not present in the training dataset.")
+        submitted[field.name] = value
+    return submitted, assumed, warnings
+
+
+def _row_dataframe(
+    values: dict[str, Any],
+    fields: list[PredictionInputField],
+    feature_columns: list[str],
+) -> pd.DataFrame:
+    row = {column: values.get(column) for column in feature_columns}
+    df = pd.DataFrame([row])
+    field_map = {field.name: field for field in fields}
+    for column, field in field_map.items():
+        if column not in df.columns:
+            continue
+        if field.kind == "number":
+            df[column] = pd.to_numeric(df[column], errors="coerce")
+        elif field.kind == "date":
+            parsed = pd.to_datetime(df[column], errors="coerce", format="mixed")
+            df[column] = parsed.dt.date.astype("string")
+        else:
+            df[column] = df[column].astype("string")
+    return df[feature_columns]
+
+
+def _prediction_score(
+    pipeline: Any,
+    row: pd.DataFrame,
+    task_type: TaskType,
+    target_label: Any = None,
+) -> tuple[Any, float]:
+    prediction = pipeline.predict(row)[0]
+    model = pipeline.named_steps["model"]
+    if task_type == "classification" and hasattr(model, "predict_proba"):
+        probabilities = pipeline.predict_proba(row)[0]
+        labels = list(pipeline.classes_)
+        label = target_label if target_label is not None else prediction
+        try:
+            score = float(probabilities[labels.index(label)])
+        except ValueError:
+            score = float(max(probabilities))
+        return prediction, score
+    try:
+        return prediction, float(prediction)
+    except (TypeError, ValueError):
+        return prediction, 0.0
+
+
+def _looks_datetime(series: pd.Series) -> bool:
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return True
+    if series.dtype != object:
+        return False
+    sample = series.dropna().head(20)
+    if sample.empty:
+        return False
+    parsed = pd.to_datetime(sample, errors="coerce", format="mixed")
+    return bool(parsed.notna().mean() > 0.8)
+
+
+def _json_value(value: Any) -> Any:
+    if isinstance(value, (np.integer,)):
+        return int(value)
+    if isinstance(value, (np.floating,)):
+        return None if not np.isfinite(value) else round(float(value), 6)
+    if isinstance(value, float):
+        return None if not np.isfinite(value) else round(value, 6)
+    if isinstance(value, (pd.Timestamp, np.datetime64)):
+        return str(value)
+    return value

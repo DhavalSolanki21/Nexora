@@ -10,6 +10,8 @@ from typing import Any, Literal
 import pandas as pd
 
 TaskType = Literal["classification", "regression"]
+InputKind = Literal["number", "category", "date", "text"]
+ScalingMode = Literal["standard", "minmax", "none"]
 
 
 @dataclass(frozen=True)
@@ -110,6 +112,158 @@ class DatasetProfile:
         return pd.DataFrame(asdict(col) for col in self.column_profiles)
 
 
+@dataclass(frozen=True)
+class TargetSuggestion:
+    """Suggested prediction target discovered during dataset intelligence."""
+
+    target_column: str
+    problem_type: TaskType
+    confidence: float
+    reason: str
+
+
+@dataclass(frozen=True)
+class RelationshipSignal:
+    """A numeric relationship between two columns."""
+
+    feature_a: str
+    feature_b: str
+    correlation: float
+    strength: str
+
+
+@dataclass(frozen=True)
+class OutlierSignal:
+    """Outlier count for a numeric column."""
+
+    column: str
+    count: int
+    percentage: float
+
+
+@dataclass(frozen=True)
+class ColumnIntelligence:
+    """Human-readable modeling guidance for one column."""
+
+    name: str
+    role: str
+    quality_score: int
+    recommendation: str
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class ModelReadiness:
+    """Dataset-level model readiness recommendation."""
+
+    score: int
+    status: str
+    recommended_families: list[str]
+    reasons: list[str]
+    warnings: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class DatasetIntelligence:
+    """CSV-first dataset intelligence used by the CLI and package API."""
+
+    profile: DatasetProfile
+    preview: list[dict[str, Any]]
+    data_quality_scorecard: dict[str, int]
+    suggested_targets: list[TargetSuggestion]
+    model_readiness: ModelReadiness
+    column_intelligence: list[ColumnIntelligence]
+    strongest_relationships: list[RelationshipSignal]
+    outlier_signals: list[OutlierSignal]
+    numeric_distributions: dict[str, dict[str, float | None]]
+    categorical_distributions: dict[str, list[dict[str, Any]]]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-friendly representation."""
+
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class TrainingSettings:
+    """Advanced training settings shown before target/model training."""
+
+    test_size: float = 0.2
+    cv_folds: int = 5
+    max_models: int | None = 6
+    timeout_sec: int | None = None
+    random_state: int = 42
+    early_stopping: bool = True
+
+
+@dataclass(frozen=True)
+class PreprocessingConfig:
+    """User-controllable preprocessing switches."""
+
+    missing_strategy: str = "auto"
+    scaling: ScalingMode = "standard"
+    encode_categorical: bool = True
+    drop_id_columns: bool = True
+    remove_duplicates: bool = True
+    fill_missing: bool = True
+    outlier_cap: bool = True
+    remove_constant: bool = True
+
+
+@dataclass(frozen=True)
+class PredictionInputField:
+    """A field users can provide in Prediction Studio."""
+
+    name: str
+    kind: InputKind
+    required: bool = False
+    default: Any = None
+    min_value: float | None = None
+    max_value: float | None = None
+    options: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class PredictionOutput:
+    """Prediction from one trained model."""
+
+    model_id: str
+    model_name: str
+    family: str
+    prediction: Any
+    metrics: dict[str, float] = field(default_factory=dict)
+    confidence: float | None = None
+    probabilities: dict[str, float] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class PredictionContribution:
+    """Single-row perturbation contribution for a prediction."""
+
+    feature: str
+    submitted_value: Any
+    baseline_value: Any
+    contribution: float
+    direction: Literal["increases", "decreases", "neutral"]
+
+
+@dataclass(frozen=True)
+class PredictionReceipt:
+    """Reproducible receipt returned by Prediction Studio."""
+
+    target_column: str
+    problem_type: TaskType
+    submitted_inputs: dict[str, Any]
+    assumed_inputs: dict[str, Any]
+    warnings: list[str]
+    predictions: list[PredictionOutput]
+    consensus: Any
+    consensus_label: str
+    why: str
+    contributions: list[PredictionContribution] = field(default_factory=list)
+    created_at: str = ""
+
+
 @dataclass
 class PreprocessingSchema:
     """Dataset-specific preprocessing decisions."""
@@ -196,3 +350,5 @@ class TrainingArtifacts:
     best_pipeline: Any
     model_specs: dict[str, ModelSpec]
     preprocessing: PreprocessingBundle
+    pipelines: dict[str, Any] = field(default_factory=dict)
+    settings: TrainingSettings = field(default_factory=TrainingSettings)
