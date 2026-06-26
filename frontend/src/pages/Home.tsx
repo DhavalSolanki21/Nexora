@@ -526,11 +526,11 @@ export const Home: React.FC = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { title: 'Auto Profiling', desc: 'Dataset health scoring, statistical summaries, missing-value detection, outlier flagging — all automatic.' },
-            { title: '18+ ML Models', desc: 'XGBoost, LightGBM, CatBoost, Random Forest, SVM, KNN, Neural Nets, Elastic Net, and more.' },
+            { title: '250+ ML Models', desc: '250+ models support in web. XGBoost, LightGBM, CatBoost, Random Forest, SVM, KNN, Neural Nets, Elastic Net, and more.' },
             { title: 'SHAP Explainability', desc: 'Feature importance, dependence plots, and interaction analysis for every model trained.' },
             { title: 'One-Command Deploy', desc: 'Generate FastAPI/Flask apps, Docker containers, or serve models directly via REST.' },
             { title: 'Drift Detection', desc: 'Evidently-powered monitoring catches feature and prediction drift before it hurts production.' },
-            { title: 'LLM Explanations', desc: 'Connect GPT, Claude, or Ollama for natural-language model explanations.' },
+            { title: 'LLM Explanations', desc: 'If you clone the system you also get LLM support! Connect GPT, Claude, or Ollama for natural-language model explanations.' },
             { title: 'PDF/HTML Reports', desc: 'Branded, exportable reports with leaderboards, charts, metrics, and recommendations.' },
             { title: 'CLI + Python API', desc: 'Full feature parity — use the terminal, write scripts, or build Jupyter notebooks.' },
           ].map((f, i) => (
