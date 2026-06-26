@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import timezone, datetime
 from pathlib import Path
 from typing import Any
 
@@ -349,7 +349,7 @@ class NexoraReport:
             consensus_label=consensus_label,
             why=why,
             contributions=contributions,
-            created_at=datetime.now(UTC).isoformat(),
+            created_at=datetime.now(timezone.utc).isoformat(),
         )
 
     def code_for(self, model_name: str) -> str:

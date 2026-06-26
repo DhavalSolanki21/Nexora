@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
+from datetime import timezone, datetime
 from pathlib import Path
 from typing import Any
 
@@ -69,7 +69,7 @@ def create_training_experiment(report, *, path: str | Path | None = None) -> Exp
     record = ExperimentRecord(
         run_id=str(uuid.uuid4()),
         kind="benchmark",
-        created_at=datetime.now(UTC).isoformat(),
+        created_at=datetime.now(timezone.utc).isoformat(),
         source_name=report.source_name,
         target_column=report.target,
         problem_type=report.task_type,
