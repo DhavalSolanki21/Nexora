@@ -10,19 +10,19 @@ import {
 /* ──────────────────────────── DATA ──────────────────────────── */
 
 const BENCHMARK_DATA = [
-  { name: 'Nexora', accuracy: 94.2, time: 12, ease: 95 },
-  { name: 'Manual\nScikit', accuracy: 89.1, time: 120, ease: 40 },
-  { name: 'AutoML\n(H2O)', accuracy: 91.5, time: 45, ease: 60 },
-  { name: 'PyCaret', accuracy: 90.8, time: 35, ease: 70 },
+  { name: 'Nexora', accuracy: 88.5, time: 12, ease: 92 },
+  { name: 'Manual\nScikit', accuracy: 87.2, time: 120, ease: 45 },
+  { name: 'AutoML\n(H2O)', accuracy: 86.8, time: 45, ease: 65 },
+  { name: 'PyCaret', accuracy: 87.1, time: 35, ease: 75 },
 ];
 
 const RADAR_DATA = [
-  { metric: 'Accuracy', nexora: 95, manual: 78, automl: 85 },
-  { metric: 'Speed', nexora: 92, manual: 40, automl: 75 },
-  { metric: 'Explainability', nexora: 98, manual: 50, automl: 60 },
-  { metric: 'Ease of Use', nexora: 96, manual: 30, automl: 65 },
-  { metric: 'Report Quality', nexora: 94, manual: 45, automl: 55 },
-  { metric: 'Deployment', nexora: 90, manual: 60, automl: 70 },
+  { metric: 'Accuracy', nexora: 88, manual: 85, automl: 82 },
+  { metric: 'Speed', nexora: 90, manual: 30, automl: 75 },
+  { metric: 'Explainability', nexora: 85, manual: 60, automl: 50 },
+  { metric: 'Ease of Use', nexora: 92, manual: 45, automl: 80 },
+  { metric: 'Report Quality', nexora: 85, manual: 20, automl: 60 },
+  { metric: 'Deployment', nexora: 80, manual: 40, automl: 65 },
 ];
 
 const MODEL_COVERAGE = [
@@ -45,11 +45,11 @@ const ADOPTION_TREND = [
 ];
 
 const TIME_SAVINGS = [
-  { task: 'Data Cleaning', manual: 45, nexora: 5 },
-  { task: 'Feature Eng.', manual: 60, nexora: 8 },
-  { task: 'Model Training', manual: 90, nexora: 12 },
-  { task: 'Hyperparams', manual: 120, nexora: 15 },
-  { task: 'Explainability', manual: 60, nexora: 3 },
+  { task: 'Data Cleaning', manual: 60, nexora: 5 },
+  { task: 'Feature Eng.', manual: 90, nexora: 10 },
+  { task: 'Model Training', manual: 45, nexora: 15 },
+  { task: 'Hyperparams', manual: 120, nexora: 20 },
+  { task: 'Explainability', manual: 45, nexora: 5 },
   { task: 'Reporting', manual: 30, nexora: 2 },
 ];
 
@@ -526,7 +526,7 @@ export const Home: React.FC = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { title: 'Auto Profiling', desc: 'Dataset health scoring, statistical summaries, missing-value detection, outlier flagging — all automatic.' },
-            { title: '250+ ML Models', desc: '250+ models support in web. XGBoost, LightGBM, CatBoost, Random Forest, SVM, KNN, Neural Nets, Elastic Net, and more.' },
+            { title: '18+ Main Models', desc: '18+ main models natively, and 256+ models in web. XGBoost, LightGBM, CatBoost, Random Forest, SVM, KNN, Neural Nets, Elastic Net, and more.' },
             { title: 'SHAP Explainability', desc: 'Feature importance, dependence plots, and interaction analysis for every model trained.' },
             { title: 'One-Command Deploy', desc: 'Generate FastAPI/Flask apps, Docker containers, or serve models directly via REST.' },
             { title: 'Drift Detection', desc: 'Evidently-powered monitoring catches feature and prediction drift before it hurts production.' },
