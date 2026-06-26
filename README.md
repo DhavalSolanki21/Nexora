@@ -53,6 +53,13 @@ By uploading a single dataset (supporting CSV, Excel, Parquet, JSON, JSONL, TSV,
 [*] SHAP Explanations - Feature importance, what-if analysis, decision drivers
 [*] Deployment - FastAPI, Flask, Streamlit, Docker, Jupyter export  
 
+### Installation via pip
+
+You can install the Nexora Python package directly via pip:
+```bash
+pip install nexora-prediction
+```
+
 ### Quick Command Examples
 ```bash
 nexora                                    # Interactive wizard
