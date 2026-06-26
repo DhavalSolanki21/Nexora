@@ -80,7 +80,6 @@ nexora serve model.nx --port 8000        # REST API
 
 ---
 
-Visit the frontend demo page at `/how_nexora_works.html` to learn how Nexora works, including monitoring and drift detection features.
 
 ## System Architecture
 
