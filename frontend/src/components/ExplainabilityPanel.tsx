@@ -270,13 +270,8 @@ export default function ExplainabilityPanel({
                   axisLine={false}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: "#ffffff",
-                    border: "1px solid #a7f3d0",
-                    borderRadius: 12,
-                    fontSize: 12,
-                    boxShadow: "0 12px 28px rgba(16,185,129,0.12)",
-                  }}
+                  cursor={{ fill: "transparent" }}
+                  contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
                   formatter={(val: number) => [val.toFixed(6), "Mean |SHAP|"]}
                 />
                 <Bar dataKey="importance" radius={[0, 6, 6, 0]}>

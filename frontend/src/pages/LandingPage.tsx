@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import {
   Brain, Zap, BarChart3, MessageSquare, Shield, Cpu,
   Upload, Target, Settings2, Trophy, Sparkles, FileDown,
@@ -27,14 +27,14 @@ const STEPS = [
 
 const TECH = ["Python", "FastAPI", "scikit-learn", "XGBoost", "LightGBM", "CatBoost", "SHAP", "React", "TypeScript", "Recharts"];
 
-const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+const fadeUp: Variants = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.92 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
 };

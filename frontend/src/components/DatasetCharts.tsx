@@ -75,9 +75,10 @@ export default function DatasetCharts({ analysis }: Props) {
               <YAxis type="category" dataKey="label" width={116} tick={{ fill: "#374151", fontSize: 10 }} />
               <Tooltip
                 contentStyle={tooltipStyle}
-                formatter={(_, __, item) => [
-                  (item.payload.value as number).toFixed(3),
-                  "Correlation",
+                // @ts-expect-error - Recharts formatter type mismatch
+                formatter={(_: unknown, __: unknown, item: { payload: { count: number; value: number } }) => [
+                  item.payload.count,
+                  item.payload.value,
                 ]}
               />
               <Bar dataKey="strength" radius={[0, 4, 4, 0]} isAnimationActive={false}>

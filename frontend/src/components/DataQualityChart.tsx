@@ -47,12 +47,7 @@ export default function DataQualityChart({ analysis }: Props) {
             tick={{ fill: "#374151", fontSize: 9 }}
           />
           <Tooltip
-            contentStyle={{
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-            }}
+            contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
             formatter={(v: number) => `${v.toFixed(1)}%`}
           />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 12 }} />

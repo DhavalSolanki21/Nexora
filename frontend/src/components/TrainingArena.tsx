@@ -125,7 +125,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
 
     ws.onerror = () => setError("WebSocket connection failed");
     return ws;
-  }, [datasetId, onComplete]);
+  }, [datasetId, onComplete, expectedTotalSec]);
 
   const handleStart = async () => {
     setError(null);
@@ -343,7 +343,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                     borderRadius: 12,
                     boxShadow: "0 12px 28px rgba(66,133,244,0.12)",
                   }}
-                  formatter={(value: number, name) =>
+                  formatter={(value: number, name: string) =>
                     name === "score" ? [formatMetric(value), metricLabel] : [value, name]
                   }
                 />
@@ -385,7 +385,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                     borderRadius: 12,
                     boxShadow: "0 12px 28px rgba(66,133,244,0.12)",
                   }}
-                  formatter={(value: number, name) =>
+                  formatter={(value: number, name: string) =>
                     name === "score" ? [formatMetric(value), metricLabel] : [value, name]
                   }
                 />
@@ -417,7 +417,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                     borderRadius: 12,
                     boxShadow: "0 12px 28px rgba(66,133,244,0.12)",
                   }}
-                  formatter={(value: number, name) => [
+                  formatter={(value: number, name: string) => [
                     typeof value === "number" ? formatMetric(value) : value,
                     name === "average" ? `Avg ${metricLabel}` : name,
                   ]}
