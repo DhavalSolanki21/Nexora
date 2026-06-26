@@ -653,8 +653,8 @@ class TestCLI:
         assert "Regressor" in result.stdout or "Ridge" in result.stdout
 
     def test_90_cli_config_show(self):
-        """90. nexora config --show."""
-        result = self._run_cli(["config", "--show"])
+        """90. nexora configuration --show."""
+        result = self._run_cli(["configuration", "--show"])
         assert "configuration" in result.stdout.lower()
 
     def test_91_cli_clean(self, reg_csv, tmp_path):

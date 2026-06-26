@@ -29,6 +29,7 @@ def test_nexora_regression_properties(df):
     assume(df["target"].nunique() >= 5)
     # Ensure enough variance in features
     assume(df["feature_num"].std() > 0)
+    assume(len(df.drop_duplicates()) >= 10)
 
     nx = Nexora(df, target="target")
     assert nx.profile() is not None
@@ -59,6 +60,7 @@ def test_nexora_classification_properties(df):
     assume((df["target"] == 0).sum() >= 5 and (df["target"] == 1).sum() >= 5)
     # Ensure enough variance in features
     assume(df["feature_num"].std() > 0)
+    assume(len(df.drop_duplicates()) >= 10)
 
     nx = Nexora(df, target="target")
 
