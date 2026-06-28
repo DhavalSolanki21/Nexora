@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { Target, TrendingUp, Tags } from "lucide-react";
-import type { PredictionSuggestion } from "../types/dataset";
+import { motion } from 'framer-motion';
+import { Target, TrendingUp, Tags } from 'lucide-react';
+import type { PredictionSuggestion } from '../types/dataset';
 
 const ICONS: Record<string, typeof Target> = {
   classification: Tags,

@@ -1,21 +1,21 @@
-import axios from "axios";
-import type { DatasetAnalysis, UploadResponse } from "../types/dataset";
-import type { ChatMessage, ChatResponse, OllamaStatus } from "../types/chat";
+import axios from 'axios';
+import type { DatasetAnalysis, UploadResponse } from '../types/dataset';
+import type { ChatMessage, ChatResponse, OllamaStatus } from '../types/chat';
 import type {
   ConfigureTargetResponse,
   DatasetSession,
   PreprocessOptions,
   PreprocessResponse,
-} from "../types/pipeline";
-import type { RegistryStats, TrainingJob, TrainingResult } from "../types/training";
+} from '../types/pipeline';
+import type { RegistryStats, TrainingJob, TrainingResult } from '../types/training';
 import type {
   PredictionReceipt,
   ProductionModelsResponse,
   ProductionStatus,
-} from "../types/production";
+} from '../types/production';
 
 function sanitizeBaseUrl(raw: string | undefined): string {
-  if (!raw) return "/api";
+  if (!raw) return '/api';
   let url = raw.trim();
   // Fix common protocol typos (e.g. "ttps://..." → "https://...")
   if (/^ttps:/i.test(url)) url = `h${url}`;
@@ -30,10 +30,10 @@ const api = axios.create({
 
 export async function uploadDataset(file: File, onProgress?: (pct: number) => void) {
   const form = new FormData();
-  form.append("file", file);
+  form.append('file', file);
 
   try {
-    const { data } = await api.post<UploadResponse>("/datasets/upload", form, {
+    const { data } = await api.post<UploadResponse>('/datasets/upload', form, {
       onUploadProgress: (e) => {
         if (e.total && onProgress) {
           onProgress(Math.round((e.loaded / e.total) * 100));
@@ -41,7 +41,8 @@ export async function uploadDataset(file: File, onProgress?: (pct: number) => vo
       },
     });
     return data;
-  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     if (error.response?.status === 400) {
       throw error.response.data;
     }
@@ -62,19 +63,19 @@ export async function getSession(datasetId: string) {
 export async function configureTarget(
   datasetId: string,
   targetColumn: string,
-  problemType?: string
+  problemType?: string,
 ) {
-  const { data } = await api.post<ConfigureTargetResponse>(
-    `/datasets/${datasetId}/configure`,
-    { target_column: targetColumn, problem_type: problemType ?? null }
-  );
+  const { data } = await api.post<ConfigureTargetResponse>(`/datasets/${datasetId}/configure`, {
+    target_column: targetColumn,
+    problem_type: problemType ?? null,
+  });
   return data;
 }
 
 export async function runPreprocess(datasetId: string, options?: PreprocessOptions) {
   const { data } = await api.post<PreprocessResponse>(
     `/datasets/${datasetId}/preprocess`,
-    options ?? {}
+    options ?? {},
   );
   return data;
 }
@@ -91,7 +92,7 @@ export interface TimingEstimates {
 
 export async function getTimingEstimates(
   datasetId: string,
-  options?: { maxModels?: number; productionModelCount?: number }
+  options?: { maxModels?: number; productionModelCount?: number },
 ) {
   const { data } = await api.get<TimingEstimates>(`/datasets/${datasetId}/timing-estimates`, {
     params: {
@@ -103,18 +104,18 @@ export async function getTimingEstimates(
 }
 
 export async function checkHealth() {
-  const { data } = await api.get<{ status: string }>("/health");
+  const { data } = await api.get<{ status: string }>('/health');
   return data;
 }
 
 export async function getRegistryStats() {
-  const { data } = await api.get<RegistryStats>("/models/registry");
+  const { data } = await api.get<RegistryStats>('/models/registry');
   return data;
 }
 
 export async function getTraining(datasetId: string) {
   const { data } = await api.get<{ result: TrainingResult | null; job: TrainingJob | null }>(
-    `/datasets/${datasetId}/training`
+    `/datasets/${datasetId}/training`,
   );
   return data;
 }
@@ -122,7 +123,7 @@ export async function getTraining(datasetId: string) {
 export async function startTraining(datasetId: string, maxModels?: number) {
   const { data } = await api.post<{ status: string; dataset_id: string }>(
     `/datasets/${datasetId}/training/start`,
-    { max_models: maxModels ?? null }
+    { max_models: maxModels ?? null },
   );
   return data;
 }
@@ -135,7 +136,7 @@ export async function startTrainingWithConfig(
     cvFolds?: number;
     timeout?: number;
     seed?: number;
-  }
+  },
 ) {
   const { data } = await api.post<{ status: string; dataset_id: string }>(
     `/datasets/${datasetId}/training/start`,
@@ -145,14 +146,14 @@ export async function startTrainingWithConfig(
       cv_folds: config.cvFolds ?? null,
       timeout_sec: config.timeout ?? null,
       seed: config.seed ?? null,
-    }
+    },
   );
   return data;
 }
 
 export async function getProductionModels(datasetId: string) {
   const { data } = await api.get<ProductionModelsResponse>(
-    `/datasets/${datasetId}/production/models`
+    `/datasets/${datasetId}/production/models`,
   );
   return data;
 }
@@ -161,7 +162,7 @@ export async function trainProductionModels(datasetId: string, modelIds: string[
   const { data } = await api.post<ProductionStatus>(
     `/datasets/${datasetId}/production/train`,
     { model_ids: modelIds },
-    { timeout: 300_000 }
+    { timeout: 300_000 },
   );
   return data;
 }
@@ -169,25 +170,25 @@ export async function trainProductionModels(datasetId: string, modelIds: string[
 export async function runProductionPrediction(
   datasetId: string,
   inputs: Record<string, unknown>,
-  modelIds?: string[]
+  modelIds?: string[],
 ) {
-  const { data } = await api.post<PredictionReceipt>(
-    `/datasets/${datasetId}/production/predict`,
-    { inputs, model_ids: modelIds ?? [] }
-  );
+  const { data } = await api.post<PredictionReceipt>(`/datasets/${datasetId}/production/predict`, {
+    inputs,
+    model_ids: modelIds ?? [],
+  });
   return data;
 }
 
 export function trainingWebSocketUrl(datasetId: string) {
   const configured = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  if (configured?.startsWith("http")) {
+  if (configured?.startsWith('http')) {
     const url = new URL(configured);
-    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.pathname = `/api/ws/training/${datasetId}`;
-    url.search = "";
+    url.search = '';
     return url.toString();
   }
-  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const host = window.location.host;
   return `${proto}//${host}/api/ws/training/${datasetId}`;
 }
@@ -198,10 +199,14 @@ export async function getChatStatus(datasetId: string) {
 }
 
 export async function sendChatMessage(datasetId: string, message: string, history: ChatMessage[]) {
-  const { data } = await api.post<ChatResponse>(`/datasets/${datasetId}/chat`, {
-    message,
-    history,
-  }, { timeout: 300_000 });
+  const { data } = await api.post<ChatResponse>(
+    `/datasets/${datasetId}/chat`,
+    {
+      message,
+      history,
+    },
+    { timeout: 300_000 },
+  );
   return data;
 }
 
@@ -227,10 +232,8 @@ export interface ReportResponse {
 }
 
 export async function runExplainability(datasetId: string, modelId?: string) {
-  const params = modelId ? `?model_id=${encodeURIComponent(modelId)}` : "";
-  const { data } = await api.post<ExplainabilityResult>(
-    `/datasets/${datasetId}/explain${params}`
-  );
+  const params = modelId ? `?model_id=${encodeURIComponent(modelId)}` : '';
+  const { data } = await api.post<ExplainabilityResult>(`/datasets/${datasetId}/explain${params}`);
   return data;
 }
 
@@ -238,14 +241,14 @@ export async function generateReport(datasetId: string, includeShap = true) {
   const { data } = await api.post<ReportResponse>(
     `/datasets/${datasetId}/report/generate?include_shap=${includeShap}`,
     {},
-    { timeout: 300_000 }
+    { timeout: 300_000 },
   );
   return data;
 }
 
 export function getReportDownloadUrl(datasetId: string) {
-  const base = import.meta.env.VITE_API_BASE_URL ?? "/api";
-  return `${String(base).replace(/\/$/, "")}/datasets/${datasetId}/report/download`;
+  const base = import.meta.env.VITE_API_BASE_URL ?? '/api';
+  return `${String(base).replace(/\/$/, '')}/datasets/${datasetId}/report/download`;
 }
 
 // --- Dataset history ---
@@ -268,7 +271,7 @@ export interface DatasetHistoryItem {
 }
 
 export async function getDatasetHistory(includeArchived = false) {
-  const { data } = await api.get<{ datasets: DatasetHistoryItem[] }>("/datasets", {
+  const { data } = await api.get<{ datasets: DatasetHistoryItem[] }>('/datasets', {
     params: { include_archived: includeArchived },
   });
   return data.datasets;
@@ -289,7 +292,7 @@ export async function deleteDataset(datasetId: string) {
 export interface ExperimentRecord {
   run_id: string;
   dataset_id: string;
-  kind: "benchmark" | "production" | "clustering" | "time_series";
+  kind: 'benchmark' | 'production' | 'clustering' | 'time_series';
   created_at: string;
   problem_type: string;
   target_column: string | null;
@@ -302,7 +305,7 @@ export interface ExperimentRecord {
 
 export async function getExperiments(datasetId: string) {
   const { data } = await api.get<{ experiments: ExperimentRecord[] }>(
-    `/datasets/${datasetId}/experiments`
+    `/datasets/${datasetId}/experiments`,
   );
   return data.experiments;
 }
@@ -337,19 +340,19 @@ export interface BatchPredictionSummary {
 
 export async function runBatchPrediction(datasetId: string, file: File, modelIds?: string[]) {
   const form = new FormData();
-  form.append("file", file);
-  form.append("model_ids", (modelIds ?? []).join(","));
+  form.append('file', file);
+  form.append('model_ids', (modelIds ?? []).join(','));
   const { data } = await api.post<BatchPredictionSummary>(
     `/datasets/${datasetId}/production/batch-predict`,
     form,
-    { timeout: 300_000 }
+    { timeout: 300_000 },
   );
   return data;
 }
 
 export async function getBatchPredictions(datasetId: string) {
   const { data } = await api.get<{ batches: BatchPredictionSummary[] }>(
-    `/datasets/${datasetId}/production/batches`
+    `/datasets/${datasetId}/production/batches`,
   );
   return data.batches;
 }
@@ -359,7 +362,7 @@ export interface PredictionContribution {
   submitted_value: unknown;
   baseline_value: unknown;
   contribution: number;
-  direction: "increases" | "decreases" | "neutral";
+  direction: 'increases' | 'decreases' | 'neutral';
 }
 
 export interface PredictionExplainResponse {
@@ -377,19 +380,19 @@ export interface PredictionExplainResponse {
 export async function explainPrediction(
   datasetId: string,
   inputs: Record<string, unknown>,
-  modelId?: string
+  modelId?: string,
 ) {
   const { data } = await api.post<PredictionExplainResponse>(
     `/datasets/${datasetId}/production/explain-prediction`,
     { inputs, model_id: modelId ?? null },
-    { timeout: 300_000 }
+    { timeout: 300_000 },
   );
   return data;
 }
 
 export async function downloadModel(datasetId: string, modelId: string) {
   const response = await api.get(`/datasets/${datasetId}/production/models/${modelId}/download`, {
-    responseType: 'blob'
+    responseType: 'blob',
   });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
@@ -414,7 +417,7 @@ export interface ModelDeployment {
 
 export async function getDeployments(datasetId: string) {
   const { data } = await api.get<{ deployments: ModelDeployment[] }>(
-    `/datasets/${datasetId}/deployments`
+    `/datasets/${datasetId}/deployments`,
   );
   return data.deployments;
 }
@@ -422,14 +425,14 @@ export async function getDeployments(datasetId: string) {
 export async function createDeployment(datasetId: string, name: string, modelIds?: string[]) {
   const { data } = await api.post<{ deployment: ModelDeployment; api_key: string }>(
     `/datasets/${datasetId}/deployments`,
-    { name, model_ids: modelIds ?? [] }
+    { name, model_ids: modelIds ?? [] },
   );
   return data;
 }
 
 export async function deactivateDeployment(datasetId: string, deploymentId: string) {
   const { data } = await api.post<ModelDeployment>(
-    `/datasets/${datasetId}/deployments/${deploymentId}/deactivate`
+    `/datasets/${datasetId}/deployments/${deploymentId}/deactivate`,
   );
   return data;
 }
@@ -449,7 +452,7 @@ export interface ClusteringResult {
 
 export async function runClustering(
   datasetId: string,
-  options: { nClusters: number; featureColumns?: string[] }
+  options: { nClusters: number; featureColumns?: string[] },
 ) {
   const { data } = await api.post<ClusteringResult>(`/datasets/${datasetId}/clustering/run`, {
     n_clusters: options.nClusters,
@@ -473,7 +476,7 @@ export interface TimeSeriesResult {
 
 export async function runTimeSeries(
   datasetId: string,
-  body: { dateColumn: string; targetColumn: string; periods: number; frequency: "D" | "W" | "M" }
+  body: { dateColumn: string; targetColumn: string; periods: number; frequency: 'D' | 'W' | 'M' },
 ) {
   const { data } = await api.post<TimeSeriesResult>(`/datasets/${datasetId}/time-series/run`, {
     date_column: body.dateColumn,

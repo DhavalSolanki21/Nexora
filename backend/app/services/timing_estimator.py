@@ -24,7 +24,9 @@ def _dataset_scale_factor(n_rows: int, n_cols: int) -> float:
     return factor
 
 
-def estimate_model_seconds(spec: ModelSpec, n_rows: int, n_cols: int, use_cv: bool) -> float:
+def estimate_model_seconds(
+    spec: ModelSpec, n_rows: int, n_cols: int, use_cv: bool
+) -> float:
     base = _SPEED_BASE_SEC.get(spec.speed, 3.5)
     scaled = base * _dataset_scale_factor(n_rows, n_cols)
     if use_cv and n_rows >= 30:

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Settings2, ChevronDown, ChevronUp, Info, Clock } from "lucide-react";
-import { getTimingEstimates, type TimingEstimates } from "../api/client";
-import { formatDuration } from "../utils/formatDuration";
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Settings2, ChevronDown, ChevronUp, Info, Clock } from 'lucide-react';
+import { getTimingEstimates, type TimingEstimates } from '../api/client';
+import { formatDuration } from '../utils/formatDuration';
 
 export interface AdvancedConfig {
   testSplit: number;
@@ -74,7 +74,7 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
@@ -87,7 +87,9 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                     Test Split Ratio
                     <Tip text="Fraction of data held out for testing" />
                   </label>
-                  <span className="font-mono text-sm text-emerald-600">{(config.testSplit * 100).toFixed(0)}%</span>
+                  <span className="font-mono text-sm text-emerald-600">
+                    {(config.testSplit * 100).toFixed(0)}%
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -95,7 +97,7 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                   max={0.4}
                   step={0.05}
                   value={config.testSplit}
-                  onChange={(e) => update("testSplit", parseFloat(e.target.value))}
+                  onChange={(e) => update('testSplit', parseFloat(e.target.value))}
                   className="w-full accent-emerald-500 h-1.5"
                 />
                 <div className="flex justify-between text-[10px] text-gray-400 mt-1">
@@ -118,11 +120,11 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                     <button
                       key={n}
                       type="button"
-                      onClick={() => update("cvFolds", n)}
+                      onClick={() => update('cvFolds', n)}
                       className={`flex-1 py-2 rounded-lg text-sm border transition-all ${
                         config.cvFolds === n
-                          ? "border-emerald-400 bg-emerald-50 text-emerald-700 font-medium"
-                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                          ? 'border-emerald-400 bg-emerald-50 text-emerald-700 font-medium'
+                          : 'border-gray-200 text-gray-500 hover:border-gray-300'
                       }`}
                     >
                       {n}
@@ -146,7 +148,7 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                   max={200}
                   step={10}
                   value={config.maxModels}
-                  onChange={(e) => update("maxModels", parseInt(e.target.value))}
+                  onChange={(e) => update('maxModels', parseInt(e.target.value))}
                   className="w-full accent-emerald-500 h-1.5"
                 />
                 <div className="flex justify-between text-[10px] text-gray-400 mt-1">
@@ -167,7 +169,7 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                     max={3600}
                     step={60}
                     value={config.timeout}
-                    onChange={(e) => update("timeout", parseInt(e.target.value) || 600)}
+                    onChange={(e) => update('timeout', parseInt(e.target.value) || 600)}
                     className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                   />
                 </div>
@@ -180,7 +182,7 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                     min={0}
                     max={99999}
                     value={config.seed}
-                    onChange={(e) => update("seed", parseInt(e.target.value) || 42)}
+                    onChange={(e) => update('seed', parseInt(e.target.value) || 42)}
                     className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
                   />
                 </div>
@@ -190,19 +192,21 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
               <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100">
                 <div>
                   <p className="text-sm text-gray-700">Early Stopping</p>
-                  <p className="text-xs text-gray-400">Stop training when no improvement is detected</p>
+                  <p className="text-xs text-gray-400">
+                    Stop training when no improvement is detected
+                  </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => update("enableEarlyStopping", !config.enableEarlyStopping)}
+                  onClick={() => update('enableEarlyStopping', !config.enableEarlyStopping)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${
-                    config.enableEarlyStopping ? "bg-emerald-500" : "bg-gray-300"
+                    config.enableEarlyStopping ? 'bg-emerald-500' : 'bg-gray-300'
                   }`}
                 >
                   <motion.div
                     className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm"
                     animate={{ left: config.enableEarlyStopping ? 22 : 2 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 </button>
               </div>
@@ -213,8 +217,10 @@ export default function AdvancedSettings({ config, onChange, datasetId }: Props)
                   <Clock className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                   <div className="text-xs text-emerald-800 space-y-1">
                     <p>
-                      Benchmark (~{timing.benchmark_model_count} models):{" "}
-                      <span className="font-mono font-medium">{formatDuration(timing.benchmark_sec)}</span>
+                      Benchmark (~{timing.benchmark_model_count} models):{' '}
+                      <span className="font-mono font-medium">
+                        {formatDuration(timing.benchmark_sec)}
+                      </span>
                     </p>
                     <p className="text-emerald-600">
                       Preprocess ~{formatDuration(timing.preprocess_sec)} · Production train ~

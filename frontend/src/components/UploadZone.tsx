@@ -1,8 +1,8 @@
-import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, AlertCircle, Loader2 } from "lucide-react";
-import { uploadDataset } from "../api/client";
+import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, FileSpreadsheet, AlertCircle, Loader2 } from 'lucide-react';
+import { uploadDataset } from '../api/client';
 
 export default function UploadZone() {
   const navigate = useNavigate();
@@ -13,8 +13,8 @@ export default function UploadZone() {
 
   const handleFile = useCallback(
     async (file: File) => {
-      if (!file.name.toLowerCase().endsWith(".csv")) {
-        setError("Please upload a CSV file.");
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        setError('Please upload a CSV file.');
         return;
       }
 
@@ -28,24 +28,24 @@ export default function UploadZone() {
           state: { analysis: result.analysis },
         });
       } catch (err: unknown) {
-        let errorMsg = "Upload failed. Please try again.";
-        
-        if (err && typeof err === "object") {
-          if ("detail" in err) {
+        let errorMsg = 'Upload failed. Please try again.';
+
+        if (err && typeof err === 'object') {
+          if ('detail' in err) {
             errorMsg = (err as { detail: string }).detail;
-          } else if ("message" in err) {
+          } else if ('message' in err) {
             errorMsg = (err as { message: string }).message;
           }
         } else if (err instanceof Error) {
           errorMsg = err.message;
         }
-        
-        setError(typeof errorMsg === "string" ? errorMsg : "Upload failed. Please try again.");
+
+        setError(typeof errorMsg === 'string' ? errorMsg : 'Upload failed. Please try again.');
       } finally {
         setUploading(false);
       }
     },
-    [navigate]
+    [navigate],
   );
 
   const onDrop = useCallback(
@@ -55,15 +55,17 @@ export default function UploadZone() {
       const file = e.dataTransfer.files[0];
       if (file) handleFile(file);
     },
-    [handleFile]
+    [handleFile],
   );
 
   return (
     <div className="w-full max-w-2xl mx-auto">
       <motion.div
         className={`glass relative p-12 text-center cursor-pointer transition-all duration-300 border-2 border-dashed ${
-          dragging ? "border-nexora-accent shadow-glow-green scale-[1.01] bg-nexora-accent/10" : "border-nexora-border"
-        } ${uploading ? "pointer-events-none" : ""}`}
+          dragging
+            ? 'border-nexora-accent shadow-glow-green scale-[1.01] bg-nexora-accent/10'
+            : 'border-nexora-border'
+        } ${uploading ? 'pointer-events-none' : ''}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);

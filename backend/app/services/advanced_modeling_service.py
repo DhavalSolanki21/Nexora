@@ -187,9 +187,13 @@ def run_time_series(
         # Try seconds first, if they are huge it will be out of bounds for 's' usually, or we can check magnitude
         # But pandas unit='s' works for both if we are careful, actually unit='ms' or 's'
         if series[date_column].mean() > 946684800000:
-            series[date_column] = pd.to_datetime(series[date_column], unit="ms", errors="coerce")
+            series[date_column] = pd.to_datetime(
+                series[date_column], unit="ms", errors="coerce"
+            )
         else:
-            series[date_column] = pd.to_datetime(series[date_column], unit="s", errors="coerce")
+            series[date_column] = pd.to_datetime(
+                series[date_column], unit="s", errors="coerce"
+            )
     else:
         series[date_column] = pd.to_datetime(
             series[date_column], errors="coerce", format="mixed"

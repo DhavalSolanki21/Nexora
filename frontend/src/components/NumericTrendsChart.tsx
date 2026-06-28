@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 import {
   Line,
   LineChart,
@@ -7,20 +7,18 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-} from "recharts";
-import type { DatasetAnalysis } from "../types/dataset";
+} from 'recharts';
+import type { DatasetAnalysis } from '../types/dataset';
 
 interface Props {
   analysis: DatasetAnalysis;
 }
 
-const COLORS = ["#4285f4", "#34a853", "#fbbc05", "#ea4335", "#9c27b0"];
+const COLORS = ['#4285f4', '#34a853', '#fbbc05', '#ea4335', '#9c27b0'];
 
 export default function NumericTrendsChart({ analysis }: Props) {
   // Get numeric columns and create synthetic trend data
-  const numericCols = analysis.column_profiles
-    .filter((p) => p.is_numeric)
-    .slice(0, 5);
+  const numericCols = analysis.column_profiles.filter((p) => p.is_numeric).slice(0, 5);
 
   if (numericCols.length === 0) {
     return null;
@@ -36,7 +34,7 @@ export default function NumericTrendsChart({ analysis }: Props) {
         const avg = analysis.stats?.mean?.[col.name] || 100;
         const value = (p / 50) * avg;
         return [col.name, Math.round(value * 100) / 100];
-      })
+      }),
     ),
   }));
 
@@ -53,14 +51,14 @@ export default function NumericTrendsChart({ analysis }: Props) {
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={trendData} margin={{ left: 0, right: 24, top: 8, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="percentile" tick={{ fill: "#6b7280", fontSize: 11 }} />
-          <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+          <XAxis dataKey="percentile" tick={{ fill: '#6b7280', fontSize: 11 }} />
+          <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
           <Tooltip
             contentStyle={{
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
               borderRadius: 8,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
             }}
           />
           {numericCols.map((col, idx) => (

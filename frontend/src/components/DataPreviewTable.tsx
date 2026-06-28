@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 interface Props {
   preview: Record<string, unknown>[];
@@ -40,7 +40,10 @@ export default function DataPreviewTable({ preview, totalRows }: Props) {
             {preview.map((row, i) => (
               <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                 {columns.map((col) => (
-                  <td key={col} className="px-4 py-2 text-gray-600 whitespace-nowrap max-w-[200px] truncate">
+                  <td
+                    key={col}
+                    className="px-4 py-2 text-gray-600 whitespace-nowrap max-w-[200px] truncate"
+                  >
                     {row[col] == null ? (
                       <span className="text-gray-300 italic">null</span>
                     ) : (

@@ -1,14 +1,6 @@
-import { motion } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Legend,
-} from "recharts";
-import type { DatasetAnalysis } from "../types/dataset";
+import { motion } from 'framer-motion';
+import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from 'recharts';
+import type { DatasetAnalysis } from '../types/dataset';
 
 interface Props {
   analysis: DatasetAnalysis;
@@ -19,11 +11,10 @@ export default function DataQualityChart({ analysis }: Props) {
   const qualityData = analysis.column_profiles
     .slice(0, 12)
     .map((col) => ({
-      name: col.name.length > 12 ? col.name.substring(0, 10) + ".." : col.name,
+      name: col.name.length > 12 ? col.name.substring(0, 10) + '..' : col.name,
       completeness: 100 - col.missing_pct,
       uniqueness: Math.min(100, (col.unique_count / (analysis.rows || 1)) * 100),
-      validity:
-        col.is_numeric || col.is_categorical ? 95 : 85, // Estimate based on type
+      validity: col.is_numeric || col.is_categorical ? 95 : 85, // Estimate based on type
     }))
     .sort((a, b) => b.completeness - a.completeness);
 
@@ -39,15 +30,25 @@ export default function DataQualityChart({ analysis }: Props) {
       </h3>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={qualityData} layout="vertical" margin={{ left: 100, right: 16 }}>
-          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#6b7280", fontSize: 10 }} unit="%" />
+          <XAxis
+            type="number"
+            domain={[0, 100]}
+            tick={{ fill: '#6b7280', fontSize: 10 }}
+            unit="%"
+          />
           <YAxis
             type="category"
             dataKey="name"
             width={95}
-            tick={{ fill: "#374151", fontSize: 9 }}
+            tick={{ fill: '#374151', fontSize: 9 }}
           />
           <Tooltip
-            contentStyle={{ background: "#ffffff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}
+            contentStyle={{
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
+              borderRadius: 8,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            }}
             formatter={(v: number) => `${v.toFixed(1)}%`}
           />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 12 }} />

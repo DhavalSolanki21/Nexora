@@ -1,18 +1,21 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Shield } from "lucide-react";
-import NexoraLogo from "./NexoraLogo";
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Shield } from 'lucide-react';
+import NexoraLogo from './NexoraLogo';
 
 export default function Layout() {
   const location = useLocation();
-  const isHome = location.pathname === "/";
+  const isHome = location.pathname === '/';
 
   return (
     <div className="min-h-screen flex flex-col bg-nexora-bg relative overflow-x-hidden">
       {/* Animated background gradient */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-nexora-accent/10 to-transparent rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-nexora-accent/5 to-transparent rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+        <div
+          className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-nexora-accent/5 to-transparent rounded-full blur-3xl animate-float"
+          style={{ animationDelay: '2s' }}
+        ></div>
       </div>
 
       {/* Header */}
@@ -23,33 +26,49 @@ export default function Layout() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <Link to="/" className="flex items-center gap-2 group text-nexora-dark hover:text-nexora-accent transition-colors duration-300">
+          <Link
+            to="/"
+            className="flex items-center gap-2 group text-nexora-dark hover:text-nexora-accent transition-colors duration-300"
+          >
             <NexoraLogo size="sm" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm text-nexora-dark/60">
-
             {isHome && (
               <>
-                <a href="#how-it-works" className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">
+                <a
+                  href="#how-it-works"
+                  className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+                >
                   How It Works
                 </a>
-                <a href="#features" className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">
+                <a
+                  href="#features"
+                  className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+                >
                   Features
                 </a>
-                <a href="#upload" className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">
+                <a
+                  href="#upload"
+                  className="hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+                >
                   Upload
                 </a>
               </>
             )}
-            <Link to="/cybershield" className="flex items-center gap-1.5 hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">
+            <Link
+              to="/cybershield"
+              className="flex items-center gap-1.5 hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium"
+            >
               <Shield size={15} />
               CyberShield
             </Link>
           </nav>
 
           <Link to="/" className="btn-ghost text-sm group font-medium">
-            <span className="group-hover:translate-x-0.5 transition-transform duration-200">New dataset</span>
+            <span className="group-hover:translate-x-0.5 transition-transform duration-200">
+              New dataset
+            </span>
           </Link>
         </motion.div>
       </header>

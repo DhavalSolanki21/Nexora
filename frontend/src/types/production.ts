@@ -8,7 +8,7 @@ export interface DeployableModelOption {
 
 export interface PredictionInputField {
   name: string;
-  kind: "number" | "category" | "date" | "text";
+  kind: 'number' | 'category' | 'date' | 'text';
   required: boolean;
   default: string | number | null;
   min_value: number | null;

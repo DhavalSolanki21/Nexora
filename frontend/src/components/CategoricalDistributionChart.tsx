@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 import {
   Area,
   AreaChart,
@@ -7,8 +7,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-} from "recharts";
-import type { DatasetAnalysis } from "../types/dataset";
+} from 'recharts';
+import type { DatasetAnalysis } from '../types/dataset';
 
 interface Props {
   analysis: DatasetAnalysis;
@@ -16,16 +16,14 @@ interface Props {
 
 export default function CategoricalDistributionChart({ analysis }: Props) {
   // Get categorical columns and create frequency data
-  const categoricalCols = analysis.column_profiles
-    .filter((p) => p.is_categorical)
-    .slice(0, 3);
+  const categoricalCols = analysis.column_profiles.filter((p) => p.is_categorical).slice(0, 3);
 
   if (categoricalCols.length === 0) {
     return null;
   }
 
   // Create synthetic category distribution (realistic based on unique count and rows)
-  const categories = ["A", "B", "C", "D", "E"];
+  const categories = ['A', 'B', 'C', 'D', 'E'];
   const distributionData = categories.map((cat, idx) => ({
     category: cat,
     ...Object.fromEntries(
@@ -35,7 +33,7 @@ export default function CategoricalDistributionChart({ analysis }: Props) {
         const variance = Math.sin((idx * Math.PI) / categories.length);
         const count = Math.max(base * (0.5 + variance * 0.5), 1);
         return [col.name, Math.round(count)];
-      })
+      }),
     ),
   }));
 
@@ -66,14 +64,14 @@ export default function CategoricalDistributionChart({ analysis }: Props) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-          <XAxis dataKey="category" tick={{ fill: "#6b7280", fontSize: 11 }} />
-          <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+          <XAxis dataKey="category" tick={{ fill: '#6b7280', fontSize: 11 }} />
+          <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
           <Tooltip
             contentStyle={{
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
               borderRadius: 8,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
             }}
           />
           {categoricalCols.length > 0 && (

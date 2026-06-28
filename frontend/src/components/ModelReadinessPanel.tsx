@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { Ban, CheckCircle2, Layers3 } from "lucide-react";
-import type { ModelEligibilityFinding } from "../types/dataset";
+import { motion } from 'framer-motion';
+import { Ban, CheckCircle2, Layers3 } from 'lucide-react';
+import type { ModelEligibilityFinding } from '../types/dataset';
 
 interface Props {
   findings: ModelEligibilityFinding[];
@@ -32,13 +32,16 @@ export default function ModelReadinessPanel({ findings }: Props) {
               <p className="text-sm font-medium text-gray-800 capitalize">{finding.task}</p>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">{finding.reason}</p>
               {finding.target_candidates.length > 0 && (
-                <p className="text-xs text-emerald-700 mt-1.5 truncate" title={finding.target_candidates.join(", ")}>
-                  Targets: {finding.target_candidates.join(", ")}
+                <p
+                  className="text-xs text-emerald-700 mt-1.5 truncate"
+                  title={finding.target_candidates.join(', ')}
+                >
+                  Targets: {finding.target_candidates.join(', ')}
                 </p>
               )}
               {finding.model_examples.length > 0 && (
                 <p className="text-[11px] text-gray-400 mt-1">
-                  Starts with {finding.model_examples.join(", ")}
+                  Starts with {finding.model_examples.join(', ')}
                 </p>
               )}
             </div>

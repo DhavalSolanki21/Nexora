@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   AlertCircle,
   BrainCircuit,
@@ -12,7 +12,7 @@ import {
   SlidersHorizontal,
   TriangleAlert,
   Download,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   explainPrediction,
   getProductionModels,
@@ -21,15 +21,15 @@ import {
   trainProductionModels,
   downloadModel,
   type PredictionExplainResponse,
-} from "../api/client";
-import { formatDuration } from "../utils/formatDuration";
+} from '../api/client';
+import { formatDuration } from '../utils/formatDuration';
 import type {
   DeployableModelOption,
   PredictionInputField,
   PredictionReceipt,
   ProductionStatus,
-} from "../types/production";
-import ProductionOpsPanel from "./ProductionOpsPanel";
+} from '../types/production';
+import ProductionOpsPanel from './ProductionOpsPanel';
 
 interface Props {
   datasetId: string;
@@ -44,7 +44,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
   const [receipt, setReceipt] = useState<PredictionReceipt | null>(null);
   const [lastInputs, setLastInputs] = useState<Record<string, unknown>>({});
   const [explanation, setExplanation] = useState<PredictionExplainResponse | null>(null);
-  const [eligibilityReason, setEligibilityReason] = useState("");
+  const [eligibilityReason, setEligibilityReason] = useState('');
   const [limitations, setLimitations] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,7 +70,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
           .map((model) => model.model_id);
         setSelected(existing.length ? existing : preferred);
       })
-      .catch((err: unknown) => setError(apiError(err, "Could not load model choices.")))
+      .catch((err: unknown) => setError(apiError(err, 'Could not load model choices.')))
       .finally(() => setLoading(false));
     getTimingEstimates(datasetId, { productionModelCount: 2 })
       .then((t) => {
@@ -91,19 +91,22 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
 
   const displayedModels = useMemo(
     () => (showAll ? available : available.filter((model) => model.recommended).slice(0, 8)),
-    [available, showAll]
+    [available, showAll],
   );
   const modelsReady = useMemo(() => {
     if (!status) return false;
-    const trained = status.models.map((model) => model.model_id).sort().join("|");
-    return trained === [...selected].sort().join("|");
+    const trained = status.models
+      .map((model) => model.model_id)
+      .sort()
+      .join('|');
+    return trained === [...selected].sort().join('|');
   }, [selected, status]);
 
   const selectModel = (modelId: string) => {
     setSelected((current) => {
       if (current.includes(modelId)) return current.filter((id) => id !== modelId);
       if (current.length >= 5) {
-        setError("Select up to five models for a prediction run.");
+        setError('Select up to five models for a prediction run.');
         return current;
       }
       setError(null);
@@ -113,7 +116,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
 
   const handleTrain = async () => {
     if (!selected.length) {
-      setError("Select at least one model.");
+      setError('Select at least one model.');
       return;
     }
     setTraining(true);
@@ -126,11 +129,13 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
       setSelected(trained.models.map((model) => model.model_id));
       setValues({});
       if (trained.models.length < requestedCount) {
-        setError("Some selected models were incompatible with this data. The trained models shown are ready.");
+        setError(
+          'Some selected models were incompatible with this data. The trained models shown are ready.',
+        );
       }
       onModelsTrained?.();
     } catch (err: unknown) {
-      setError(apiError(err, "Training selected models failed."));
+      setError(apiError(err, 'Training selected models failed.'));
     } finally {
       setTraining(false);
     }
@@ -140,15 +145,13 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
     setPredicting(true);
     setError(null);
     try {
-      const inputs = Object.fromEntries(
-        Object.entries(values).filter(([, value]) => value !== "")
-      );
+      const inputs = Object.fromEntries(Object.entries(values).filter(([, value]) => value !== ''));
       const result = await runProductionPrediction(datasetId, inputs);
       setLastInputs(inputs);
       setReceipt(result);
       setExplanation(null);
     } catch (err: unknown) {
-      setError(apiError(err, "Prediction failed."));
+      setError(apiError(err, 'Prediction failed.'));
     } finally {
       setPredicting(false);
     }
@@ -161,7 +164,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
       const result = await explainPrediction(datasetId, lastInputs, modelId);
       setExplanation(result);
     } catch (err: unknown) {
-      setError(apiError(err, "Prediction explanation failed."));
+      setError(apiError(err, 'Prediction explanation failed.'));
     } finally {
       setExplaining(false);
     }
@@ -212,8 +215,10 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
               className="btn-ghost text-xs"
               onClick={() => setShowAll((open) => !open)}
             >
-              {showAll ? "Recommended" : "Browse all"}
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAll ? "rotate-180" : ""}`} />
+              {showAll ? 'Recommended' : 'Browse all'}
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${showAll ? 'rotate-180' : ''}`}
+              />
             </button>
           </div>
 
@@ -229,7 +234,9 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
                 <label
                   key={model.model_id}
                   className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                    checked ? "border-emerald-200 bg-emerald-50/70" : "border-gray-100 hover:border-emerald-100"
+                    checked
+                      ? 'border-emerald-200 bg-emerald-50/70'
+                      : 'border-gray-100 hover:border-emerald-100'
                   }`}
                 >
                   <input
@@ -257,7 +264,10 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
           {limitations.length > 0 && (
             <div className="mt-4 border-t border-gray-100 pt-3 space-y-1.5">
               {limitations.map((limitation) => (
-                <p key={limitation} className="flex gap-2 text-[11px] leading-relaxed text-gray-500">
+                <p
+                  key={limitation}
+                  className="flex gap-2 text-[11px] leading-relaxed text-gray-500"
+                >
                   <TriangleAlert className="w-3.5 h-3.5 shrink-0 text-amber-500 mt-0.5" />
                   {limitation}
                 </p>
@@ -279,7 +289,7 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
             ) : (
               <>
                 <BrainCircuit className="w-4 h-4" />
-                Train {selected.length || ""} Selected Model{selected.length === 1 ? "" : "s"}
+                Train {selected.length || ''} Selected Model{selected.length === 1 ? '' : 's'}
               </>
             )}
           </button>
@@ -303,8 +313,8 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
           ) : (
             <>
               <p className="text-xs text-gray-400 mb-4">
-                Target: <span className="text-emerald-600 font-medium">{status.target_column}</span>.
-                Blank fields use typical training values.
+                Target: <span className="text-emerald-600 font-medium">{status.target_column}</span>
+                . Blank fields use typical training values.
               </p>
               {!modelsReady && (
                 <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-4">
@@ -316,8 +326,10 @@ export default function PredictionStudio({ datasetId, onModelsTrained }: Props) 
                   <InputField
                     key={field.name}
                     field={field}
-                    value={values[field.name] ?? ""}
-                    onChange={(value) => setValues((current) => ({ ...current, [field.name]: value }))}
+                    value={values[field.name] ?? ''}
+                    onChange={(value) =>
+                      setValues((current) => ({ ...current, [field.name]: value }))
+                    }
                   />
                 ))}
               </div>
@@ -377,24 +389,28 @@ function InputField({
 }) {
   return (
     <label className="text-xs text-gray-500">
-      <span className="block mb-1.5 truncate" title={field.name}>{field.name}</span>
-      {field.kind === "category" ? (
+      <span className="block mb-1.5 truncate" title={field.name}>
+        {field.name}
+      </span>
+      {field.kind === 'category' ? (
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}
           className="w-full h-10 bg-white border border-gray-200 rounded-lg px-3 text-sm text-gray-700 focus:border-emerald-400 focus:outline-none"
         >
-          <option value="">Typical: {String(field.default ?? "-")}</option>
+          <option value="">Typical: {String(field.default ?? '-')}</option>
           {field.options.map((option) => (
-            <option key={option} value={option}>{option}</option>
+            <option key={option} value={option}>
+              {option}
+            </option>
           ))}
         </select>
       ) : (
         <input
-          type={field.kind === "number" ? "number" : field.kind === "date" ? "date" : "text"}
+          type={field.kind === 'number' ? 'number' : field.kind === 'date' ? 'date' : 'text'}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder={field.default == null ? "Enter value" : `Typical: ${field.default}`}
+          placeholder={field.default == null ? 'Enter value' : `Typical: ${field.default}`}
           className="w-full h-10 bg-white border border-gray-200 rounded-lg px-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:outline-none"
         />
       )}
@@ -415,9 +431,11 @@ function PredictionResultView({
   explaining: boolean;
   onExplain: (modelId?: string) => void;
 }) {
-  const metric = receipt.problem_type === "classification" ? "accuracy" : "r2";
+  const metric = receipt.problem_type === 'classification' ? 'accuracy' : 'r2';
   const renderValue = (value: string | number) =>
-    typeof value === "number" ? value.toLocaleString(undefined, { maximumFractionDigits: 4 }) : value;
+    typeof value === 'number'
+      ? value.toLocaleString(undefined, { maximumFractionDigits: 4 })
+      : value;
 
   return (
     <motion.section
@@ -427,9 +445,12 @@ function PredictionResultView({
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5 mb-5">
         <div>
-          <p className="text-[11px] uppercase text-emerald-600 font-mono mb-1">Prediction Receipt</p>
+          <p className="text-[11px] uppercase text-emerald-600 font-mono mb-1">
+            Prediction Receipt
+          </p>
           <h3 className="text-lg text-gray-900">
-            {receipt.target_column}: <span className="font-semibold text-emerald-700">{renderValue(receipt.consensus)}</span>
+            {receipt.target_column}:{' '}
+            <span className="font-semibold text-emerald-700">{renderValue(receipt.consensus)}</span>
           </h3>
           <p className="text-xs text-gray-400 mt-1">{receipt.consensus_label}</p>
         </div>
@@ -467,13 +488,17 @@ function PredictionResultView({
                 <Download className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-2xl text-emerald-700 font-mono mt-3">{renderValue(output.prediction)}</p>
+            <p className="text-2xl text-emerald-700 font-mono mt-3">
+              {renderValue(output.prediction)}
+            </p>
             <div className="flex gap-3 mt-3 text-xs text-gray-500">
               <span className="inline-flex items-center gap-1">
                 <Gauge className="w-3.5 h-3.5" />
                 {metric}: {formatScore(output.metrics[metric], receipt.problem_type)}
               </span>
-              {output.confidence != null && <span>{(output.confidence * 100).toFixed(1)}% confidence</span>}
+              {output.confidence != null && (
+                <span>{(output.confidence * 100).toFixed(1)}% confidence</span>
+              )}
             </div>
           </div>
         ))}
@@ -486,27 +511,44 @@ function PredictionResultView({
           disabled={explaining}
           className="btn-ghost border border-emerald-100 text-sm disabled:opacity-50 hover:bg-emerald-50/40"
         >
-          {explaining ? <Loader2 className="w-4 h-4 animate-spin text-emerald-600" /> : <BrainCircuit className="w-4 h-4 text-emerald-600" />}
+          {explaining ? (
+            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+          ) : (
+            <BrainCircuit className="w-4 h-4 text-emerald-600" />
+          )}
           Why this prediction?
         </button>
 
         {explanation && (
           <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
-            <p className="text-xs text-emerald-600 uppercase tracking-wider mb-2">{explanation.method}</p>
+            <p className="text-xs text-emerald-600 uppercase tracking-wider mb-2">
+              {explanation.method}
+            </p>
             <p className="text-sm text-gray-700 mb-3">
-              {explanation.model_name} moved from typical baseline{" "}
-              <span className="font-mono">{renderValue(explanation.baseline_prediction)}</span> to{" "}
-              <span className="font-mono text-emerald-700">{renderValue(explanation.prediction)}</span>.
+              {explanation.model_name} moved from typical baseline{' '}
+              <span className="font-mono">{renderValue(explanation.baseline_prediction)}</span> to{' '}
+              <span className="font-mono text-emerald-700">
+                {renderValue(explanation.prediction)}
+              </span>
+              .
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {explanation.contributions.slice(0, 6).map((item) => (
-                <div key={item.feature} className="rounded-lg bg-white border border-emerald-100 p-3">
-                  <p className="text-xs text-gray-500 truncate" title={item.feature}>{item.feature}</p>
-                  <p className={`font-mono text-sm mt-1 ${item.contribution >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                    {item.contribution >= 0 ? "+" : ""}{item.contribution.toFixed(4)}
+                <div
+                  key={item.feature}
+                  className="rounded-lg bg-white border border-emerald-100 p-3"
+                >
+                  <p className="text-xs text-gray-500 truncate" title={item.feature}>
+                    {item.feature}
+                  </p>
+                  <p
+                    className={`font-mono text-sm mt-1 ${item.contribution >= 0 ? 'text-emerald-700' : 'text-red-600'}`}
+                  >
+                    {item.contribution >= 0 ? '+' : ''}
+                    {item.contribution.toFixed(4)}
                   </p>
                   <p className="text-[11px] text-gray-400 mt-1">
-                    vs typical {String(item.baseline_value ?? "-")}
+                    vs typical {String(item.baseline_value ?? '-')}
                   </p>
                 </div>
               ))}
@@ -517,11 +559,11 @@ function PredictionResultView({
 
       {Object.keys(receipt.assumed_inputs).length > 0 && (
         <p className="text-xs text-gray-400 mt-5">
-          Typical values used for blank inputs:{" "}
+          Typical values used for blank inputs:{' '}
           {Object.entries(receipt.assumed_inputs)
             .slice(0, 8)
             .map(([key, value]) => `${key}=${String(value)}`)
-            .join(", ")}
+            .join(', ')}
         </p>
       )}
     </motion.section>
@@ -529,11 +571,11 @@ function PredictionResultView({
 }
 
 function formatScore(score: number | undefined, type: string) {
-  if (score == null) return "-";
-  return type === "classification" ? `${(score * 100).toFixed(1)}%` : score.toFixed(3);
+  if (score == null) return '-';
+  return type === 'classification' ? `${(score * 100).toFixed(1)}%` : score.toFixed(3);
 }
 
 function apiError(error: unknown, fallback: string) {
   const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-  return typeof detail === "string" ? detail : fallback;
+  return typeof detail === 'string' ? detail : fallback;
 }

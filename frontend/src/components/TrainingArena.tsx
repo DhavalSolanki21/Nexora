@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Zap, Play, Loader2, Cpu, AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, Zap, Play, Loader2, Cpu, AlertCircle } from 'lucide-react';
 import {
   getRegistryStats,
   getTimingEstimates,
@@ -8,10 +8,10 @@ import {
   startTraining,
   startTrainingWithConfig,
   trainingWebSocketUrl,
-} from "../api/client";
-import type { ModelResult, RegistryStats, TrainingResult } from "../types/training";
-import type { WsTrainingEvent } from "../types/training";
-import { formatDuration } from "../utils/formatDuration";
+} from '../api/client';
+import type { ModelResult, RegistryStats, TrainingResult } from '../types/training';
+import type { WsTrainingEvent } from '../types/training';
+import { formatDuration } from '../utils/formatDuration';
 import {
   Bar,
   BarChart,
@@ -23,9 +23,9 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from 'recharts';
 
-const LAB_COLORS = ["#93C998", "#7ab37f", "#d4a843", "#c97a5a", "#8bb896", "#a8d9a8"];
+const LAB_COLORS = ['#93C998', '#7ab37f', '#d4a843', '#c97a5a', '#8bb896', '#a8d9a8'];
 
 interface Props {
   datasetId: string;
@@ -40,10 +40,17 @@ interface Props {
   };
 }
 
-export default function TrainingArena({ datasetId, problemType, onComplete, trainingConfig }: Props) {
+export default function TrainingArena({
+  datasetId,
+  problemType,
+  onComplete,
+  trainingConfig,
+}: Props) {
   const [registry, setRegistry] = useState<RegistryStats | null>(null);
   const [leaderboard, setLeaderboard] = useState<ModelResult[]>([]);
-  const [current, setCurrent] = useState<{ name: string; index: number; total: number } | null>(null);
+  const [current, setCurrent] = useState<{ name: string; index: number; total: number } | null>(
+    null,
+  );
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [completed, setCompleted] = useState(0);
@@ -56,7 +63,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
   const [remainingSec, setRemainingSec] = useState<number | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  const metricLabel = problemType === "regression" ? "R²" : "Accuracy";
+  const metricLabel = problemType === 'regression' ? 'R²' : 'Accuracy';
 
   useEffect(() => {
     getRegistryStats().then(setRegistry);
@@ -66,7 +73,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
         setLeaderboard(data.result.leaderboard);
         onComplete?.(data.result);
       }
-      if (data.job?.status === "running") setRunning(true);
+      if (data.job?.status === 'running') setRunning(true);
     });
     getTimingEstimates(datasetId, { maxModels: trainingConfig?.maxModels ?? 100 })
       .then((t) => setExpectedTotalSec(t.benchmark_sec))
@@ -81,10 +88,10 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
     ws.onmessage = (ev) => {
       const data = JSON.parse(ev.data) as WsTrainingEvent;
 
-      if (data.event === "snapshot" && data.leaderboard) {
+      if (data.event === 'snapshot' && data.leaderboard) {
         setLeaderboard(data.leaderboard as ModelResult[]);
       }
-      if (data.event === "training_started") {
+      if (data.event === 'training_started') {
         setTotal(data.total_models ?? 0);
         setRunning(true);
         setProgress(0);
@@ -92,14 +99,14 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
         setRemainingSec(data.expected_total_sec ?? expectedTotalSec);
         if (data.expected_total_sec) setExpectedTotalSec(data.expected_total_sec);
       }
-      if (data.event === "model_started") {
+      if (data.event === 'model_started') {
         setCurrent({
-          name: data.model_name ?? "",
+          name: data.model_name ?? '',
           index: data.index ?? 0,
           total: data.total ?? 0,
         });
       }
-      if (data.event === "model_completed") {
+      if (data.event === 'model_completed') {
         setCompleted(data.completed_count ?? 0);
         setFailed(data.failed_count ?? 0);
         setProgress(((data.index ?? 0) / (data.total ?? 1)) * 100);
@@ -107,7 +114,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
         if (data.estimated_remaining_sec != null) setRemainingSec(data.estimated_remaining_sec);
         if (data.leaderboard) setLeaderboard(data.leaderboard as ModelResult[]);
       }
-      if (data.event === "training_complete" && data.summary) {
+      if (data.event === 'training_complete' && data.summary) {
         setRunning(false);
         setCurrent(null);
         getTraining(datasetId).then((d) => {
@@ -117,13 +124,13 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
           }
         });
       }
-      if (data.event === "training_failed") {
+      if (data.event === 'training_failed') {
         setRunning(false);
-        setError((data as { error?: string }).error ?? "Training failed");
+        setError((data as { error?: string }).error ?? 'Training failed');
       }
     };
 
-    ws.onerror = () => setError("WebSocket connection failed");
+    ws.onerror = () => setError('WebSocket connection failed');
     return ws;
   }, [datasetId, onComplete, expectedTotalSec]);
 
@@ -142,8 +149,8 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Failed to start training";
-      setError(typeof msg === "string" ? msg : "Failed to start training");
+        'Failed to start training';
+      setError(typeof msg === 'string' ? msg : 'Failed to start training');
       setRunning(false);
     }
   };
@@ -153,12 +160,12 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
   }, []);
 
   const primaryMetric = (m: ModelResult) =>
-    problemType === "regression"
+    problemType === 'regression'
       ? (m.metrics.r2 ?? m.primary_score)
       : (m.metrics.accuracy ?? m.primary_score);
 
   const formatMetric = (value: number) =>
-    metricLabel === "Accuracy" ? `${(value * 100).toFixed(1)}%` : value.toFixed(4);
+    metricLabel === 'Accuracy' ? `${(value * 100).toFixed(1)}%` : value.toFixed(4);
 
   const topModelChartData = leaderboard.slice(0, 10).map((model, index) => ({
     name: model.model_name.length > 18 ? `${model.model_name.slice(0, 18)}...` : model.model_name,
@@ -170,17 +177,16 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
   }));
 
   const familyChartData = Object.values(
-    leaderboard.reduce<Record<string, { family: string; scoreSum: number; count: number; best: number }>>(
-      (acc, model) => {
-        const score = primaryMetric(model);
-        acc[model.family] ??= { family: model.family, scoreSum: 0, count: 0, best: score };
-        acc[model.family].scoreSum += score;
-        acc[model.family].count += 1;
-        acc[model.family].best = Math.max(acc[model.family].best, score);
-        return acc;
-      },
-      {}
-    )
+    leaderboard.reduce<
+      Record<string, { family: string; scoreSum: number; count: number; best: number }>
+    >((acc, model) => {
+      const score = primaryMetric(model);
+      acc[model.family] ??= { family: model.family, scoreSum: 0, count: 0, best: score };
+      acc[model.family].scoreSum += score;
+      acc[model.family].count += 1;
+      acc[model.family].best = Math.max(acc[model.family].best, score);
+      return acc;
+    }, {}),
   )
     .map((item) => ({
       family: item.family,
@@ -201,18 +207,24 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
 
   return (
     <div className="space-y-6">
-      <motion.div className="glass p-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      <motion.div
+        className="glass p-6"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
               <Trophy className="w-6 h-6 text-amber-600" />
             </div>
             <div>
-              <h3 className="font-display text-lg text-gray-800 tracking-wide">Model Battle Arena</h3>
+              <h3 className="font-display text-lg text-gray-800 tracking-wide">
+                Model Battle Arena
+              </h3>
               <p className="text-sm text-gray-500">
                 {registry
-                  ? `${registry.total}+ models in registry · ${problemType === "classification" ? registry.classification : registry.regression} for this task`
-                  : "Loading model registry…"}
+                  ? `${registry.total}+ models in registry · ${problemType === 'classification' ? registry.classification : registry.regression} for this task`
+                  : 'Loading model registry…'}
                 {expectedTotalSec != null && !running && (
                   <span className="block text-xs text-emerald-600 mt-1">
                     Expected benchmark time: ~{formatDuration(expectedTotalSec)}
@@ -248,16 +260,12 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
               <span className="text-emerald-600 font-mono">
                 {current
                   ? `Training: ${current.name} (${current.index}/${current.total})`
-                  : "Initializing arena…"}
+                  : 'Initializing arena…'}
               </span>
               <span className="text-gray-400">
                 {completed} ok · {failed} failed
-                {running && remainingSec != null && (
-                  <> · ~{formatDuration(remainingSec)} left</>
-                )}
-                {running && elapsedSec > 0 && (
-                  <> · {formatDuration(elapsedSec)} elapsed</>
-                )}
+                {running && remainingSec != null && <> · ~{formatDuration(remainingSec)} left</>}
+                {running && elapsedSec > 0 && <> · {formatDuration(elapsedSec)} elapsed</>}
               </span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -290,17 +298,19 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
             <div>
               <p className="text-xl font-display text-gray-800">{result.best_model.model_name}</p>
               <p className="text-sm text-gray-500">
-                {metricLabel}: {(primaryMetric(result.best_model) * (metricLabel === "Accuracy" ? 100 : 1)).toFixed(metricLabel === "Accuracy" ? 1 : 3)}
-                {metricLabel === "Accuracy" ? "%" : ""}
-                {" · "}
-                {result.best_model.train_time_sec}s
-                {" · "}
+                {metricLabel}:{' '}
+                {(
+                  primaryMetric(result.best_model) * (metricLabel === 'Accuracy' ? 100 : 1)
+                ).toFixed(metricLabel === 'Accuracy' ? 1 : 3)}
+                {metricLabel === 'Accuracy' ? '%' : ''}
+                {' · '}
+                {result.best_model.train_time_sec}s{' · '}
                 {result.best_model.family}
               </p>
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-3">
-            {result.total_completed}/{result.total_attempted} models completed ·{" "}
+            {result.total_completed}/{result.total_attempted} models completed ·{' '}
             {result.registry_available} available in registry
           </p>
         </motion.div>
@@ -318,33 +328,38 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                 <h3 className="font-display text-sm tracking-widest text-gray-400 uppercase">
                   Top Model Scores
                 </h3>
-                <p className="text-xs text-gray-400 mt-1">Compares the strongest models by {metricLabel}.</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Compares the strongest models by {metricLabel}.
+                </p>
               </div>
               <span className="text-xs font-mono text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
                 top {topModelChartData.length}
               </span>
             </div>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={topModelChartData} margin={{ top: 8, right: 12, left: 0, bottom: 46 }}>
+              <BarChart
+                data={topModelChartData}
+                margin={{ top: 8, right: 12, left: 0, bottom: 46 }}
+              >
                 <CartesianGrid stroke="#eef2f7" vertical={false} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fill: "#5f6368", fontSize: 10 }}
+                  tick={{ fill: '#5f6368', fontSize: 10 }}
                   angle={-24}
                   textAnchor="end"
                   height={58}
                   interval={0}
                 />
-                <YAxis tick={{ fill: "#5f6368", fontSize: 11 }} />
+                <YAxis tick={{ fill: '#5f6368', fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
-                    background: "#ffffff",
-                    border: "1px solid #dbeafe",
+                    background: '#ffffff',
+                    border: '1px solid #dbeafe',
                     borderRadius: 12,
-                    boxShadow: "0 12px 28px rgba(66,133,244,0.12)",
+                    boxShadow: '0 12px 28px rgba(66,133,244,0.12)',
                   }}
                   formatter={(value: number, name: string) =>
-                    name === "score" ? [formatMetric(value), metricLabel] : [value, name]
+                    name === 'score' ? [formatMetric(value), metricLabel] : [value, name]
                   }
                 />
                 <Bar dataKey="score" radius={[8, 8, 0, 0]}>
@@ -360,7 +375,9 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
             <h3 className="font-display text-sm tracking-widest text-gray-400 uppercase mb-1">
               Speed vs Score
             </h3>
-            <p className="text-xs text-gray-400 mb-4">Models near the top-left are fast and strong.</p>
+            <p className="text-xs text-gray-400 mb-4">
+              Models near the top-left are fast and strong.
+            </p>
             <ResponsiveContainer width="100%" height={260}>
               <ScatterChart margin={{ top: 8, right: 12, left: -12, bottom: 8 }}>
                 <CartesianGrid stroke="#eef2f7" />
@@ -368,25 +385,25 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                   dataKey="time"
                   name="Time"
                   unit="s"
-                  tick={{ fill: "#5f6368", fontSize: 10 }}
+                  tick={{ fill: '#5f6368', fontSize: 10 }}
                   type="number"
                 />
                 <YAxis
                   dataKey="score"
                   name={metricLabel}
-                  tick={{ fill: "#5f6368", fontSize: 10 }}
+                  tick={{ fill: '#5f6368', fontSize: 10 }}
                   type="number"
                 />
                 <Tooltip
-                  cursor={{ strokeDasharray: "3 3" }}
+                  cursor={{ strokeDasharray: '3 3' }}
                   contentStyle={{
-                    background: "#ffffff",
-                    border: "1px solid #dbeafe",
+                    background: '#ffffff',
+                    border: '1px solid #dbeafe',
                     borderRadius: 12,
-                    boxShadow: "0 12px 28px rgba(66,133,244,0.12)",
+                    boxShadow: '0 12px 28px rgba(66,133,244,0.12)',
                   }}
                   formatter={(value: number, name: string) =>
-                    name === "score" ? [formatMetric(value), metricLabel] : [value, name]
+                    name === 'score' ? [formatMetric(value), metricLabel] : [value, name]
                   }
                 />
                 <Scatter data={speedScoreData} fill="#93C998">
@@ -408,18 +425,18 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
             <ResponsiveContainer width="100%" height={230}>
               <BarChart data={familyChartData} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
                 <CartesianGrid stroke="#eef2f7" vertical={false} />
-                <XAxis dataKey="family" tick={{ fill: "#5f6368", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#5f6368", fontSize: 11 }} />
+                <XAxis dataKey="family" tick={{ fill: '#5f6368', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#5f6368', fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
-                    background: "#ffffff",
-                    border: "1px solid #dbeafe",
+                    background: '#ffffff',
+                    border: '1px solid #dbeafe',
                     borderRadius: 12,
-                    boxShadow: "0 12px 28px rgba(66,133,244,0.12)",
+                    boxShadow: '0 12px 28px rgba(66,133,244,0.12)',
                   }}
                   formatter={(value: number, name: string) => [
-                    typeof value === "number" ? formatMetric(value) : value,
-                    name === "average" ? `Avg ${metricLabel}` : name,
+                    typeof value === 'number' ? formatMetric(value) : value,
+                    name === 'average' ? `Avg ${metricLabel}` : name,
                   ]}
                 />
                 <Bar dataKey="average" name={`Avg ${metricLabel}`} radius={[8, 8, 0, 0]}>
@@ -433,7 +450,11 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
         </motion.div>
       )}
 
-      <motion.div className="glass overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div
+        className="glass overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         <motion.div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h3 className="font-display text-sm tracking-widest text-gray-400 uppercase">
             Live Leaderboard
@@ -458,7 +479,9 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                 {leaderboard.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
-                      {running ? "Waiting for first results…" : "Start benchmark to populate leaderboard"}
+                      {running
+                        ? 'Waiting for first results…'
+                        : 'Start benchmark to populate leaderboard'}
                     </td>
                   </tr>
                 ) : (
@@ -469,7 +492,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                       initial={{ opacity: 0, x: -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       className={`border-b border-gray-50 ${
-                        i === 0 ? "bg-emerald-50/70" : "hover:bg-gray-50/50"
+                        i === 0 ? 'bg-emerald-50/70' : 'hover:bg-gray-50/50'
                       }`}
                     >
                       <td className="px-6 py-3 font-mono text-gray-400">{i + 1}</td>
@@ -482,7 +505,7 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
                         </span>
                       </td>
                       <td className="px-4 py-3 font-mono text-emerald-600">
-                        {metricLabel === "Accuracy"
+                        {metricLabel === 'Accuracy'
                           ? `${(primaryMetric(m) * 100).toFixed(1)}%`
                           : primaryMetric(m).toFixed(4)}
                       </td>
@@ -504,13 +527,15 @@ export default function TrainingArena({ datasetId, problemType, onComplete, trai
 
 function SpeedBadge({ speed }: { speed: string }) {
   const colors: Record<string, string> = {
-    fast: "text-green-700 border-green-200 bg-green-50",
-    medium: "text-amber-700 border-amber-200 bg-amber-50",
-    slow: "text-red-700 border-red-200 bg-red-50",
+    fast: 'text-green-700 border-green-200 bg-green-50',
+    medium: 'text-amber-700 border-amber-200 bg-amber-50',
+    slow: 'text-red-700 border-red-200 bg-red-50',
   };
-  const Icon = speed === "fast" ? Zap : Cpu;
+  const Icon = speed === 'fast' ? Zap : Cpu;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border capitalize ${colors[speed] ?? colors.medium}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded border capitalize ${colors[speed] ?? colors.medium}`}
+    >
       <Icon className="w-3 h-3" />
       {speed}
     </span>

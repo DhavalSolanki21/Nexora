@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain,
   Loader2,
@@ -11,29 +11,29 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
-} from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+} from 'lucide-react';
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   runExplainability,
   generateReport,
   getReportDownloadUrl,
   type ExplainabilityResult,
-} from "../api/client";
+} from '../api/client';
 
 const GRADIENT_COLORS = [
-  "#10b981", "#0d9488", "#0f766e", "#059669", "#047857",
-  "#34d399", "#2dd4bf", "#14b8a6", "#06b6d4", "#0891b2",
+  '#10b981',
+  '#0d9488',
+  '#0f766e',
+  '#059669',
+  '#047857',
+  '#34d399',
+  '#2dd4bf',
+  '#14b8a6',
+  '#06b6d4',
+  '#0891b2',
 ];
 
-const cleanError = (message: string) => message.replace(/\x1b\[[0-9;]*m/g, "").slice(0, 260); // eslint-disable-line no-control-regex
+const cleanError = (message: string) => message.replace(/\x1b\[[0-9;]*m/g, '').slice(0, 260); // eslint-disable-line no-control-regex
 
 interface Props {
   datasetId: string;
@@ -65,8 +65,8 @@ export default function ExplainabilityPanel({
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Explainability analysis failed";
-      setError(typeof msg === "string" ? cleanError(msg) : "Failed");
+        'Explainability analysis failed';
+      setError(typeof msg === 'string' ? cleanError(msg) : 'Failed');
     } finally {
       setLoading(false);
     }
@@ -84,9 +84,9 @@ export default function ExplainabilityPanel({
         for (let i = 0; i < byteChars.length; i++) {
           byteNumbers[i] = byteChars.charCodeAt(i);
         }
-        const blob = new Blob([byteNumbers], { type: "application/pdf" });
+        const blob = new Blob([byteNumbers], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = url;
         a.download = res.filename || `nexora_report_${datasetId}.pdf`;
         document.body.appendChild(a);
@@ -101,8 +101,8 @@ export default function ExplainabilityPanel({
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Report generation failed";
-      setError(typeof msg === "string" ? cleanError(msg) : "Failed");
+        'Report generation failed';
+      setError(typeof msg === 'string' ? cleanError(msg) : 'Failed');
     } finally {
       setReportLoading(false);
     }
@@ -132,7 +132,7 @@ export default function ExplainabilityPanel({
               <p className="text-sm text-gray-500">
                 {bestModelName
                   ? `Analyze "${bestModelName}" with SHAP · Generate PDF reports`
-                  : "Complete training to unlock explainability"}
+                  : 'Complete training to unlock explainability'}
               </p>
             </div>
           </div>
@@ -215,11 +215,9 @@ export default function ExplainabilityPanel({
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {Object.entries(result.metrics).map(([key, val]) => (
                 <div key={key} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">
-                    {key}
-                  </p>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">{key}</p>
                   <p className="font-mono text-lg text-emerald-600 font-semibold">
-                    {key === "accuracy" ? `${(val * 100).toFixed(1)}%` : val.toFixed(4)}
+                    {key === 'accuracy' ? `${(val * 100).toFixed(1)}%` : val.toFixed(4)}
                   </p>
                 </div>
               ))}
@@ -230,9 +228,7 @@ export default function ExplainabilityPanel({
                 <p className="font-mono text-lg text-gray-800">{result.test_count}</p>
               </div>
               <div className="p-3 rounded-lg bg-gray-50 border border-gray-100">
-                <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">
-                  Features
-                </p>
+                <p className="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Features</p>
                 <p className="font-mono text-lg text-gray-800">{result.feature_count}</p>
               </div>
             </div>
@@ -251,7 +247,10 @@ export default function ExplainabilityPanel({
                 Feature Importance (SHAP)
               </h3>
             </div>
-            <ResponsiveContainer width="100%" height={Math.max(200, result.feature_importance.length * 32)}>
+            <ResponsiveContainer
+              width="100%"
+              height={Math.max(200, result.feature_importance.length * 32)}
+            >
               <BarChart
                 data={result.feature_importance.slice(0, 12)}
                 layout="vertical"
@@ -259,20 +258,24 @@ export default function ExplainabilityPanel({
               >
                 <XAxis
                   type="number"
-                  tick={{ fill: "#6b7280", fontSize: 11 }}
-                  axisLine={{ stroke: "#e5e7eb" }}
+                  tick={{ fill: '#6b7280', fontSize: 11 }}
+                  axisLine={{ stroke: '#e5e7eb' }}
                 />
                 <YAxis
                   type="category"
                   dataKey="feature"
                   width={140}
-                  tick={{ fill: "#374151", fontSize: 10 }}
+                  tick={{ fill: '#374151', fontSize: 10 }}
                   axisLine={false}
                 />
                 <Tooltip
-                  cursor={{ fill: "transparent" }}
-                  contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                  formatter={(val: number) => [val.toFixed(6), "Mean |SHAP|"]}
+                  cursor={{ fill: 'transparent' }}
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}
+                  formatter={(val: number) => [val.toFixed(6), 'Mean |SHAP|']}
                 />
                 <Bar dataKey="importance" radius={[0, 6, 6, 0]}>
                   {result.feature_importance.slice(0, 12).map((_, i) => (
@@ -320,12 +323,12 @@ export default function ExplainabilityPanel({
               </h3>
               {Object.entries(result.plots).map(([name, b64]) => {
                 const titles: Record<string, string> = {
-                  feature_importance: "Feature Importance Chart",
-                  shap_summary: "SHAP Summary (Beeswarm)",
-                  shap_bar: "SHAP Bar Chart",
+                  feature_importance: 'Feature Importance Chart',
+                  shap_summary: 'SHAP Summary (Beeswarm)',
+                  shap_bar: 'SHAP Bar Chart',
                   prediction_distribution:
-                    problemType === "classification" ? "Confusion Matrix" : "Actual vs Predicted",
-                  residuals: "Residual Analysis",
+                    problemType === 'classification' ? 'Confusion Matrix' : 'Actual vs Predicted',
+                  residuals: 'Residual Analysis',
                 };
                 const isExpanded = expandedPlot === name;
 
@@ -349,7 +352,7 @@ export default function ExplainabilityPanel({
                       {isExpanded && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
+                          animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           transition={{ duration: 0.3 }}
                           className="overflow-hidden"
@@ -381,8 +384,9 @@ export default function ExplainabilityPanel({
         >
           <Brain className="w-10 h-10 text-emerald-300 mx-auto mb-3" />
           <p className="text-gray-500 text-sm">
-            Click <span className="text-emerald-600 font-medium">&quot;Run SHAP Analysis&quot;</span> to understand
-            why your champion model makes the predictions it does.
+            Click{' '}
+            <span className="text-emerald-600 font-medium">&quot;Run SHAP Analysis&quot;</span> to
+            understand why your champion model makes the predictions it does.
           </p>
           <p className="text-gray-400 text-xs mt-2">
             SHAP (SHapley Additive exPlanations) reveals each feature&apos;s contribution.

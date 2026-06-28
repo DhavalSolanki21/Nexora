@@ -1,43 +1,52 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import { useLocation, useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, Database, Rows3, Columns3, Copy } from "lucide-react";
-import { getDataset, getSession } from "../api/client";
-import type { DatasetAnalysis } from "../types/dataset";
-import type { ConfigureTargetResponse, DatasetSession, PreprocessResponse } from "../types/pipeline";
-import HealthScoreCard from "../components/HealthScoreCard";
-import PredictionSuggestions from "../components/PredictionSuggestions";
-import ColumnProfiles from "../components/ColumnProfiles";
-import DataPreviewTable from "../components/DataPreviewTable";
-import MissingValuesChart from "../components/MissingValuesChart";
-import ModelReadinessPanel from "../components/ModelReadinessPanel";
-import WorkflowTabs, { type WorkflowTab } from "../components/WorkflowTabs";
-import TargetSelector from "../components/TargetSelector";
-import ProblemTypeCard from "../components/ProblemTypeCard";
-import DatasetChat from "../components/DatasetChat";
-import AdvancedSettings, { DEFAULT_CONFIG, type AdvancedConfig } from "../components/AdvancedSettings";
-import TabLoader from "../components/TabLoader";
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { useLocation, useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Database, Rows3, Columns3, Copy } from 'lucide-react';
+import { getDataset, getSession } from '../api/client';
+import type { DatasetAnalysis } from '../types/dataset';
+import type {
+  ConfigureTargetResponse,
+  DatasetSession,
+  PreprocessResponse,
+} from '../types/pipeline';
+import HealthScoreCard from '../components/HealthScoreCard';
+import PredictionSuggestions from '../components/PredictionSuggestions';
+import ColumnProfiles from '../components/ColumnProfiles';
+import DataPreviewTable from '../components/DataPreviewTable';
+import MissingValuesChart from '../components/MissingValuesChart';
+import ModelReadinessPanel from '../components/ModelReadinessPanel';
+import WorkflowTabs, { type WorkflowTab } from '../components/WorkflowTabs';
+import TargetSelector from '../components/TargetSelector';
+import ProblemTypeCard from '../components/ProblemTypeCard';
+import DatasetChat from '../components/DatasetChat';
+import AdvancedSettings, {
+  DEFAULT_CONFIG,
+  type AdvancedConfig,
+} from '../components/AdvancedSettings';
+import TabLoader from '../components/TabLoader';
 
-const DatasetCharts = lazy(() => import("../components/DatasetCharts"));
-const NumericTrendsChart = lazy(() => import("../components/NumericTrendsChart"));
-const CategoricalDistributionChart = lazy(() => import("../components/CategoricalDistributionChart"));
-const DataQualityChart = lazy(() => import("../components/DataQualityChart"));
-const ExplorationModesPanel = lazy(() => import("../components/ExplorationModesPanel"));
-const PredictionStudio = lazy(() => import("../components/PredictionStudio"));
-const PreprocessPanel = lazy(() => import("../components/PreprocessPanel"));
-const InsightsPanel = lazy(() => import("../components/InsightsPanel"));
-const TrainingArena = lazy(() => import("../components/TrainingArena"));
-const ExperimentPanel = lazy(() => import("../components/ExperimentPanel"));
-const ExplainabilityPanel = lazy(() => import("../components/ExplainabilityPanel"));
+const DatasetCharts = lazy(() => import('../components/DatasetCharts'));
+const NumericTrendsChart = lazy(() => import('../components/NumericTrendsChart'));
+const CategoricalDistributionChart = lazy(
+  () => import('../components/CategoricalDistributionChart'),
+);
+const DataQualityChart = lazy(() => import('../components/DataQualityChart'));
+const ExplorationModesPanel = lazy(() => import('../components/ExplorationModesPanel'));
+const PredictionStudio = lazy(() => import('../components/PredictionStudio'));
+const PreprocessPanel = lazy(() => import('../components/PreprocessPanel'));
+const InsightsPanel = lazy(() => import('../components/InsightsPanel'));
+const TrainingArena = lazy(() => import('../components/TrainingArena'));
+const ExperimentPanel = lazy(() => import('../components/ExperimentPanel'));
+const ExplainabilityPanel = lazy(() => import('../components/ExplainabilityPanel'));
 
 export default function DatasetDashboard() {
   const { datasetId } = useParams<{ datasetId: string }>();
   const location = useLocation();
   const [analysis, setAnalysis] = useState<DatasetAnalysis | null>(
-    (location.state as { analysis?: DatasetAnalysis })?.analysis ?? null
+    (location.state as { analysis?: DatasetAnalysis })?.analysis ?? null,
   );
   const [session, setSession] = useState<DatasetSession | null>(null);
-  const [tab, setTab] = useState<WorkflowTab>("overview");
+  const [tab, setTab] = useState<WorkflowTab>('overview');
   const [loading, setLoading] = useState(!analysis);
   const [error, setError] = useState<string | null>(null);
   const [advancedConfig, setAdvancedConfig] = useState<AdvancedConfig>(DEFAULT_CONFIG);
@@ -52,9 +61,9 @@ export default function DatasetDashboard() {
           analysis ? Promise.resolve(null) : getDataset(datasetId).then(setAnalysis),
         ]);
         setSession(sess);
-        if (sess.target_column) setTab("studio");
+        if (sess.target_column) setTab('studio');
       } catch {
-        if (!analysis) setError("Could not load dataset.");
+        if (!analysis) setError('Could not load dataset.');
       } finally {
         setLoading(false);
       }
@@ -64,22 +73,22 @@ export default function DatasetDashboard() {
   }, [datasetId, analysis]);
 
   const maxUnlocked: WorkflowTab =
-    session?.status === "trained"
-      ? "insights"
-      : session?.status === "preprocessed"
-        ? "arena"
-        : session?.status === "configured"
-          ? "preprocess"
-          : "overview";
+    session?.status === 'trained'
+      ? 'insights'
+      : session?.status === 'preprocessed'
+        ? 'arena'
+        : session?.status === 'configured'
+          ? 'preprocess'
+          : 'overview';
 
   const handleConfigured = (res: ConfigureTargetResponse) => {
     setSession(res.session);
-    setTab("studio");
+    setTab('studio');
   };
 
   const handlePreprocessed = (res: PreprocessResponse) => {
     setSession(res.session);
-    setTab("arena");
+    setTab('arena');
   };
 
   const handleTrainingComplete = () => {
@@ -92,7 +101,7 @@ export default function DatasetDashboard() {
         <motion.div
           className="w-10 h-10 border-2 border-emerald-200 border-t-emerald-500 rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
         />
       </div>
     );
@@ -101,7 +110,7 @@ export default function DatasetDashboard() {
   if (error || !analysis || !datasetId) {
     return (
       <motion.div className="max-w-lg mx-auto mt-24 text-center px-6">
-        <p className="text-red-500 mb-4">{error ?? "Dataset not found."}</p>
+        <p className="text-red-500 mb-4">{error ?? 'Dataset not found.'}</p>
         <Link to="/" className="btn-primary">
           Back to upload
         </Link>
@@ -111,11 +120,7 @@ export default function DatasetDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
-      >
+      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <Link to="/" className="btn-ghost text-sm mb-6 inline-flex">
           <ArrowLeft className="w-4 h-4" />
           Upload another dataset
@@ -141,7 +146,7 @@ export default function DatasetDashboard() {
 
       <WorkflowTabs active={tab} onChange={setTab} maxUnlocked={maxUnlocked} />
 
-      {tab === "overview" && (
+      {tab === 'overview' && (
         <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div className="grid lg:grid-cols-2 gap-6 mb-6">
             <HealthScoreCard health={analysis.health} />
@@ -189,15 +194,20 @@ export default function DatasetDashboard() {
           </motion.div>
 
           <motion.div className="mt-8 flex justify-center">
-            <button type="button" onClick={() => setTab("configure")} className="btn-primary">
+            <button type="button" onClick={() => setTab('configure')} className="btn-primary">
               Configure Prediction Target →
             </button>
           </motion.div>
         </motion.div>
       )}
 
-      {tab === "configure" && (
-        <motion.div key="configure" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      {tab === 'configure' && (
+        <motion.div
+          key="configure"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
           {!session?.problem_detection ? (
             <TargetSelector
               datasetId={datasetId}
@@ -214,18 +224,23 @@ export default function DatasetDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    setSession({ ...session, status: "analyzed", problem_detection: null, target_column: null });
+                    setSession({
+                      ...session,
+                      status: 'analyzed',
+                      problem_detection: null,
+                      target_column: null,
+                    });
                   }}
                   className="btn-ghost"
                 >
                   Change target
                 </button>
-                <button type="button" onClick={() => setTab("studio")} className="btn-primary">
+                <button type="button" onClick={() => setTab('studio')} className="btn-primary">
                   Open Prediction Studio
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTab("preprocess")}
+                  onClick={() => setTab('preprocess')}
                   className="btn-ghost border border-gray-200"
                 >
                   Compare Many Models
@@ -236,7 +251,7 @@ export default function DatasetDashboard() {
         </motion.div>
       )}
 
-      {tab === "studio" && (
+      {tab === 'studio' && (
         <motion.div key="studio" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {session?.target_column ? (
             <Suspense fallback={<TabLoader label="Loading Prediction Studio…" />}>
@@ -245,7 +260,7 @@ export default function DatasetDashboard() {
           ) : (
             <motion.div className="glass p-6 text-center text-gray-400">
               <p className="mb-4">Select a prediction target first.</p>
-              <button type="button" onClick={() => setTab("configure")} className="btn-primary">
+              <button type="button" onClick={() => setTab('configure')} className="btn-primary">
                 Go to Target Selection
               </button>
             </motion.div>
@@ -253,9 +268,14 @@ export default function DatasetDashboard() {
         </motion.div>
       )}
 
-      {tab === "preprocess" && (
-        <motion.div key="preprocess" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-          {session?.status !== "preprocessed" ? (
+      {tab === 'preprocess' && (
+        <motion.div
+          key="preprocess"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          {session?.status !== 'preprocessed' ? (
             <>
               {session?.problem_detection && (
                 <ProblemTypeCard
@@ -270,7 +290,7 @@ export default function DatasetDashboard() {
               ) : (
                 <motion.div className="glass p-6 text-center text-gray-400">
                   <p className="mb-4">Configure a prediction target first.</p>
-                  <button type="button" onClick={() => setTab("configure")} className="btn-primary">
+                  <button type="button" onClick={() => setTab('configure')} className="btn-primary">
                     Go to Target Selection
                   </button>
                 </motion.div>
@@ -284,7 +304,7 @@ export default function DatasetDashboard() {
                 </Suspense>
               )}
               <motion.div className="mt-8 flex justify-center">
-                <button type="button" onClick={() => setTab("arena")} className="btn-primary">
+                <button type="button" onClick={() => setTab('arena')} className="btn-primary">
                   Open Optional Comparison Arena
                 </button>
               </motion.div>
@@ -293,13 +313,13 @@ export default function DatasetDashboard() {
         </motion.div>
       )}
 
-      {tab === "arena" && (
+      {tab === 'arena' && (
         <motion.div key="arena" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          {session?.status === "preprocessed" || session?.status === "trained" ? (
+          {session?.status === 'preprocessed' || session?.status === 'trained' ? (
             <Suspense fallback={<TabLoader label="Loading training arena…" />}>
               <TrainingArena
                 datasetId={datasetId}
-                problemType={session.problem_type ?? "classification"}
+                problemType={session.problem_type ?? 'classification'}
                 onComplete={handleTrainingComplete}
                 trainingConfig={advancedConfig}
               />
@@ -310,7 +330,7 @@ export default function DatasetDashboard() {
           ) : (
             <motion.div className="glass p-6 text-center text-gray-400">
               <p className="mb-4">Complete preprocessing before training models.</p>
-              <button type="button" onClick={() => setTab("preprocess")} className="btn-primary">
+              <button type="button" onClick={() => setTab('preprocess')} className="btn-primary">
                 Go to Pipeline
               </button>
             </motion.div>
@@ -318,13 +338,13 @@ export default function DatasetDashboard() {
         </motion.div>
       )}
 
-      {tab === "insights" && (
+      {tab === 'insights' && (
         <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          {session?.status === "trained" && session.training_result?.best_model ? (
+          {session?.status === 'trained' && session.training_result?.best_model ? (
             <Suspense fallback={<TabLoader label="Loading explainability…" />}>
               <ExplainabilityPanel
                 datasetId={datasetId}
-                problemType={session.problem_type ?? "classification"}
+                problemType={session.problem_type ?? 'classification'}
                 bestModelId={session.training_result.best_model.model_id}
                 bestModelName={session.training_result.best_model.model_name}
               />
@@ -332,7 +352,7 @@ export default function DatasetDashboard() {
           ) : (
             <motion.div className="glass p-6 text-center text-gray-400">
               <p className="mb-4">Complete model training to unlock explainability insights.</p>
-              <button type="button" onClick={() => setTab("arena")} className="btn-primary">
+              <button type="button" onClick={() => setTab('arena')} className="btn-primary">
                 Go to Arena
               </button>
             </motion.div>
@@ -345,15 +365,7 @@ export default function DatasetDashboard() {
   );
 }
 
-function Stat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Rows3;
-  label: string;
-  value: string;
-}) {
+function Stat({ icon: Icon, label, value }: { icon: typeof Rows3; label: string; value: string }) {
   return (
     <div className="glass px-4 py-3 flex items-center gap-3 min-w-[120px]">
       <Icon className="w-4 h-4 text-emerald-500" />

@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Cog, Loader2, Play, AlertCircle, Clock } from "lucide-react";
-import { getTimingEstimates, runPreprocess } from "../api/client";
-import type { PreprocessResponse } from "../types/pipeline";
-import { formatDuration } from "../utils/formatDuration";
-import PreprocessSteps from "./PreprocessSteps";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Cog, Loader2, Play, AlertCircle, Clock } from 'lucide-react';
+import { getTimingEstimates, runPreprocess } from '../api/client';
+import type { PreprocessResponse } from '../types/pipeline';
+import { formatDuration } from '../utils/formatDuration';
+import PreprocessSteps from './PreprocessSteps';
 
 interface Props {
   datasetId: string;
@@ -14,7 +14,7 @@ interface Props {
 export default function PreprocessPanel({ datasetId, onComplete }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [scaling, setScaling] = useState<"standard" | "minmax" | "none">("standard");
+  const [scaling, setScaling] = useState<'standard' | 'minmax' | 'none'>('standard');
   const [expectedSec, setExpectedSec] = useState<number | null>(null);
 
   useEffect(() => {
@@ -33,14 +33,14 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
         remove_constant: true,
         drop_id_columns: true,
         encode_categorical: true,
-        outlier_method: "iqr_cap",
+        outlier_method: 'iqr_cap',
       });
       onComplete(res);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Preprocessing failed.";
-      setError(typeof msg === "string" ? msg : "Preprocessing failed.");
+        'Preprocessing failed.';
+      setError(typeof msg === 'string' ? msg : 'Preprocessing failed.');
     } finally {
       setLoading(false);
     }
@@ -74,9 +74,9 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
 
       <div className="grid sm:grid-cols-3 gap-3 mb-6 text-sm">
         {[
-          { label: "Missing values", value: "Auto (median / mode)" },
-          { label: "Encoding", value: "Label + One-Hot" },
-          { label: "Outliers", value: "IQR capping" },
+          { label: 'Missing values', value: 'Auto (median / mode)' },
+          { label: 'Encoding', value: 'Label + One-Hot' },
+          { label: 'Outliers', value: 'IQR capping' },
         ].map((item) => (
           <div key={item.label} className="px-3 py-2 rounded-lg bg-gray-50 border border-gray-100">
             <p className="text-gray-400 text-xs">{item.label}</p>
@@ -90,18 +90,18 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
           Feature Scaling
         </label>
         <div className="flex gap-2">
-          {(["standard", "minmax", "none"] as const).map((s) => (
+          {(['standard', 'minmax', 'none'] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => setScaling(s)}
               className={`px-4 py-2 rounded-lg text-sm border capitalize transition-all ${
                 scaling === s
-                  ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
+                  ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                  : 'border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
             >
-              {s === "standard" ? "StandardScaler" : s === "minmax" ? "MinMaxScaler" : "None"}
+              {s === 'standard' ? 'StandardScaler' : s === 'minmax' ? 'MinMaxScaler' : 'None'}
             </button>
           ))}
         </div>
@@ -109,12 +109,12 @@ export default function PreprocessPanel({ datasetId, onComplete }: Props) {
 
       <PreprocessSteps
         steps={[
-          { step: "drop_id_columns", detail: "Remove ID-like columns", affected_rows_or_cols: 0 },
-          { step: "remove_duplicates", detail: "Deduplicate rows", affected_rows_or_cols: 0 },
-          { step: "fill_missing", detail: "Impute missing values", affected_rows_or_cols: 0 },
-          { step: "outlier_cap", detail: "IQR outlier capping", affected_rows_or_cols: 0 },
-          { step: "encode", detail: "Encode categoricals", affected_rows_or_cols: 0 },
-          { step: "scale", detail: "Scale numeric features", affected_rows_or_cols: 0 },
+          { step: 'drop_id_columns', detail: 'Remove ID-like columns', affected_rows_or_cols: 0 },
+          { step: 'remove_duplicates', detail: 'Deduplicate rows', affected_rows_or_cols: 0 },
+          { step: 'fill_missing', detail: 'Impute missing values', affected_rows_or_cols: 0 },
+          { step: 'outlier_cap', detail: 'IQR outlier capping', affected_rows_or_cols: 0 },
+          { step: 'encode', detail: 'Encode categoricals', affected_rows_or_cols: 0 },
+          { step: 'scale', detail: 'Scale numeric features', affected_rows_or_cols: 0 },
         ]}
         pending
       />

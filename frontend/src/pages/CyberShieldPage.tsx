@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   AreaChart,
   Area,
@@ -9,11 +9,22 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-} from "recharts";
-import { Shield, Activity, AlertTriangle, Zap, TrendingUp, Wifi, WifiOff } from "lucide-react";
-import { useCyberStream } from "../hooks/useCyberStream";
-import type { ScoredEvent } from "../hooks/useCyberStream";
-import "./CyberShield.css";
+} from 'recharts';
+import {
+  Shield,
+  Activity,
+  AlertTriangle,
+  Zap,
+  TrendingUp,
+  Wifi,
+  WifiOff,
+  Download,
+} from 'lucide-react';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { useCyberStream } from '../hooks/useCyberStream';
+import type { ScoredEvent } from '../hooks/useCyberStream';
+import './CyberShield.css';
 
 export default function CyberShieldPage() {
   const [rowsPerSec, setRowsPerSec] = useState(10);
@@ -29,14 +40,31 @@ export default function CyberShieldPage() {
     onCritical: handleCritical,
   });
 
+  const exportPDF = useCallback(() => {
+    const element = document.getElementById('cybershield-export-area');
+    if (!element) return;
+
+    import('html2pdf.js').then((html2pdf) => {
+      const opt = {
+        margin: 10,
+        filename: 'cybershield-incident-report.pdf',
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 1200 },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'landscape' as const },
+      };
+
+      html2pdf.default().set(opt).from(element).save();
+    });
+  }, []);
+
   const formatTimestamp = (ts: string) => {
     try {
       const d = new Date(ts);
-      return d.toLocaleTimeString("en-US", {
+      return d.toLocaleTimeString('en-US', {
         hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
       });
     } catch {
       return ts;
@@ -51,7 +79,7 @@ export default function CyberShieldPage() {
 
   return (
     <div className="cybershield-page">
-      <div className="cyber-content">
+      <div className="cyber-content" id="cybershield-export-area">
         {/* ═══ Header ═══ */}
         <header className="cyber-header">
           <div className="cyber-header-left">
@@ -59,7 +87,7 @@ export default function CyberShieldPage() {
               className="cyber-shield-icon"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
             >
               <Shield size={26} color="#fff" strokeWidth={2.5} />
             </motion.div>
@@ -71,15 +99,21 @@ export default function CyberShieldPage() {
 
           <div className="cyber-header-right">
             <div className="cyber-status">
-              <div className={`cyber-status-dot ${connected ? "connected" : "disconnected"}`} />
+              <div className={`cyber-status-dot ${connected ? 'connected' : 'disconnected'}`} />
               {connected ? (
-                <span style={{ color: "var(--cyber-green)" }}>
-                  <Wifi size={13} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />
+                <span style={{ color: 'var(--cyber-green)' }}>
+                  <Wifi
+                    size={13}
+                    style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }}
+                  />
                   CONNECTED
                 </span>
               ) : (
-                <span style={{ color: "var(--cyber-red)" }}>
-                  <WifiOff size={13} style={{ display: "inline", marginRight: 4, verticalAlign: "middle" }} />
+                <span style={{ color: 'var(--cyber-red)' }}>
+                  <WifiOff
+                    size={13}
+                    style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }}
+                  />
                   DISCONNECTED
                 </span>
               )}
@@ -97,6 +131,10 @@ export default function CyberShieldPage() {
               <span className="cyber-speed-value">{rowsPerSec}</span>
               <span>r/s</span>
             </div>
+
+            <button className="cyber-export-btn" onClick={exportPDF}>
+              <Download size={14} /> EXPORT PDF
+            </button>
           </div>
         </header>
 
@@ -113,7 +151,7 @@ export default function CyberShieldPage() {
             label="Anomaly Rate"
             value={`${stats.anomalyRate}`}
             unit="%"
-            color={stats.anomalyRate >= 80 ? "red" : stats.anomalyRate >= 40 ? "amber" : "green"}
+            color={stats.anomalyRate >= 80 ? 'red' : stats.anomalyRate >= 40 ? 'amber' : 'green'}
             icon={<TrendingUp size={18} />}
             delay={0.05}
           />
@@ -148,38 +186,54 @@ export default function CyberShieldPage() {
             <AreaChart data={rollingData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="anomalyGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isCritical ? "#ff1744" : "#00e5ff"} stopOpacity={0.5} />
-                  <stop offset="50%" stopColor={isCritical ? "#ff1744" : "#00e5ff"} stopOpacity={0.15} />
-                  <stop offset="100%" stopColor={isCritical ? "#ff1744" : "#00e5ff"} stopOpacity={0} />
+                  <stop
+                    offset="0%"
+                    stopColor={isCritical ? '#ff1744' : '#00e5ff'}
+                    stopOpacity={0.5}
+                  />
+                  <stop
+                    offset="50%"
+                    stopColor={isCritical ? '#ff1744' : '#00e5ff'}
+                    stopOpacity={0.15}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={isCritical ? '#ff1744' : '#00e5ff'}
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 6" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <CartesianGrid
+                strokeDasharray="3 6"
+                stroke="rgba(255,255,255,0.04)"
+                vertical={false}
+              />
               <XAxis
                 dataKey="time"
-                tick={{ fill: "#546e7a", fontSize: 10, fontFamily: "JetBrains Mono" }}
+                tick={{ fill: '#546e7a', fontSize: 10, fontFamily: 'JetBrains Mono' }}
                 tickLine={false}
-                axisLine={{ stroke: "rgba(255,255,255,0.06)" }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.06)' }}
                 interval="preserveStartEnd"
               />
               <YAxis
                 domain={[0, 100]}
-                tick={{ fill: "#546e7a", fontSize: 10, fontFamily: "JetBrains Mono" }}
+                tick={{ fill: '#546e7a', fontSize: 10, fontFamily: 'JetBrains Mono' }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) => `${v}%`}
               />
               <Tooltip
                 contentStyle={{
-                  background: "rgba(12, 18, 32, 0.95)",
-                  border: "1px solid rgba(0, 229, 255, 0.2)",
+                  background: 'rgba(12, 18, 32, 0.95)',
+                  border: '1px solid rgba(0, 229, 255, 0.2)',
                   borderRadius: 10,
-                  fontFamily: "JetBrains Mono",
+                  fontFamily: 'JetBrains Mono',
                   fontSize: 12,
-                  color: "#e8eaf6",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                  color: '#e8eaf6',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
                 }}
-                formatter={(value: number) => [`${value}%`, "Anomaly Rate"]}
-                labelStyle={{ color: "#546e7a" }}
+                formatter={(value: number) => [`${value}%`, 'Anomaly Rate']}
+                labelStyle={{ color: '#546e7a' }}
               />
               <ReferenceLine
                 y={80}
@@ -187,23 +241,102 @@ export default function CyberShieldPage() {
                 strokeDasharray="4 4"
                 strokeOpacity={0.6}
                 label={{
-                  value: "CRITICAL",
-                  fill: "#ff1744",
+                  value: 'CRITICAL',
+                  fill: '#ff1744',
                   fontSize: 10,
-                  fontFamily: "JetBrains Mono",
-                  position: "insideTopRight",
+                  fontFamily: 'JetBrains Mono',
+                  position: 'insideTopRight',
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="rate"
-                stroke={isCritical ? "#ff1744" : "#00e5ff"}
+                stroke={isCritical ? '#ff1744' : '#00e5ff'}
                 strokeWidth={2}
                 fill="url(#anomalyGradient)"
                 isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>
+        </motion.div>
+
+        {/* ═══ Live Map ═══ */}
+        <motion.div
+          className="cyber-map-panel"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            marginTop: 20,
+            marginBottom: 20,
+            borderRadius: 12,
+            overflow: 'hidden',
+            border: '1px solid rgba(0, 229, 255, 0.15)',
+            height: 350,
+          }}
+        >
+          <div
+            className="cyber-chart-title"
+            style={{
+              padding: '12px 16px',
+              background: 'rgba(12, 18, 32, 0.9)',
+              borderBottom: '1px solid rgba(0, 229, 255, 0.15)',
+            }}
+          >
+            <span className="live-dot" />
+            LIVE SOURCE MAP
+          </div>
+          <MapContainer
+            center={[20, 0]}
+            zoom={2}
+            style={{ height: '100%', width: '100%', background: '#0a0f1c' }}
+            zoomControl={false}
+            attributionControl={false}
+          >
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+            {rows
+              .filter((r) => r.raw.src_lat != null && r.raw.src_lon != null)
+              .map((row) => {
+                const lat = row.raw.src_lat!;
+                const lon = row.raw.src_lon!;
+                const isDanger = row.threat_level === 'HIGH' || row.threat_level === 'CRITICAL';
+
+                return (
+                  <CircleMarker
+                    key={row.row_id}
+                    center={[lat, lon]}
+                    radius={isDanger ? 8 : 4}
+                    fillColor={isDanger ? '#ff1744' : '#00e5ff'}
+                    color={isDanger ? '#ff1744' : '#00e5ff'}
+                    weight={1}
+                    opacity={0.8}
+                    fillOpacity={0.6}
+                  >
+                    <Popup>
+                      <div
+                        style={{
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 11,
+                          background: 'rgba(12,18,32,0.9)',
+                          color: '#fff',
+                          padding: 8,
+                          borderRadius: 4,
+                        }}
+                      >
+                        <strong>IP:</strong> {row.raw.src_ip}
+                        <br />
+                        <strong>Threat:</strong>{' '}
+                        <span style={{ color: isDanger ? '#ff1744' : '#00e5ff' }}>
+                          {row.threat_level}
+                        </span>
+                        <br />
+                        <strong>Score:</strong> {row.anomaly_score.toFixed(2)}
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
+          </MapContainer>
         </motion.div>
 
         {/* ═══ Data Table ═══ */}
@@ -215,7 +348,15 @@ export default function CyberShieldPage() {
         >
           <div className="cyber-table-header">
             <span className="cyber-table-title">
-              <Activity size={14} style={{ display: "inline", marginRight: 8, verticalAlign: "middle", color: "var(--cyber-cyan)" }} />
+              <Activity
+                size={14}
+                style={{
+                  display: 'inline',
+                  marginRight: 8,
+                  verticalAlign: 'middle',
+                  color: 'var(--cyber-cyan)',
+                }}
+              />
               LIVE NETWORK EVENTS
             </span>
             <span className="cyber-table-count">{rows.length} / 50 rows</span>
@@ -237,7 +378,12 @@ export default function CyberShieldPage() {
               <tbody>
                 <AnimatePresence initial={false}>
                   {rows.map((row) => (
-                    <TableRow key={row.row_id} row={row} formatTimestamp={formatTimestamp} formatBytes={formatBytes} />
+                    <TableRow
+                      key={row.row_id}
+                      row={row}
+                      formatTimestamp={formatTimestamp}
+                      formatBytes={formatBytes}
+                    />
                   ))}
                 </AnimatePresence>
               </tbody>
@@ -254,7 +400,7 @@ export default function CyberShieldPage() {
             initial={{ opacity: 0, x: 60, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 60, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           >
             <AlertTriangle className="toast-icon" size={22} />
             <div>
@@ -294,7 +440,7 @@ function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="cyber-stat-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="cyber-stat-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ color: `var(--cyber-${color})`, opacity: 0.8 }}>{icon}</span>
         {label}
       </div>
@@ -319,35 +465,38 @@ function TableRow({
     <motion.tr
       className={`threat-${row.threat_level}`}
       initial={{ opacity: 0, x: -20, height: 0 }}
-      animate={{ opacity: 1, x: 0, height: "auto" }}
+      animate={{ opacity: 1, x: 0, height: 'auto' }}
       exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
       layout
     >
       <td>{formatTimestamp(row.timestamp)}</td>
       <td>{row.raw.src_ip}</td>
       <td>{row.raw.dst_ip}</td>
-      <td style={{ color: "var(--cyber-cyan-dim)" }}>{row.raw.protocol}</td>
+      <td style={{ color: 'var(--cyber-cyan-dim)' }}>{row.raw.protocol}</td>
       <td>
-        <span style={{ color: row.raw.bytes_sent > 100000 ? "var(--cyber-amber)" : "var(--cyber-text-muted)" }}>
+        <span
+          style={{
+            color: row.raw.bytes_sent > 100000 ? 'var(--cyber-amber)' : 'var(--cyber-text-muted)',
+          }}
+        >
           ↑{formatBytes(row.raw.bytes_sent)}
-        </span>
-        {" "}
-        <span style={{ color: "var(--cyber-text-dim)" }}>↓{formatBytes(row.raw.bytes_received)}</span>
-      </td>
-      <td>
-        <span className={`score-badge ${row.threat_level}`}>
-          {row.anomaly_score.toFixed(2)}
+        </span>{' '}
+        <span style={{ color: 'var(--cyber-text-dim)' }}>
+          ↓{formatBytes(row.raw.bytes_received)}
         </span>
       </td>
       <td>
-        <span className={`score-badge ${row.threat_level}`}>
-          {row.threat_level}
-        </span>
+        <span className={`score-badge ${row.threat_level}`}>{row.anomaly_score.toFixed(2)}</span>
+      </td>
+      <td>
+        <span className={`score-badge ${row.threat_level}`}>{row.threat_level}</span>
       </td>
       <td>
         {row.top_features.map((f) => (
-          <span key={f} className="feature-tag">{f}</span>
+          <span key={f} className="feature-tag">
+            {f}
+          </span>
         ))}
       </td>
     </motion.tr>

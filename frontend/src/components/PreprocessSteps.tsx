@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
-import { Check, Circle } from "lucide-react";
-import type { PreprocessStep } from "../types/pipeline";
+import { motion } from 'framer-motion';
+import { Check, Circle } from 'lucide-react';
+import type { PreprocessStep } from '../types/pipeline';
 
 interface Props {
   steps: PreprocessStep[];
@@ -21,8 +21,8 @@ export default function PreprocessSteps({ steps, pending }: Props) {
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
               pending
-                ? "bg-gray-100 border border-gray-200"
-                : "bg-emerald-100 border border-emerald-300"
+                ? 'bg-gray-100 border border-gray-200'
+                : 'bg-emerald-100 border border-emerald-300'
             }`}
           >
             {pending ? (
@@ -32,7 +32,7 @@ export default function PreprocessSteps({ steps, pending }: Props) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-700 font-mono">{s.step.replace(/_/g, " ")}</p>
+            <p className="text-sm text-gray-700 font-mono">{s.step.replace(/_/g, ' ')}</p>
             <p className="text-xs text-gray-400 mt-0.5">{s.detail}</p>
           </div>
           {!pending && s.affected_rows_or_cols > 0 && (

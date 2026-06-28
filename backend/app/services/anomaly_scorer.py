@@ -18,8 +18,13 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 # ── Feature columns used for scoring ────────────────────────────────────────
 NUMERIC_FEATURES = [
-    "src_port", "dst_port", "bytes_sent", "bytes_received",
-    "duration_ms", "packet_count", "is_encrypted",
+    "src_port",
+    "dst_port",
+    "bytes_sent",
+    "bytes_received",
+    "duration_ms",
+    "packet_count",
+    "is_encrypted",
 ]
 CATEGORICAL_FEATURES = ["protocol", "tcp_flags"]
 ALL_FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
@@ -42,10 +47,13 @@ def _threat_level(score: float) -> str:
 # Lightweight NumPy Autoencoder
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
 class _NumpyAutoencoder:
     """Single-hidden-layer autoencoder for reconstruction-error anomaly detection."""
 
-    def __init__(self, input_dim: int, hidden_dim: int = 4, lr: float = 0.005, epochs: int = 100):
+    def __init__(
+        self, input_dim: int, hidden_dim: int = 4, lr: float = 0.005, epochs: int = 100
+    ):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.lr = lr
@@ -102,6 +110,7 @@ class _NumpyAutoencoder:
 # Main Scorer
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+
 class AnomalyScorer:
     """Ensemble anomaly scorer: Isolation Forest (0.5) + Autoencoder (0.5)."""
 
@@ -151,9 +160,11 @@ class AnomalyScorer:
         # Numeric columns
         num_cols = [c for c in NUMERIC_FEATURES if c in df.columns]
         if fit:
-            num_data: np.ndarray = self._scaler.fit_transform(df[num_cols].values.astype(float))  # type: ignore[assignment]
+            # type: ignore
+            num_data = np.asarray(self._scaler.fit_transform(df[num_cols].values.astype(float)))
         else:
-            num_data: np.ndarray = self._scaler.transform(df[num_cols].values.astype(float))  # type: ignore[assignment]
+            # type: ignore
+            num_data = np.asarray(self._scaler.transform(df[num_cols].values.astype(float)))
         parts.append(num_data)
 
         # Categorical columns — label-encode
@@ -167,10 +178,13 @@ class AnomalyScorer:
                     le = self._label_encoders[col]
                     vals = df[col].astype(str).values
                     # Handle unseen labels gracefully
-                    mapped = [
-                        int(le.transform([v])[0]) if v in le.classes_ else len(le.classes_)  # type: ignore[index]
-                        for v in vals
-                    ]
+                    mapped = []
+                    for v in vals:
+                        if v in le.classes_:
+                            # type: ignore
+                            mapped.append(int(np.asarray(le.transform([v]))[0]))
+                        else:
+                            mapped.append(len(le.classes_))
                     encoded: np.ndarray = np.array(mapped)
                 parts.append(encoded.reshape(-1, 1).astype(float))
 
@@ -210,7 +224,9 @@ class AnomalyScorer:
         # Top features: largest absolute deviation from mean (z-score magnitude)
         feature_deviations = np.abs(X[0]) / (self._feature_stds + 1e-8)  # type: ignore[operator]
         top_indices = np.argsort(feature_deviations)[-3:][::-1]
-        top_feats = [self._feature_names[i] for i in top_indices if i < len(self._feature_names)]
+        top_feats = [
+            self._feature_names[i] for i in top_indices if i < len(self._feature_names)
+        ]
 
         elapsed_ms = (time.perf_counter_ns() - t0) / 1_000_000
 

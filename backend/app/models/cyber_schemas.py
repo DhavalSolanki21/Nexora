@@ -29,6 +29,8 @@ class NetworkLogRow(BaseModel):
     packet_count: int
     tcp_flags: str
     is_encrypted: int
+    src_lat: float | None = None
+    src_lon: float | None = None
 
 
 class ScoredRow(BaseModel):

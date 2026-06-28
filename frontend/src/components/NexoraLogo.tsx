@@ -1,9 +1,9 @@
 interface Props {
   className?: string;
-  size?: "sm" | "md" | "lg" | "hero";
+  size?: 'sm' | 'md' | 'lg' | 'hero';
 }
 
-const VIEWBOX = "0 0 810 83";
+const VIEWBOX = '0 0 810 83';
 const SVG_SIZES = {
   sm: 110,
   md: 148,
@@ -11,7 +11,7 @@ const SVG_SIZES = {
   hero: 370,
 };
 
-export default function NexoraLogo({ className = "", size = "md" }: Props) {
+export default function NexoraLogo({ className = '', size = 'md' }: Props) {
   const width = SVG_SIZES[size];
   const height = (width * 83) / 810;
 
@@ -40,7 +40,11 @@ export default function NexoraLogo({ className = "", size = "md" }: Props) {
       <path d="M391 0H375L292 83H309L391 0Z" fill="#171514" />
       <path d="M292 0H308L391 83H374L292 0Z" fill="#171514" />
       <rect x="433" y="6" width="94" height="71" rx="20" stroke="#171514" strokeWidth="12" />
-      <path d="M580 6H650.5C660.717 6 669 14.2827 669 24.5C669 34.7173 660.717 43 650.5 43H580" stroke="#171514" strokeWidth="12" />
+      <path
+        d="M580 6H650.5C660.717 6 669 14.2827 669 24.5C669 34.7173 660.717 43 650.5 43H580"
+        stroke="#171514"
+        strokeWidth="12"
+      />
       <path d="M761 33L786 82H736L761 33Z" fill="#171514" />
       <path d="M341.5 21.5L320 0H363L341.5 21.5Z" fill="#93C998" />
     </svg>

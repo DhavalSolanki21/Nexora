@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 export interface RawNetworkLog {
   timestamp: string;
@@ -13,13 +13,15 @@ export interface RawNetworkLog {
   packet_count: number;
   tcp_flags: string;
   is_encrypted: number;
+  src_lat?: number;
+  src_lon?: number;
 }
 
 export interface ScoredEvent {
   row_id: string;
   timestamp: string;
   anomaly_score: number;
-  threat_level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  threat_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   top_features: string[];
   raw: RawNetworkLog;
 }
@@ -100,7 +102,7 @@ export function useCyberStream(options: UseCyberStreamOptions = {}) {
 
         totalRef.current += 1;
         scoreSum.current += data.anomaly_score;
-        if (data.threat_level === "HIGH" || data.threat_level === "CRITICAL") {
+        if (data.threat_level === 'HIGH' || data.threat_level === 'CRITICAL') {
           threatsRef.current += 1;
         }
 
@@ -129,14 +131,17 @@ export function useCyberStream(options: UseCyberStreamOptions = {}) {
         setRows((prev) => [data, ...prev].slice(0, maxTableRows));
 
         // Update rolling chart data
-        const timeStr = new Date(now).toLocaleTimeString("en-US", {
+        const timeStr = new Date(now).toLocaleTimeString('en-US', {
           hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
         });
         setRollingData((prev) => {
-          const updated = [...prev, { time: timeStr, rate: Math.round(rate * 100), timestamp: now }];
+          const updated = [
+            ...prev,
+            { time: timeStr, rate: Math.round(rate * 100), timestamp: now },
+          ];
           // Keep only last 60 seconds of chart points
           return updated.filter((p) => p.timestamp >= cutoff);
         });
@@ -146,7 +151,10 @@ export function useCyberStream(options: UseCyberStreamOptions = {}) {
           totalEvents: totalRef.current,
           anomalyRate: Math.round(rate * 100),
           threatsDetected: threatsRef.current,
-          avgScore: totalRef.current > 0 ? Math.round((scoreSum.current / totalRef.current) * 100) / 100 : 0,
+          avgScore:
+            totalRef.current > 0
+              ? Math.round((scoreSum.current / totalRef.current) * 100) / 100
+              : 0,
         });
       } catch {
         // Ignore malformed events
