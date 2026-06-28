@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from typing import Dict, List
 
-def get_partial_dependence(model, X: pd.DataFrame, feature: str) -> Dict[str, List[float]]:
+
+def get_partial_dependence(model, X: pd.DataFrame, feature: str) -> dict[str, list[float]]:
     """Calculate partial dependence for ``feature``.
 
     Args:
@@ -33,7 +33,7 @@ def get_partial_dependence(model, X: pd.DataFrame, feature: str) -> Dict[str, Li
     else:
         grid = np.asarray(col.unique())
 
-    averages: List[float] = []
+    averages: list[float] = []
     for val in grid:
         X_tmp = X.copy()
         X_tmp[feature] = val

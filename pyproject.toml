@@ -69,7 +69,7 @@ cloud   = ["boto3>=1.34", "gspread>=5.12"]
 ui      = ["streamlit>=1.30"]
 llm     = ["ollama>=0.1", "openai>=1.0"]
 export  = ["weasyprint>=60.0", "nbformat>=5.9"]
-all     = ["nexora[sql,mongo,cloud,ui,llm,export]"]
+all     = ["nexora-prediction[sql,mongo,cloud,ui,llm,export]"]
 
 [project.entry-points."pytest11"]
 nexora = "nexora.testing.plugin"

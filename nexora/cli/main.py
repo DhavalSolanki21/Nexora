@@ -4,15 +4,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional
-import pandas as pd
+
 import click
+import pandas as pd
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
 
 from nexora import Nexora
-from nexora.report import NexoraReport
 
 console = Console()
 
@@ -37,7 +35,6 @@ def welcome() -> None:
 def info() -> None:
     """Show Nexora version and environment info."""
     import nexora
-    import sys
     
     info_table = Table(title="Nexora Information", show_header=True, header_style="bold cyan")
     info_table.add_column("Property", style="bold")
@@ -133,7 +130,7 @@ def profile(data_csv: Path, export: Path | None) -> None:
 @click.option("--target", required=True, help="Target column to predict.")
 def quick(data_csv: Path, target: str) -> None:
     """30-second fast mode from terminal."""
-    console.print(f"\n[bold cyan]Quick training (2 models)...[/bold cyan]\n")
+    console.print("\n[bold cyan]Quick training (2 models)...[/bold cyan]\n")
     report = Nexora(data_csv, target=target).quick()
     console.print(f"[green]✓ Best:[/green] {report.best_model} | [green]Score:[/green] {report.best_score:.4f}\n")
     leaderboard = report.leaderboard
@@ -148,7 +145,7 @@ def quick(data_csv: Path, target: str) -> None:
 @click.option("--show-top", default=10, type=int, help="Show top N predictions.")
 def predict(model_nx: Path, new_data: Path, output: Path, show_top: int) -> None:
     """Batch predictions from CLI."""
-    console.print(f"\n[bold cyan]Loading model and making predictions...[/bold cyan]\n")
+    console.print("\n[bold cyan]Loading model and making predictions...[/bold cyan]\n")
     report = Nexora.load(model_nx)
     df = pd.read_csv(new_data)
     preds = report.predict(df)
@@ -163,9 +160,9 @@ def predict(model_nx: Path, new_data: Path, output: Path, show_top: int) -> None
 @click.argument("model_nx", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--model", default=None, help="Specific model to explain (default: best model).")
 @click.option("--top-features", default=10, type=int, help="Top N features to show.")
-def explain(model_nx: Path, model: Optional[str], top_features: int) -> None:
+def explain(model_nx: Path, model: str | None, top_features: int) -> None:
     """SHAP feature importance and explanations from CLI."""
-    console.print(f"\n[bold cyan]Loading model and generating SHAP explanations...[/bold cyan]\n")
+    console.print("\n[bold cyan]Loading model and generating SHAP explanations...[/bold cyan]\n")
     report = Nexora.load(model_nx)
     
     try:
@@ -193,7 +190,7 @@ def explain(model_nx: Path, model: Optional[str], top_features: int) -> None:
 @click.option("--sample-size", default=100, type=int, help="Number of samples to analyze.")
 def whatif(model_nx: Path, new_data: Path, sample_size: int) -> None:
     """What-if scenario analysis."""
-    console.print(f"\n[bold cyan]Running what-if analysis...[/bold cyan]\n")
+    console.print("\n[bold cyan]Running what-if analysis...[/bold cyan]\n")
     report = Nexora.load(model_nx)
     df = pd.read_csv(new_data).head(sample_size)
     
@@ -241,7 +238,7 @@ def cluster(data_csv: Path, n_clusters: int) -> None:
         console.print(cluster_table)
         
         metrics = result.get("metrics", {})
-        console.print(f"\n[bold]Metrics:[/bold]")
+        console.print("\n[bold]Metrics:[/bold]")
         console.print(f"  Silhouette: {metrics.get('silhouette', 'N/A')}")
         console.print(f"  Inertia: {metrics.get('inertia', 'N/A')}")
     except Exception as e:
@@ -272,7 +269,7 @@ def forecast(data_csv: Path, date_col: str, target_col: str, periods: int, freq:
         console.print(forecast_table)
         
         metrics = result.get("metrics", {})
-        console.print(f"\n[bold]Metrics:[/bold]")
+        console.print("\n[bold]Metrics:[/bold]")
         console.print(f"  MAE: {metrics.get('mae', 'N/A')}")
         console.print(f"  R²: {metrics.get('r2', 'N/A')}")
     except Exception as e:
@@ -284,7 +281,7 @@ def forecast(data_csv: Path, date_col: str, target_col: str, periods: int, freq:
 @click.option("--limit", default=5, type=int, help="Number of models to compare.")
 def compare(model_nx: Path, limit: int) -> None:
     """Compare all trained models."""
-    console.print(f"\n[bold cyan]Model Comparison...[/bold cyan]\n")
+    console.print("\n[bold cyan]Model Comparison...[/bold cyan]\n")
     report = Nexora.load(model_nx)
     
     leaderboard = report.leaderboard.head(limit)
@@ -349,10 +346,10 @@ def drift(model_nx: Path, new_data: Path, threshold: float) -> None:
     click.echo(str(drift_res))
 
 
-@cli.command()
+@cli.command(name="compare-sessions")
 @click.argument("r1", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.argument("r2", type=click.Path(exists=True, dir_okay=False, path_type=Path))
-def compare(r1: Path, r2: Path) -> None:
+def compare_sessions(r1: Path, r2: Path) -> None:
     """Compare two sessions in terminal."""
     report1 = Nexora.load(r1)
     report2 = Nexora.load(r2)
@@ -418,7 +415,7 @@ def history(limit: int) -> None:
     from nexora.experiments import list_experiments
     
     try:
-        experiments = list_experiments(limit=limit)
+        experiments = list_experiments()
         console.print(f"\n[bold cyan]Recent Sessions ({len(experiments)})[/bold cyan]\n")
         
         history_table = Table(show_header=True, header_style="bold cyan")
@@ -440,12 +437,12 @@ def history(limit: int) -> None:
         console.print(f"[yellow]⚠ History error: {e}[/yellow]")
 
 
-@cli.command()
+@cli.command(name="session-info")
 @click.argument("model_nx", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--json", is_flag=True, help="Output as JSON")
-def info(model_nx: Path, json: bool) -> None:
+def session_info(model_nx: Path, json: bool) -> None:
     """Display session information."""
-    console.print(f"\n[bold cyan]Session Info[/bold cyan]\n")
+    console.print("\n[bold cyan]Session Info[/bold cyan]\n")
     report = Nexora.load(model_nx)
     
     info_table = Table(show_header=True, header_style="bold cyan")

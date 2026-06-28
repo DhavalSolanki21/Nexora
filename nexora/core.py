@@ -4,17 +4,18 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+
 import pandas as pd
 
-from nexora.io.loaders import load_source
-from nexora.io.serializer import load_report
-from nexora.experiments import create_training_experiment, list_experiments
 from nexora.advanced import run_clustering, run_forecast
+from nexora.experiments import create_training_experiment, list_experiments
 from nexora.intelligence import (
     build_dataset_intelligence,
     detect_problem,
     suggest_targets,
 )
+from nexora.io.loaders import load_source
+from nexora.io.serializer import load_report
 from nexora.models.task_detector import detect_task_type
 from nexora.models.trainer import train_models
 from nexora.preprocessing.pipeline_builder import build_preprocessing
@@ -54,49 +55,46 @@ class Nexora:
             raise ValueError(f"Target column '{target}' not found.")
 
     @classmethod
-    def from_url(cls, url: str, target: str | None = None) -> "Nexora":
+    def from_url(cls, url: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_url
         return cls(load_from_url(url), target=target)
 
     @classmethod
-    def from_sql(cls, query: str, connection_string: str | None = None, target: str | None = None) -> "Nexora":
+    def from_sql(cls, query: str, connection_string: str | None = None, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_sql
         return cls(load_from_sql(query, connection_string), target=target)
 
     @classmethod
-    def from_postgres(cls, uri: str, table: str, target: str | None = None) -> "Nexora":
+    def from_postgres(cls, uri: str, table: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_postgres
         return cls(load_from_postgres(uri, table), target=target)
 
     @classmethod
-    def from_mongodb(cls, uri: str, collection: str, target: str | None = None) -> "Nexora":
+    def from_mongodb(cls, uri: str, collection: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_mongodb
         return cls(load_from_mongodb(uri, collection), target=target)
 
     @classmethod
-    def from_s3(cls, bucket: str, key: str, target: str | None = None) -> "Nexora":
+    def from_s3(cls, bucket: str, key: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_s3
         return cls(load_from_s3(bucket, key), target=target)
 
     @classmethod
-    def from_google_sheets(cls, sheet_id: str, target: str | None = None) -> "Nexora":
+    def from_google_sheets(cls, sheet_id: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_google_sheets
         return cls(load_from_google_sheets(sheet_id), target=target)
 
     @classmethod
-    def from_sklearn(cls, dataset_name: str, target: str | None = None) -> "Nexora":
+    def from_sklearn(cls, dataset_name: str, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_sklearn
         return cls(load_from_sklearn(dataset_name), target=target)
 
     @classmethod
-    def from_clipboard(cls, target: str | None = None) -> "Nexora":
+    def from_clipboard(cls, target: str | None = None) -> Nexora:
         from nexora.io.remote import load_from_clipboard
         return cls(load_from_clipboard(), target=target)
 
-    @classmethod
-    def load(cls, path: str | Path) -> "NexoraReport":
-        from nexora.io.serializer import load_report
-        return load_report(path)
+
 
     def profile(self) -> DatasetProfile:
         """Profile the dataset without training.

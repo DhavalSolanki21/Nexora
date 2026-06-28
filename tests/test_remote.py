@@ -1,4 +1,3 @@
-import sys
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -39,7 +38,7 @@ def test_load_from_url_csv(mock_get):
 
 def test_load_from_sql():
     try:
-        import duckdb
+        import duckdb  # noqa: F401
     except ImportError:
         with pytest.raises(ImportError, match="DuckDB is required"):
             load_from_sql("SELECT * FROM mock_table", "mock_engine")
@@ -59,8 +58,8 @@ def test_load_from_sql():
 
 def test_load_from_postgres():
     try:
-        import psycopg2
-        import sqlalchemy
+        import psycopg2  # noqa: F401
+        import sqlalchemy  # noqa: F401
     except ImportError:
         with pytest.raises(ImportError, match="psycopg2 and sqlalchemy are required"):
             load_from_postgres("postgresql://user:pass@localhost/db", "my_table")
@@ -78,7 +77,7 @@ def test_load_from_postgres():
 
 def test_load_from_mongodb():
     try:
-        import pymongo
+        import pymongo  # noqa: F401
     except ImportError:
         with pytest.raises(ImportError, match="pymongo is required"):
             load_from_mongodb("mongodb://localhost", "mydb.mycollection")
@@ -101,7 +100,7 @@ def test_load_from_mongodb():
 
 def test_load_from_s3_csv():
     try:
-        import boto3
+        import boto3  # noqa: F401
     except ImportError:
         with pytest.raises(ImportError, match="boto3 is required"):
             load_from_s3("mybucket", "data.csv")

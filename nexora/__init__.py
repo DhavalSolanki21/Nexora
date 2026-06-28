@@ -10,6 +10,7 @@ from nexora.types import (
     PredictionReceipt,
     TrainingSettings,
 )
+
 # Alias for backward compatibility
 NexoraPrediction = Nexora
 

@@ -15,18 +15,15 @@ Stages:
 from __future__ import annotations
 
 import sys
-import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from rich.columns import Columns
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
-from rich.prompt import Confirm, IntPrompt, FloatPrompt, Prompt
+from rich.prompt import Confirm, FloatPrompt, IntPrompt, Prompt
 from rich.table import Table
-from rich.text import Text
 from rich.tree import Tree
 
 from nexora import Nexora
@@ -496,8 +493,8 @@ def _stage_pipeline(df: pd.DataFrame, target: str, settings: dict) -> object:
     for col in schema.numeric_features:
         scale_branch.add(f"[dim]{col}[/dim] → StandardScaler")
 
-    outlier_branch = tree.add(f"📊 Outliers → [green]{'IQR capping' if config.outlier_cap else 'Disabled'}[/green]")
-    duplicate_branch = tree.add(f"🧹 Duplicates → [green]{'Deduplicate rows' if config.remove_duplicates else 'Keep rows'}[/green]")
+    tree.add(f"📊 Outliers → [green]{'IQR capping' if config.outlier_cap else 'Disabled'}[/green]")
+    tree.add(f"🧹 Duplicates → [green]{'Deduplicate rows' if config.remove_duplicates else 'Keep rows'}[/green]")
 
     if schema.id_columns:
         drop_branch = tree.add("🗑️  Dropped Columns")

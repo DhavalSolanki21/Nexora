@@ -10,19 +10,15 @@ Run:  pytest tests/test_full_system.py -v --tb=short
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from nexora import Nexora, NexoraReport
-
 
 # ─────────────────────────── helpers ───────────────────────────
 
@@ -614,10 +610,14 @@ class TestCLI:
     """Tests 84–95: CLI commands."""
 
     def _run_cli(self, args: list[str], cwd: str | None = None) -> subprocess.CompletedProcess:
+        import os
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
         return subprocess.run(
             [sys.executable, "-m", "nexora.cli.main"] + args,
-            capture_output=True, text=True, timeout=120,
+            capture_output=True, encoding="utf-8", timeout=120,
             cwd=cwd,
+            env=env,
         )
 
     def test_84_cli_help(self):
@@ -679,7 +679,7 @@ class TestCLI:
         m2 = tmp_path / "m2.nx"
         self._run_cli(["train", str(reg_csv), "--target", "target", "--out", str(m1)])
         self._run_cli(["train", str(reg_csv), "--target", "target", "--out", str(m2)])
-        result = self._run_cli(["compare", str(m1), str(m2)])
+        result = self._run_cli(["compare-sessions", str(m1), str(m2)])
         assert "Score Delta" in result.stdout
 
     def test_94_cli_report_html(self, reg_csv, tmp_path):

@@ -5,7 +5,7 @@ This file demonstrates the build configuration and post-install hooks.
 The actual configuration is in pyproject.toml - this is for reference.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 setup(
     name="nexora-prediction",

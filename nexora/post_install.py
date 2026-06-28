@@ -4,7 +4,6 @@ Run automatically after pip install nexora-prediction.
 """
 
 import sys
-import time
 from datetime import datetime
 
 NEXORA_LOGO = """
@@ -156,8 +155,8 @@ def print_installation_info():
     try:
         import nexora
         print(f"  Nexora Version:  {nexora.__version__}")
-    except:
-        print(f"  Nexora Version:  0.1.1")
+    except Exception:
+        print("  Nexora Version:  0.1.1")
     print(f"  Python Version:  {sys.version.split()[0]}")
     print(f"  Installation:    {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 

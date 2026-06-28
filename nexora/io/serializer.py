@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def save_report(report: "NexoraReport", path: str | Path) -> Path:
+def save_report(report: NexoraReport, path: str | Path) -> Path:
     """Persist a report to a `.nx` session file.
 
     Args:
@@ -31,7 +31,7 @@ def save_report(report: "NexoraReport", path: str | Path) -> Path:
     return output
 
 
-def load_report(path: str | Path) -> "NexoraReport":
+def load_report(path: str | Path) -> NexoraReport:
     """Load a `.nx` session file as a ready NexoraReport.
 
     Args:

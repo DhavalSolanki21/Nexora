@@ -1,6 +1,7 @@
 """pytest-nexora: Pytest plugin for asserting ML invariants."""
 
 import pandas as pd
+
 from nexora.report import NexoraReport
 
 

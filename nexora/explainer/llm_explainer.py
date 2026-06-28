@@ -32,7 +32,7 @@ def _get_llm_response(system_prompt: str, user_prompt: str) -> str:
             response.raise_for_status()
             return response.json()["message"]["content"]
         except Exception as e:
-            raise RuntimeError(f"Ollama error: {e}")
+            raise RuntimeError(f"Ollama error: {e}") from e
             
     elif provider == "openai":
         try:
@@ -54,7 +54,7 @@ def _get_llm_response(system_prompt: str, user_prompt: str) -> str:
             )
             return response.choices[0].message.content
         except Exception as e:
-            raise RuntimeError(f"OpenAI error: {e}")
+            raise RuntimeError(f"OpenAI error: {e}") from e
             
     else:
         raise ValueError(f"Unknown LLM provider: {provider}")

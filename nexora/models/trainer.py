@@ -26,8 +26,8 @@ from nexora.types import (
     ModelSpec,
     PreprocessingBundle,
     TaskType,
-    TrainingSettings,
     TrainingArtifacts,
+    TrainingSettings,
 )
 
 ProgressCallback = Callable[[dict[str, Any]], None]

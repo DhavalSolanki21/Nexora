@@ -20,7 +20,6 @@ from nexora.types import (
     TaskType,
 )
 
-
 TARGET_NAME_HINTS = {
     "target",
     "label",

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import io
-from typing import Any
 
 import pandas as pd
 
@@ -68,7 +67,7 @@ def load_from_postgres(uri: str, table: str) -> pd.DataFrame:
         Loaded DataFrame.
     """
     try:
-        import psycopg2
+        import psycopg2  # noqa: F401
         import sqlalchemy
     except ImportError as e:
         raise ImportError("psycopg2 and sqlalchemy are required for from_postgres. Run `pip install nexora[sql]`") from e
@@ -144,7 +143,7 @@ def load_from_google_sheets(sheet_id: str) -> pd.DataFrame:
     try:
         return pd.read_csv(url)
     except Exception as e:
-        raise RuntimeError(f"Could not read Google Sheet (ensure it is accessible via link): {e}")
+        raise RuntimeError(f"Could not read Google Sheet (ensure it is accessible via link): {e}") from e
 
 
 def load_from_sklearn(dataset_name: str) -> pd.DataFrame:
@@ -190,4 +189,4 @@ def load_from_clipboard() -> pd.DataFrame:
     try:
         return pd.read_clipboard()
     except Exception as e:
-        raise RuntimeError(f"Failed to read from clipboard. Make sure text is copied: {e}")
+        raise RuntimeError(f"Failed to read from clipboard. Make sure text is copied: {e}") from e

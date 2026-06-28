@@ -55,10 +55,9 @@ def load_custom_model(url_or_repo: str) -> ModelSpec:
     Returns:
         The dynamically loaded ModelSpec.
     """
-    import urllib.request
-    import tempfile
     import importlib.util
-    import os
+    import tempfile
+    import urllib.request
     
     if url_or_repo.startswith("http"):
         # Download the spec

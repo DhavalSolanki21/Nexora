@@ -89,6 +89,6 @@ def _importance_frame(feature_names: list[str], raw: np.ndarray) -> pd.DataFrame
             "importance": round(float(value), 8),
             "percentage": round(float(value) / total * 100, 2),
         }
-        for feature, value in zip(feature_names, values)
+        for feature, value in zip(feature_names, values, strict=False)
     ]
     return pd.DataFrame(rows).sort_values("importance", ascending=False).reset_index(drop=True)

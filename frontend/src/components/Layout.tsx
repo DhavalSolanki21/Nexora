@@ -1,5 +1,6 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Shield } from "lucide-react";
 import NexoraLogo from "./NexoraLogo";
 
 export default function Layout() {
@@ -41,6 +42,10 @@ export default function Layout() {
                 </a>
               </>
             )}
+            <Link to="/cybershield" className="flex items-center gap-1.5 hover:text-nexora-accent transition-colors duration-300 underline-animate font-medium">
+              <Shield size={15} />
+              CyberShield
+            </Link>
           </nav>
 
           <Link to="/" className="btn-ghost text-sm group font-medium">

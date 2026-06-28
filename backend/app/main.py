@@ -6,6 +6,7 @@ from app.routers import (
     advanced,
     auth,
     chat,
+    cyber_stream,
     datasets,
     explainability,
     pipeline,
@@ -35,6 +36,7 @@ app.include_router(training.public_router)
 app.include_router(chat.router)
 app.include_router(explainability.router)
 app.include_router(advanced.router)
+app.include_router(cyber_stream.router)
 
 
 from fastapi.responses import HTMLResponse

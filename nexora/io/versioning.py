@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+
 import pandas as pd
 
 
@@ -12,7 +13,7 @@ def init_dvc(repo_path: str = "."):
         try:
             subprocess.run(["dvc", "init"], cwd=repo_path, check=True, capture_output=True)
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"Failed to initialize DVC: {e.stderr.decode()}")
+            raise RuntimeError(f"Failed to initialize DVC: {e.stderr.decode()}") from e
 
 
 def snapshot_data(df: pd.DataFrame, dataset_name: str, version_tag: str, repo_path: str = ".") -> str:
@@ -47,6 +48,6 @@ def snapshot_data(df: pd.DataFrame, dataset_name: str, version_tag: str, repo_pa
         # Tag it
         subprocess.run(["git", "tag", "-a", version_tag, "-m", f"Data version {version_tag}"], cwd=repo_path, check=False, capture_output=True)
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to track data with DVC: {e.stderr.decode() if e.stderr else str(e)}")
+        raise RuntimeError(f"Failed to track data with DVC: {e.stderr.decode() if e.stderr else str(e)}") from e
         
     return file_path

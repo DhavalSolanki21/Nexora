@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def generate_notebook(report: "NexoraReport", model_name: str | None = None) -> str:
+def generate_notebook(report: NexoraReport, model_name: str | None = None) -> str:
     """Generate a Jupyter notebook (.ipynb) for model training and prediction.
 
     Args:
@@ -237,7 +237,7 @@ def _code_cell(content: str) -> dict[str, Any]:
 
 
 def _resolve_model(
-    report: "NexoraReport", model_name: str | None
+    report: NexoraReport, model_name: str | None
 ) -> tuple[ModelResult, ModelSpec]:
     """Resolve the target model from report."""
 
