@@ -1,21 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  Archive,
-  ArchiveRestore,
-  Database,
-  Download,
-  Loader2,
-  Trash2,
-} from "lucide-react";
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Archive, ArchiveRestore, Database, Download, Loader2, Trash2 } from 'lucide-react';
 import {
   archiveDataset,
   deleteDataset,
   getDatasetHistory,
   getReportDownloadUrl,
   type DatasetHistoryItem,
-} from "../api/client";
+} from '../api/client';
 
 export default function DatasetHistoryPage() {
   const [items, setItems] = useState<DatasetHistoryItem[]>([]);
@@ -29,7 +22,7 @@ export default function DatasetHistoryPage() {
       setItems(await getDatasetHistory(includeArchived));
       setError(null);
     } catch {
-      setError("Could not load dataset history.");
+      setError('Could not load dataset history.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +38,9 @@ export default function DatasetHistoryPage() {
   };
 
   const remove = async (item: DatasetHistoryItem) => {
-    const confirmed = window.confirm(`Delete ${item.filename}? This removes local files and model artifacts.`);
+    const confirmed = window.confirm(
+      `Delete ${item.filename}? This removes local files and model artifacts.`,
+    );
     if (!confirmed) return;
     await deleteDataset(item.dataset_id);
     await load();
@@ -95,7 +90,7 @@ export default function DatasetHistoryPage() {
           {items.map((item) => (
             <motion.article
               key={item.dataset_id}
-              className={`glass p-5 ${item.archived ? "opacity-70" : ""}`}
+              className={`glass p-5 ${item.archived ? 'opacity-70' : ''}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -108,7 +103,8 @@ export default function DatasetHistoryPage() {
                     {item.filename}
                   </Link>
                   <p className="text-xs text-gray-400 mt-1">
-                    {item.rows.toLocaleString()} rows · {item.columns} columns · health {item.health_score}/100
+                    {item.rows.toLocaleString()} rows · {item.columns} columns · health{' '}
+                    {item.health_score}/100
                   </p>
                 </div>
                 <span className="text-[10px] uppercase tracking-wide px-2 py-1 rounded border border-gray-200 text-gray-500">
@@ -117,9 +113,9 @@ export default function DatasetHistoryPage() {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3 mt-5 text-sm">
-                <Info label="Target" value={item.target_column ?? "Not selected"} />
-                <Info label="Problem" value={item.problem_type ?? "Not configured"} />
-                <Info label="Last model" value={item.last_trained_model ?? "None"} />
+                <Info label="Target" value={item.target_column ?? 'Not selected'} />
+                <Info label="Problem" value={item.problem_type ?? 'Not configured'} />
+                <Info label="Last model" value={item.last_trained_model ?? 'None'} />
                 <Info label="Trained models" value={String(item.trained_model_count)} />
               </div>
 
@@ -128,16 +124,31 @@ export default function DatasetHistoryPage() {
                   Open
                 </Link>
                 {item.report_available && (
-                  <a href={getReportDownloadUrl(item.dataset_id)} className="btn-ghost border border-gray-200 text-sm">
+                  <a
+                    href={getReportDownloadUrl(item.dataset_id)}
+                    className="btn-ghost border border-gray-200 text-sm"
+                  >
                     <Download className="w-4 h-4" />
                     Report
                   </a>
                 )}
-                <button type="button" onClick={() => toggleArchive(item)} className="btn-ghost border border-gray-200 text-sm">
-                  {item.archived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
-                  {item.archived ? "Restore" : "Archive"}
+                <button
+                  type="button"
+                  onClick={() => toggleArchive(item)}
+                  className="btn-ghost border border-gray-200 text-sm"
+                >
+                  {item.archived ? (
+                    <ArchiveRestore className="w-4 h-4" />
+                  ) : (
+                    <Archive className="w-4 h-4" />
+                  )}
+                  {item.archived ? 'Restore' : 'Archive'}
                 </button>
-                <button type="button" onClick={() => remove(item)} className="btn-ghost border border-red-100 text-sm text-red-500 hover:text-red-600">
+                <button
+                  type="button"
+                  onClick={() => remove(item)}
+                  className="btn-ghost border border-red-100 text-sm text-red-500 hover:text-red-600"
+                >
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </button>

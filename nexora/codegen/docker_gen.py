@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def generate_docker(report: "NexoraReport", model_name: str | None = None) -> tuple[str, str]:
+def generate_docker(report: NexoraReport, model_name: str | None = None) -> tuple[str, str]:
     """Generate Docker deployment files (Dockerfile + requirements.txt).
 
     Args:
@@ -100,7 +100,7 @@ python-multipart>=0.0.6
 
 
 def _resolve_model(
-    report: "NexoraReport", model_name: str | None
+    report: NexoraReport, model_name: str | None
 ) -> tuple[ModelResult, ModelSpec]:
     """Resolve the target model from report."""
 

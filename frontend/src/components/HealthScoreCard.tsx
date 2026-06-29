@@ -1,22 +1,25 @@
-import { motion } from "framer-motion";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-import type { HealthScore } from "../types/dataset";
+import { motion } from 'framer-motion';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import type { HealthScore } from '../types/dataset';
 
-const METRICS: { key: keyof Omit<HealthScore, "overall">; label: string }[] = [
-  { key: "missing_values", label: "Missing Values" },
-  { key: "data_quality", label: "Data Quality" },
-  { key: "prediction_readiness", label: "Prediction Readiness" },
-  { key: "feature_quality", label: "Feature Quality" },
+const METRICS: { key: keyof Omit<HealthScore, 'overall'>; label: string }[] = [
+  { key: 'missing_values', label: 'Missing Values' },
+  { key: 'data_quality', label: 'Data Quality' },
+  { key: 'prediction_readiness', label: 'Prediction Readiness' },
+  { key: 'feature_quality', label: 'Feature Quality' },
 ];
 
-const COLORS = ["#93C998", "#7ab37f", "#a8d9a8", "#6a9b6f"];
+const COLORS = ['#93C998', '#7ab37f', '#a8d9a8', '#6a9b6f'];
 
 interface Props {
   health: HealthScore;
 }
 
 export default function HealthScoreCard({ health }: Props) {
-  const pieData = [{ name: "score", value: health.overall }, { name: "rest", value: 100 - health.overall }];
+  const pieData = [
+    { name: 'score', value: health.overall },
+    { name: 'rest', value: 100 - health.overall },
+  ];
 
   return (
     <motion.div
@@ -57,7 +60,9 @@ export default function HealthScoreCard({ health }: Props) {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-display text-3xl font-bold text-nexora-dark">{health.overall}</span>
+            <span className="font-display text-3xl font-bold text-nexora-dark">
+              {health.overall}
+            </span>
             <span className="text-xs text-nexora-dark/40">/ 100</span>
           </div>
         </div>

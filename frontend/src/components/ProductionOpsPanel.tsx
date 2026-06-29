@@ -1,14 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  AlertCircle,
-  Copy,
-  Download,
-  KeyRound,
-  Loader2,
-  Rocket,
-  Upload,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { AlertCircle, Copy, Download, KeyRound, Loader2, Rocket, Upload } from 'lucide-react';
 import {
   createDeployment,
   deactivateDeployment,
@@ -17,8 +9,8 @@ import {
   runBatchPrediction,
   type BatchPredictionSummary,
   type ModelDeployment,
-} from "../api/client";
-import type { ProductionStatus } from "../types/production";
+} from '../api/client';
+import type { ProductionStatus } from '../types/production';
 
 interface Props {
   datasetId: string;
@@ -35,10 +27,10 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
   const [error, setError] = useState<string | null>(null);
 
   const ready = Boolean(status?.models.length);
-  const baseApi = (import.meta.env.VITE_API_BASE_URL ?? "/api").replace(/\/$/, "");
+  const baseApi = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '');
   const selected = useMemo(
     () => selectedModelIds.filter((id) => status?.models.some((model) => model.model_id === id)),
-    [selectedModelIds, status]
+    [selectedModelIds, status],
   );
 
   const load = useCallback(async () => {
@@ -57,28 +49,36 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
 
   const submitBatch = async () => {
     if (!file) return;
-    setBusy("batch");
+    setBusy('batch');
     setError(null);
     try {
-      const batch = await runBatchPrediction(datasetId, file, selected.length ? selected : undefined);
+      const batch = await runBatchPrediction(
+        datasetId,
+        file,
+        selected.length ? selected : undefined,
+      );
       setBatches((current) => [batch, ...current]);
       setFile(null);
     } catch (err: unknown) {
-      setError(apiError(err, "Batch prediction failed."));
+      setError(apiError(err, 'Batch prediction failed.'));
     } finally {
       setBusy(null);
     }
   };
 
   const deploy = async () => {
-    setBusy("deploy");
+    setBusy('deploy');
     setError(null);
     try {
-      const res = await createDeployment(datasetId, "Production endpoint", selected.length ? selected : undefined);
+      const res = await createDeployment(
+        datasetId,
+        'Production endpoint',
+        selected.length ? selected : undefined,
+      );
       setDeployments((current) => [res.deployment, ...current]);
       setApiKey(res.api_key);
     } catch (err: unknown) {
-      setError(apiError(err, "Could not create deployment endpoint."));
+      setError(apiError(err, 'Could not create deployment endpoint.'));
     } finally {
       setBusy(null);
     }
@@ -100,7 +100,11 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
   }
 
   return (
-    <motion.section className="glass p-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.section
+      className="glass p-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5 mb-5">
         <div>
           <p className="text-[11px] uppercase tracking-widest text-emerald-600 font-mono mb-1">
@@ -111,8 +115,17 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
             Use saved models against new files or expose a stable prediction endpoint.
           </p>
         </div>
-        <button type="button" onClick={deploy} disabled={busy === "deploy"} className="btn-primary shrink-0">
-          {busy === "deploy" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rocket className="w-4 h-4" />}
+        <button
+          type="button"
+          onClick={deploy}
+          disabled={busy === 'deploy'}
+          className="btn-primary shrink-0"
+        >
+          {busy === 'deploy' ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Rocket className="w-4 h-4" />
+          )}
           Create API Endpoint
         </button>
       </div>
@@ -146,10 +159,14 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
           <button
             type="button"
             onClick={submitBatch}
-            disabled={!file || busy === "batch"}
+            disabled={!file || busy === 'batch'}
             className="btn-primary w-full mt-4 disabled:opacity-50"
           >
-            {busy === "batch" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {busy === 'batch' ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4" />
+            )}
             Run Batch
           </button>
 
@@ -158,16 +175,23 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
               <p className="text-xs text-gray-400">No batch files processed yet.</p>
             ) : (
               batches.map((batch) => (
-                <div key={batch.batch_id} className="rounded-lg bg-gray-50 border border-gray-100 p-3">
+                <div
+                  key={batch.batch_id}
+                  className="rounded-lg bg-gray-50 border border-gray-100 p-3"
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm text-gray-800 truncate">{batch.filename}</p>
                       <p className="text-xs text-gray-400">
-                        {batch.rows.toLocaleString()} rows · drift {batch.drift.severity ?? "low"}
+                        {batch.rows.toLocaleString()} rows · drift {batch.drift.severity ?? 'low'}
                       </p>
                     </div>
                     <a
-                      href={baseApi.endsWith("/api") ? `${baseApi.replace(/\/api$/, "")}${batch.download_url}` : `${baseApi}${batch.download_url}`}
+                      href={
+                        baseApi.endsWith('/api')
+                          ? `${baseApi.replace(/\/api$/, '')}${batch.download_url}`
+                          : `${baseApi}${batch.download_url}`
+                      }
                       className="p-2 rounded-lg text-emerald-700 hover:bg-emerald-50"
                       title="Download predictions"
                     >
@@ -195,12 +219,16 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
               <p className="text-xs text-gray-400">No API endpoints created yet.</p>
             ) : (
               deployments.map((deployment) => (
-                <div key={deployment.deployment_id} className="rounded-lg bg-gray-50 border border-gray-100 p-3">
+                <div
+                  key={deployment.deployment_id}
+                  className="rounded-lg bg-gray-50 border border-gray-100 p-3"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm text-gray-800">{deployment.name}</p>
                       <p className="text-xs text-gray-400">
-                        {deployment.model_ids.length} models · {deployment.active ? "active" : "inactive"}
+                        {deployment.model_ids.length} models ·{' '}
+                        {deployment.active ? 'active' : 'inactive'}
                       </p>
                     </div>
                     {deployment.active && (
@@ -216,11 +244,15 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
                   </div>
                   <div className="mt-2 flex gap-2">
                     <code className="flex-1 text-[11px] bg-white rounded p-2 overflow-hidden text-ellipsis">
-                      {deployment.predict_url.replace("http://127.0.0.1:8000/api", baseApi)}
+                      {deployment.predict_url.replace('http://127.0.0.1:8000/api', baseApi)}
                     </code>
                     <button
                       type="button"
-                      onClick={() => navigator.clipboard.writeText(deployment.predict_url.replace("http://127.0.0.1:8000/api", baseApi))}
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          deployment.predict_url.replace('http://127.0.0.1:8000/api', baseApi),
+                        )
+                      }
                       className="p-2 rounded-lg text-gray-500 hover:bg-white"
                       title="Copy URL"
                     >
@@ -228,7 +260,9 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
                     </button>
                   </div>
                   {deployment.api_key_preview && (
-                    <p className="text-[11px] text-gray-400 mt-2">Key: {deployment.api_key_preview}</p>
+                    <p className="text-[11px] text-gray-400 mt-2">
+                      Key: {deployment.api_key_preview}
+                    </p>
                   )}
                 </div>
               ))
@@ -242,6 +276,5 @@ export default function ProductionOpsPanel({ datasetId, status, selectedModelIds
 
 function apiError(error: unknown, fallback: string) {
   const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-  return typeof detail === "string" ? detail : fallback;
+  return typeof detail === 'string' ? detail : fallback;
 }
-

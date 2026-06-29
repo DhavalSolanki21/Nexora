@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import type { ColumnProfile } from "../types/dataset";
+import { motion } from 'framer-motion';
+import type { ColumnProfile } from '../types/dataset';
 
 interface Props {
   profiles: ColumnProfile[];
@@ -41,7 +41,9 @@ export default function ColumnProfiles({ profiles }: Props) {
                 <td className="px-6 py-3 font-mono text-gray-800">{p.name}</td>
                 <td className="px-4 py-3 text-gray-500">{p.dtype}</td>
                 <td className="px-4 py-3">
-                  <span className={p.missing_pct > 20 ? "text-amber-600 font-medium" : "text-gray-500"}>
+                  <span
+                    className={p.missing_pct > 20 ? 'text-amber-600 font-medium' : 'text-gray-500'}
+                  >
                     {p.missing_pct}%
                   </span>
                 </td>
@@ -65,14 +67,12 @@ export default function ColumnProfiles({ profiles }: Props) {
 
 function Tag({ label, color }: { label: string; color: string }) {
   const colors: Record<string, string> = {
-    green: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    teal: "bg-teal-50/70 text-teal-700 border-teal-200",
-    amber: "bg-amber-50 text-amber-700 border-amber-200",
-    gray: "bg-gray-100 text-gray-500 border-gray-200",
+    green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    teal: 'bg-teal-50/70 text-teal-700 border-teal-200',
+    amber: 'bg-amber-50 text-amber-700 border-amber-200',
+    gray: 'bg-gray-100 text-gray-500 border-gray-200',
   };
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${colors[color]}`}>
-      {label}
-    </span>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${colors[color]}`}>{label}</span>
   );
 }

@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { Lightbulb, AlertTriangle, Gauge } from "lucide-react";
+import { motion } from 'framer-motion';
+import { Lightbulb, AlertTriangle, Gauge } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -10,11 +10,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
-import type { PreprocessResult } from "../types/pipeline";
-import PreprocessSteps from "./PreprocessSteps";
+} from 'recharts';
+import type { PreprocessResult } from '../types/pipeline';
+import PreprocessSteps from './PreprocessSteps';
 
-const LAB_COLORS = ["#10b981", "#34a853", "#fbbc05", "#ea4335", "#a142f4", "#00acc1"];
+const LAB_COLORS = ['#10b981', '#34a853', '#fbbc05', '#ea4335', '#a142f4', '#00acc1'];
 
 interface Props {
   result: PreprocessResult;
@@ -23,8 +23,8 @@ interface Props {
 export default function InsightsPanel({ result }: Props) {
   const { insights, meta, steps } = result;
   const flowData = [
-    { stage: "Rows", before: meta.rows_before, after: meta.rows_after },
-    { stage: "Columns", before: meta.columns_before, after: meta.columns_after },
+    { stage: 'Rows', before: meta.rows_before, after: meta.rows_after },
+    { stage: 'Columns', before: meta.columns_before, after: meta.columns_after },
   ];
 
   return (
@@ -82,19 +82,19 @@ export default function InsightsPanel({ result }: Props) {
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={insights.top_correlations} layout="vertical" margin={{ left: 8 }}>
                 <CartesianGrid stroke="#eef2f7" horizontal={false} />
-                <XAxis type="number" domain={[0, 1]} tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <XAxis type="number" domain={[0, 1]} tick={{ fill: '#6b7280', fontSize: 11 }} />
                 <YAxis
                   type="category"
                   dataKey="feature"
                   width={110}
-                  tick={{ fill: "#374151", fontSize: 10 }}
+                  tick={{ fill: '#374151', fontSize: 10 }}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: "#ffffff",
-                    border: "1px solid #a7f3d0",
+                    background: '#ffffff',
+                    border: '1px solid #a7f3d0',
                     borderRadius: 12,
-                    boxShadow: "0 12px 28px rgba(16,185,129,0.12)",
+                    boxShadow: '0 12px 28px rgba(16,185,129,0.12)',
                   }}
                 />
                 <Bar dataKey="correlation" radius={[0, 6, 6, 0]}>
@@ -132,14 +132,14 @@ export default function InsightsPanel({ result }: Props) {
         <ResponsiveContainer width="100%" height={190}>
           <BarChart data={flowData}>
             <CartesianGrid stroke="#eef2f7" vertical={false} />
-            <XAxis dataKey="stage" tick={{ fill: "#374151", fontSize: 11 }} />
-            <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+            <XAxis dataKey="stage" tick={{ fill: '#374151', fontSize: 11 }} />
+            <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
             <Tooltip
               contentStyle={{
-                background: "#ffffff",
-                border: "1px solid #a7f3d0",
+                background: '#ffffff',
+                border: '1px solid #a7f3d0',
                 borderRadius: 12,
-                boxShadow: "0 12px 28px rgba(16,185,129,0.12)",
+                boxShadow: '0 12px 28px rgba(16,185,129,0.12)',
               }}
             />
             <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -162,14 +162,14 @@ export default function InsightsPanel({ result }: Props) {
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={insights.class_balance}>
               <CartesianGrid stroke="#eef2f7" vertical={false} />
-              <XAxis dataKey="class" tick={{ fill: "#374151", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} unit="%" />
+              <XAxis dataKey="class" tick={{ fill: '#374151', fontSize: 11 }} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} unit="%" />
               <Tooltip
                 contentStyle={{
-                  background: "#ffffff",
-                  border: "1px solid #a7f3d0",
+                  background: '#ffffff',
+                  border: '1px solid #a7f3d0',
                   borderRadius: 12,
-                  boxShadow: "0 12px 28px rgba(16,185,129,0.12)",
+                  boxShadow: '0 12px 28px rgba(16,185,129,0.12)',
                 }}
               />
               <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
@@ -255,8 +255,8 @@ export default function InsightsPanel({ result }: Props) {
                       .map((k) => (
                         <td key={k} className="px-2 py-1.5 text-gray-600 whitespace-nowrap">
                           {row[k] == null
-                            ? "—"
-                            : typeof row[k] === "number"
+                            ? '—'
+                            : typeof row[k] === 'number'
                               ? (row[k] as number).toFixed(2)
                               : String(row[k])}
                         </td>
@@ -275,7 +275,7 @@ export default function InsightsPanel({ result }: Props) {
         animate={{ opacity: 1 }}
       >
         <p className="text-gray-500 text-sm">
-          Dataset is preprocessed and ready for{" "}
+          Dataset is preprocessed and ready for{' '}
           <span className="text-emerald-600 font-medium">Model Battle Arena</span>
         </p>
       </motion.div>

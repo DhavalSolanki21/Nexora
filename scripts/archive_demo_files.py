@@ -1,7 +1,7 @@
 """Safe cleanup script: moves notebooks and demo artifacts to examples/archive/ with timestamp."""
 import shutil
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 
 def main():

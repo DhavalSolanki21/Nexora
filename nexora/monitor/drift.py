@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-import numpy as np
 import pandas as pd
+
 
 @dataclass
 class DriftAlert:
@@ -23,8 +23,8 @@ class DriftAlert:
 def _run_evidently(training_df: pd.DataFrame, new_df: pd.DataFrame) -> Any:
     """Run Evidently Data Drift preset."""
     try:
-        from evidently.report import Report
         from evidently.metric_preset import DataDriftPreset
+        from evidently.report import Report
     except ImportError as e:
         raise ImportError("Evidently is required for drift detection. Run `pip install evidently`.") from e
 

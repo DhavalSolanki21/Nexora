@@ -1,6 +1,7 @@
-import pytest
 import pandas as pd
+import pytest
 from sklearn.linear_model import LinearRegression
+
 from nexora.explainer.pdp import get_partial_dependence
 from nexora.explainer.sensitivity import sensitivity
 

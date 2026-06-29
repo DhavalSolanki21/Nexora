@@ -1,11 +1,16 @@
 """Tests for monitoring and diagnostics."""
 
+import matplotlib
+
+matplotlib.use('Agg')
+
 import numpy as np
 import pandas as pd
 import pytest
 
 from nexora.core import Nexora
 from nexora.monitor.drift import detect_drift
+
 
 @pytest.fixture
 def regression_data():

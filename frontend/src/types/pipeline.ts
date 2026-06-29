@@ -1,4 +1,4 @@
-export type ProblemType = "classification" | "regression" | "time_series" | "clustering";
+export type ProblemType = 'classification' | 'regression' | 'time_series' | 'clustering';
 
 export interface ProblemDetection {
   problem_type: string;
@@ -14,7 +14,7 @@ export interface FeatureSelection {
   excluded_datetime_columns: string[];
 }
 
-import type { TrainingResult } from "./training";
+import type { TrainingResult } from './training';
 
 export interface DatasetSession {
   dataset_id: string;
@@ -22,7 +22,7 @@ export interface DatasetSession {
   problem_type: string | null;
   problem_detection: ProblemDetection | null;
   feature_selection: FeatureSelection | null;
-  status: "analyzed" | "configured" | "preprocessed" | "trained";
+  status: 'analyzed' | 'configured' | 'preprocessed' | 'trained';
   preprocess_result: PreprocessResult | null;
   training_result?: TrainingResult | null;
 }
@@ -80,7 +80,7 @@ export interface PreprocessResponse {
 export interface PreprocessOptions {
   missing_strategy?: string;
   outlier_method?: string;
-  scaling?: "standard" | "minmax" | "none";
+  scaling?: 'standard' | 'minmax' | 'none';
   encode_categorical?: boolean;
   remove_duplicates?: boolean;
   remove_constant?: boolean;

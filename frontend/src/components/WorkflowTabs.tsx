@@ -1,14 +1,14 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
-export type WorkflowTab = "overview" | "configure" | "studio" | "preprocess" | "arena" | "insights";
+export type WorkflowTab = 'overview' | 'configure' | 'studio' | 'preprocess' | 'arena' | 'insights';
 
 const TABS: { id: WorkflowTab; label: string; step: number }[] = [
-  { id: "overview", label: "Intelligence", step: 1 },
-  { id: "configure", label: "Target", step: 2 },
-  { id: "studio", label: "Predict", step: 3 },
-  { id: "preprocess", label: "Pipeline", step: 4 },
-  { id: "arena", label: "Compare", step: 5 },
-  { id: "insights", label: "Explain", step: 6 },
+  { id: 'overview', label: 'Intelligence', step: 1 },
+  { id: 'configure', label: 'Target', step: 2 },
+  { id: 'studio', label: 'Predict', step: 3 },
+  { id: 'preprocess', label: 'Pipeline', step: 4 },
+  { id: 'arena', label: 'Compare', step: 5 },
+  { id: 'insights', label: 'Explain', step: 6 },
 ];
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
   maxUnlocked: WorkflowTab;
 }
 
-const ORDER: WorkflowTab[] = ["overview", "configure", "studio", "preprocess", "arena", "insights"];
+const ORDER: WorkflowTab[] = ['overview', 'configure', 'studio', 'preprocess', 'arena', 'insights'];
 
 function tabIndex(t: WorkflowTab) {
   return ORDER.indexOf(t);
@@ -41,20 +41,22 @@ export default function WorkflowTabs({ active, onChange, maxUnlocked }: Props) {
             onClick={() => unlocked && onChange(tab.id)}
             className={`relative flex-1 min-w-[80px] flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
               isActive
-                ? "text-nexora-accent-dark font-semibold"
+                ? 'text-nexora-accent-dark font-semibold'
                 : unlocked
-                  ? "text-gray-500 hover:text-gray-700"
-                  : "text-gray-300 cursor-not-allowed"
+                  ? 'text-gray-500 hover:text-gray-700'
+                  : 'text-gray-300 cursor-not-allowed'
             }`}
           >
             {isActive && (
               <motion.div
                 layoutId="tab-bg"
                 className="absolute inset-0 bg-nexora-accent/10 border border-nexora-accent/30 rounded-lg"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
               />
             )}
-            <span className="relative z-10 font-mono text-[10px] text-nexora-accent/70 font-semibold">{tab.step}</span>
+            <span className="relative z-10 font-mono text-[10px] text-nexora-accent/70 font-semibold">
+              {tab.step}
+            </span>
             <span className="relative z-10">{tab.label}</span>
           </button>
         );

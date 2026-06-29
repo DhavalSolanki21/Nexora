@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def generate_pipeline(report: "NexoraReport", model_name: str | None = None) -> str:
+def generate_pipeline(report: NexoraReport, model_name: str | None = None) -> str:
     """Generate code to recreate the sklearn Pipeline programmatically.
 
     Args:
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 
 def _resolve_model(
-    report: "NexoraReport", model_name: str | None
+    report: NexoraReport, model_name: str | None
 ) -> tuple[ModelResult, ModelSpec]:
     """Resolve the target model from report."""
 

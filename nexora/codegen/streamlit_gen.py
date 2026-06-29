@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def generate_streamlit(report: "NexoraReport", model_name: str | None = None) -> str:
+def generate_streamlit(report: NexoraReport, model_name: str | None = None) -> str:
     """Generate a complete Streamlit application for interactive model prediction.
 
     Args:
@@ -307,7 +307,7 @@ def _categorical_input_block(categorical_features: list[str]) -> str:
 
 
 def _resolve_model(
-    report: "NexoraReport", model_name: str | None
+    report: NexoraReport, model_name: str | None
 ) -> tuple[ModelResult, ModelSpec]:
     """Resolve the target model from report."""
 

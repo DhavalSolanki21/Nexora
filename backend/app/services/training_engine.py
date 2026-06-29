@@ -193,9 +193,7 @@ def run_training(
                 "registry_total": len(all_specs),
                 "problem_type": problem_type,
                 "expected_total_sec": expected_total_sec,
-                "expected_per_model_sec": round(
-                    expected_total_sec / max(total, 1), 1
-                ),
+                "expected_per_model_sec": round(expected_total_sec / max(total, 1), 1),
                 "config": {
                     "test_split": test_split,
                     "cv_folds": cv_folds,

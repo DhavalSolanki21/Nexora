@@ -33,7 +33,7 @@ def _is_id_like(series: pd.Series) -> bool:
 def _infer_datetime(series: pd.Series) -> bool:
     if pd.api.types.is_datetime64_any_dtype(series):
         return True
-    
+
     sample = series.dropna().head(20)
     if len(sample) == 0:
         return False
@@ -41,7 +41,7 @@ def _infer_datetime(series: pd.Series) -> bool:
     if series.dtype == object:
         parsed = pd.to_datetime(sample, errors="coerce", format="mixed")
         return parsed.notna().mean() > 0.8
-        
+
     if pd.api.types.is_numeric_dtype(series):
         # Check if values look like Unix timestamps (seconds or milliseconds)
         # 946684800 = 2000-01-01, 2524608000 = 2050-01-01 (in seconds)

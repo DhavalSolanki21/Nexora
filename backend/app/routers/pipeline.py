@@ -20,7 +20,6 @@ from app.services.dataset_store import load_analysis, load_dataframe
 from app.services.insights_engine import generate_insights
 from app.services.preprocessing_engine import PreprocessingConfig, preprocess
 from app.services.problem_detector import detect_problem_type, suggest_feature_columns
-from app.services.timing_estimator import estimate_all
 from app.services.session_store import (
     load_processed_df,
     load_session,
@@ -28,6 +27,7 @@ from app.services.session_store import (
     save_session,
     update_session_preprocess,
 )
+from app.services.timing_estimator import estimate_all
 
 router = APIRouter(prefix="/api/datasets", tags=["pipeline"])
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import timezone, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -69,7 +69,7 @@ def create_experiment(
         run_id=str(uuid.uuid4()),
         dataset_id=dataset_id,
         kind=kind,  # type: ignore[arg-type]
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
         problem_type=problem_type,
         target_column=target_column,
         config=config or {},

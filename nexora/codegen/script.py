@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def generate_script(report: "NexoraReport", model_name: str | None = None) -> str:
+def generate_script(report: NexoraReport, model_name: str | None = None) -> str:
     """Generate standalone Python code for a trained leaderboard model.
 
     Args:
@@ -112,7 +112,7 @@ main()
 
 
 def _resolve_model(
-    report: "NexoraReport", model_name: str | None
+    report: NexoraReport, model_name: str | None
 ) -> tuple[ModelResult, ModelSpec]:
     if model_name is None:
         result = report.best_result

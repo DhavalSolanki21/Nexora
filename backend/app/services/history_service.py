@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
-from datetime import timezone, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.config import settings
@@ -45,7 +45,7 @@ def set_archived(dataset_id: str, archived: bool) -> None:
             {
                 "dataset_id": dataset_id,
                 "archived": archived,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(UTC).isoformat(),
             },
             indent=2,
         ),
@@ -90,10 +90,10 @@ def history_item(dataset_id: str) -> DatasetHistoryItem | None:
         trained_model_count=trained_count,
         report_available=report_path.exists(),
         archived=_read_archived(dataset_id),
-        created_at=datetime.fromtimestamp(stat.st_ctime, timezone.utc).isoformat()
+        created_at=datetime.fromtimestamp(stat.st_ctime, UTC).isoformat()
         if stat
         else None,
-        updated_at=datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat()
+        updated_at=datetime.fromtimestamp(stat.st_mtime, UTC).isoformat()
         if stat
         else None,
     )

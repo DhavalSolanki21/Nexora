@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Boxes, CalendarClock, Clock, Loader2, Play } from "lucide-react";
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Boxes, CalendarClock, Clock, Loader2, Play } from 'lucide-react';
 import {
   getClustering,
   getTimeSeries,
@@ -9,9 +9,9 @@ import {
   runTimeSeries,
   type ClusteringResult,
   type TimeSeriesResult,
-} from "../api/client";
-import type { DatasetAnalysis } from "../types/dataset";
-import { formatDuration } from "../utils/formatDuration";
+} from '../api/client';
+import type { DatasetAnalysis } from '../types/dataset';
+import { formatDuration } from '../utils/formatDuration';
 import {
   CartesianGrid,
   Line,
@@ -20,15 +20,15 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
+} from 'recharts';
 
 function pickDefaultDateColumn(analysis: DatasetAnalysis): string {
   const datetime = analysis.column_profiles.filter((p) => p.is_datetime).map((p) => p.name);
   if (datetime.length) return datetime[0];
   const fallback = analysis.column_profiles
-    .filter((p) => p.name.toLowerCase().includes("date") || p.name.toLowerCase().includes("time"))
+    .filter((p) => p.name.toLowerCase().includes('date') || p.name.toLowerCase().includes('time'))
     .map((p) => p.name);
-  return fallback[0] ?? "";
+  return fallback[0] ?? '';
 }
 
 function pickDefaultTargetColumn(analysis: DatasetAnalysis, dateColumn: string): string {
@@ -36,8 +36,8 @@ function pickDefaultTargetColumn(analysis: DatasetAnalysis, dateColumn: string):
     .filter((p) => p.is_numeric && p.name !== dateColumn)
     .map((p) => p.name);
   if (numeric.length) return numeric[0];
-  const suggestion = analysis.prediction_suggestions.find((s) => s.problem_type === "regression");
-  return suggestion?.target_column ?? numeric[0] ?? "";
+  const suggestion = analysis.prediction_suggestions.find((s) => s.problem_type === 'regression');
+  return suggestion?.target_column ?? numeric[0] ?? '';
 }
 
 export default function ExplorationModesPanel({
@@ -52,14 +52,14 @@ export default function ExplorationModesPanel({
   const [clusterCount, setClusterCount] = useState(3);
   const [dateColumn, setDateColumn] = useState(() => pickDefaultDateColumn(analysis));
   const [targetColumn, setTargetColumn] = useState(() =>
-    pickDefaultTargetColumn(analysis, pickDefaultDateColumn(analysis))
+    pickDefaultTargetColumn(analysis, pickDefaultDateColumn(analysis)),
   );
   const [periods, setPeriods] = useState(12);
-  const [frequency, setFrequency] = useState<"D" | "W" | "M">("M");
+  const [frequency, setFrequency] = useState<'D' | 'W' | 'M'>('M');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [timing, setTiming] = useState<{ clustering_sec: number; time_series_sec: number } | null>(
-    null
+    null,
   );
 
   const numericColumns = analysis.column_profiles
@@ -67,7 +67,7 @@ export default function ExplorationModesPanel({
     .map((p) => p.name);
   const dateColumns = analysis.column_profiles.filter((p) => p.is_datetime).map((p) => p.name);
   const fallbackDateOptions = analysis.column_profiles
-    .filter((p) => p.name.toLowerCase().includes("date") || p.name.toLowerCase().includes("time"))
+    .filter((p) => p.name.toLowerCase().includes('date') || p.name.toLowerCase().includes('time'))
     .map((p) => p.name);
   const timeDateOptions = [...new Set([...dateColumns, ...fallbackDateOptions])];
   const tsReady = Boolean(dateColumn && targetColumn);
@@ -81,7 +81,7 @@ export default function ExplorationModesPanel({
           setDateColumn(forecastData.date_column);
           setTargetColumn(forecastData.target_column);
           setPeriods(forecastData.periods);
-          setFrequency(forecastData.frequency as "D" | "W" | "M");
+          setFrequency(forecastData.frequency as 'D' | 'W' | 'M');
         }
         setTiming({
           clustering_sec: timingData.clustering_sec,
@@ -100,12 +100,12 @@ export default function ExplorationModesPanel({
   }, [forecast]);
 
   const startClustering = async () => {
-    setBusy("cluster");
+    setBusy('cluster');
     setError(null);
     try {
       setClusters(await runClustering(datasetId, { nClusters: clusterCount }));
     } catch (err: unknown) {
-      setError(apiError(err, "Clustering failed."));
+      setError(apiError(err, 'Clustering failed.'));
     } finally {
       setBusy(null);
     }
@@ -113,10 +113,10 @@ export default function ExplorationModesPanel({
 
   const startForecast = async () => {
     if (!dateColumn || !targetColumn) {
-      setError("Choose date and numeric target columns for forecasting.");
+      setError('Choose date and numeric target columns for forecasting.');
       return;
     }
-    setBusy("time");
+    setBusy('time');
     setError(null);
     try {
       setForecast(
@@ -125,24 +125,29 @@ export default function ExplorationModesPanel({
           targetColumn,
           periods,
           frequency,
-        })
+        }),
       );
     } catch (err: unknown) {
-      setError(apiError(err, "Forecasting failed."));
+      setError(apiError(err, 'Forecasting failed.'));
     } finally {
       setBusy(null);
     }
   };
 
   return (
-    <motion.section className="glass p-6 mb-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+    <motion.section
+      className="glass p-6 mb-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       <div className="mb-5">
         <p className="text-[11px] uppercase tracking-widest text-emerald-600 font-mono mb-1">
           Additional Modeling Modes
         </p>
         <h3 className="font-display text-lg text-gray-900">Clustering & Time-Series Forecasting</h3>
         <p className="text-sm text-gray-500 mt-1">
-          Run unsupervised segmentation or a dated numeric trend forecast directly from this dataset.
+          Run unsupervised segmentation or a dated numeric trend forecast directly from this
+          dataset.
         </p>
       </div>
 
@@ -161,11 +166,22 @@ export default function ExplorationModesPanel({
               className="h-10 rounded-lg border border-gray-200 px-3 text-sm"
             >
               {[2, 3, 4, 5, 6, 8].map((count) => (
-                <option key={count} value={count}>{count} clusters</option>
+                <option key={count} value={count}>
+                  {count} clusters
+                </option>
               ))}
             </select>
-            <button type="button" onClick={startClustering} disabled={busy === "cluster"} className="btn-primary py-2">
-              {busy === "cluster" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            <button
+              type="button"
+              onClick={startClustering}
+              disabled={busy === 'cluster'}
+              className="btn-primary py-2"
+            >
+              {busy === 'cluster' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
               Run
             </button>
           </div>
@@ -179,11 +195,15 @@ export default function ExplorationModesPanel({
           {clusters && (
             <div className="mt-4">
               <p className="text-xs text-gray-400 mb-3">
-                Silhouette {clusters.metrics.silhouette?.toFixed(3) ?? "-"} · inertia {clusters.metrics.inertia?.toLocaleString() ?? "-"}
+                Silhouette {clusters.metrics.silhouette?.toFixed(3) ?? '-'} · inertia{' '}
+                {clusters.metrics.inertia?.toLocaleString() ?? '-'}
               </p>
               <div className="grid sm:grid-cols-2 gap-2">
                 {clusters.clusters.map((cluster) => (
-                  <div key={String(cluster.cluster)} className="rounded-lg bg-gray-50 border border-gray-100 p-3">
+                  <div
+                    key={String(cluster.cluster)}
+                    className="rounded-lg bg-gray-50 border border-gray-100 p-3"
+                  >
                     <p className="text-sm text-gray-800">Cluster {String(cluster.cluster)}</p>
                     <p className="text-xs text-gray-400">
                       {String(cluster.size)} rows · {String(cluster.percentage)}%
@@ -208,7 +228,9 @@ export default function ExplorationModesPanel({
             >
               <option value="">Date column</option>
               {timeDateOptions.map((column) => (
-                <option key={column} value={column}>{column}</option>
+                <option key={column} value={column}>
+                  {column}
+                </option>
               ))}
             </select>
             <select
@@ -218,12 +240,14 @@ export default function ExplorationModesPanel({
             >
               <option value="">Numeric target</option>
               {numericColumns.map((column) => (
-                <option key={column} value={column}>{column}</option>
+                <option key={column} value={column}>
+                  {column}
+                </option>
               ))}
             </select>
             <select
               value={frequency}
-              onChange={(event) => setFrequency(event.target.value as "D" | "W" | "M")}
+              onChange={(event) => setFrequency(event.target.value as 'D' | 'W' | 'M')}
               className="h-10 rounded-lg border border-gray-200 px-3 text-sm"
             >
               <option value="D">Daily</option>
@@ -244,10 +268,14 @@ export default function ExplorationModesPanel({
             <button
               type="button"
               onClick={startForecast}
-              disabled={busy === "time" || !tsReady}
+              disabled={busy === 'time' || !tsReady}
               className="btn-primary py-2 disabled:opacity-50"
             >
-              {busy === "time" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              {busy === 'time' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
               Run Forecast
             </button>
             {timing && (
@@ -266,17 +294,32 @@ export default function ExplorationModesPanel({
           {forecast && (
             <div className="mt-4">
               <p className="text-xs text-gray-400 mb-3">
-                {forecast.date_column} → {forecast.target_column} · {forecast.frequency} ·{" "}
-                MAE {forecast.metrics.mae?.toLocaleString() ?? "-"} · R² {forecast.metrics.r2?.toFixed(3) ?? "-"}
+                {forecast.date_column} → {forecast.target_column} · {forecast.frequency} · MAE{' '}
+                {forecast.metrics.mae?.toLocaleString() ?? '-'} · R²{' '}
+                {forecast.metrics.r2?.toFixed(3) ?? '-'}
               </p>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={forecastChart} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
                   <CartesianGrid stroke="#eef2f7" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#6b7280" }} />
-                  <YAxis tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#6b7280' }} />
+                  <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} />
                   <Tooltip />
-                  <Line type="monotone" dataKey="actual" stroke="#4285f4" dot={false} strokeWidth={2} name="History" />
-                  <Line type="monotone" dataKey="forecast" stroke="#34a853" dot={false} strokeWidth={2} name="Forecast" />
+                  <Line
+                    type="monotone"
+                    dataKey="actual"
+                    stroke="#4285f4"
+                    dot={false}
+                    strokeWidth={2}
+                    name="History"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke="#34a853"
+                    dot={false}
+                    strokeWidth={2}
+                    name="Forecast"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -289,5 +332,5 @@ export default function ExplorationModesPanel({
 
 function apiError(error: unknown, fallback: string) {
   const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-  return typeof detail === "string" ? detail : fallback;
+  return typeof detail === 'string' ? detail : fallback;
 }

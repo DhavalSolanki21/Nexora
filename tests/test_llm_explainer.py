@@ -1,7 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from nexora.explainer.llm_explainer import generate_explanation, ask_question, what_if
+
 from nexora.config import config
+from nexora.explainer.llm_explainer import ask_question, generate_explanation, what_if
 
 
 @pytest.fixture

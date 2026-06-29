@@ -31,7 +31,9 @@ def run_clustering(
     ]
     columns = [column for column in columns if column in df.columns]
     if not columns:
-        raise ValueError("At least one usable feature column is required for clustering.")
+        raise ValueError(
+            "At least one usable feature column is required for clustering."
+        )
     if len(df) < n_clusters:
         raise ValueError("Number of clusters cannot exceed row count.")
 
@@ -98,7 +100,9 @@ def run_forecast(
     if date_column not in df.columns or target_column not in df.columns:
         raise ValueError("Date and target columns must exist.")
     series = df[[date_column, target_column]].copy()
-    series[date_column] = pd.to_datetime(series[date_column], errors="coerce", format="mixed")
+    series[date_column] = pd.to_datetime(
+        series[date_column], errors="coerce", format="mixed"
+    )
     series[target_column] = pd.to_numeric(series[target_column], errors="coerce")
     series = series.dropna().sort_values(date_column)
     if len(series) < 6:
@@ -107,11 +111,30 @@ def run_forecast(
     freq = frequency.upper()
     if freq not in {"D", "W", "M"}:
         raise ValueError("frequency must be D, W, or M.")
-    grouped = (
-        series.groupby(pd.Grouper(key=date_column, freq=freq))[target_column]
-        .mean()
-        .dropna()
-    )
+    # Bypass pd.Grouper/resample due to Python 3.12 C-extension segfaults
+    # We group using Python's native datetime.date to avoid Cython period/resample bugs
+    from datetime import date, timedelta
+
+    raw_dates = series[date_column].tolist()
+    py_dates = []
+    for d in raw_dates:
+        if hasattr(d, "to_pydatetime"):
+            py_dates.append(d.to_pydatetime().date())
+        elif hasattr(d, "date"):
+            py_dates.append(d.date())
+        else:
+            py_dates.append(d)
+
+    if freq == "D":
+        group_keys = py_dates
+    elif freq == "W":
+        group_keys = [d - timedelta(days=d.weekday()) for d in py_dates]
+    else:  # M
+        group_keys = [date(d.year, d.month, 1) for d in py_dates]
+
+    series["_group_key"] = group_keys
+    grouped = series.groupby("_group_key")[target_column].mean().dropna()
+    grouped.index = pd.to_datetime(grouped.index)
     if len(grouped) < 6:
         raise ValueError("Not enough observations remain after date grouping.")
 
@@ -123,18 +146,26 @@ def run_forecast(
     pred_test = model.predict(t[-holdout:])
     metrics = {
         "mae": round(float(mean_absolute_error(y[-holdout:], pred_test)), 4),
-        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4) if holdout >= 2 else 0.0,
+        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4)
+        if holdout >= 2
+        else 0.0,
     }
     model.fit(t, y)
     future_t = np.arange(len(grouped), len(grouped) + periods).reshape(-1, 1)
     future_values = model.predict(future_t)
 
     current = grouped.index[-1]
-    offset = {"D": pd.DateOffset(days=1), "W": pd.DateOffset(weeks=1), "M": pd.DateOffset(months=1)}[freq]
+    offset = {
+        "D": pd.DateOffset(days=1),
+        "W": pd.DateOffset(weeks=1),
+        "M": pd.DateOffset(months=1),
+    }[freq]
     forecast = []
     for value in future_values:
         current = current + offset
-        forecast.append({"date": current.date().isoformat(), "prediction": _safe(value)})
+        forecast.append(
+            {"date": current.date().isoformat(), "prediction": _safe(value)}
+        )
 
     return {
         "kind": "forecast",

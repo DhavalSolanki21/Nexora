@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import uuid
-from datetime import timezone, datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -58,7 +58,7 @@ def run_clustering(
         raise ValueError("Dataset not found.")
 
     columns = feature_columns or [
-        str(column)
+        column
         for column in df.columns
         if not _is_id_like(df[column]) and df[column].nunique(dropna=True) > 1
     ]
@@ -94,15 +94,15 @@ def run_clustering(
             series = part[column]
             if pd.api.types.is_numeric_dtype(series):
                 profile[column] = round(
-                    float(pd.to_numeric(series, errors="coerce").mean()), 4
+                    pd.to_numeric(series, errors="coerce").mean(), 4
                 )
             else:
                 mode = series.dropna().astype(str).mode()
-                profile[column] = str(mode.iloc[0]) if len(mode) else None
+                profile[column] = mode.iloc[0] if len(mode) else None
         clusters.append(
             {
                 "cluster": cluster_id,
-                "size": int(len(part)),
+                "size": len(part),
                 "percentage": round(100 * len(part) / max(len(df), 1), 2),
                 "profile": profile,
             }
@@ -121,14 +121,14 @@ def run_clustering(
         feature_columns=columns,
         metrics={
             "silhouette": round(silhouette, 4),
-            "inertia": round(float(model.inertia_), 4),
+            "inertia": round(model.inertia_, 4),
         },
         clusters=clusters,
         preview=[
-            {key: _json_ready(value) for key, value in row.items()}
+            {str(key): _json_ready(value) for key, value in row.items()}
             for row in preview_rows
         ],
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
     )
     _result_path(dataset_id, "clustering").write_text(
         result.model_dump_json(indent=2), encoding="utf-8"
@@ -187,9 +187,13 @@ def run_time_series(
         # Try seconds first, if they are huge it will be out of bounds for 's' usually, or we can check magnitude
         # But pandas unit='s' works for both if we are careful, actually unit='ms' or 's'
         if series[date_column].mean() > 946684800000:
-            series[date_column] = pd.to_datetime(series[date_column], unit="ms", errors="coerce")
+            series[date_column] = pd.to_datetime(
+                series[date_column], unit="ms", errors="coerce"
+            )
         else:
-            series[date_column] = pd.to_datetime(series[date_column], unit="s", errors="coerce")
+            series[date_column] = pd.to_datetime(
+                series[date_column], unit="s", errors="coerce"
+            )
     else:
         series[date_column] = pd.to_datetime(
             series[date_column], errors="coerce", format="mixed"
@@ -201,32 +205,48 @@ def run_time_series(
             "At least six dated numeric observations are required for forecasting."
         )
 
-    grouper = _grouper_freq(frequency)
-    grouped = (
-        series.groupby(pd.Grouper(key=date_column, freq=grouper))[target_column]
-        .mean()
-        .dropna()
-    )
+    # Bypass pd.Grouper/resample due to Python 3.12 C-extension segfaults
+    # We group using Python's native datetime.date to avoid Cython period/resample bugs
+    from datetime import date, timedelta
+
+    raw_dates = series[date_column].tolist()
+    py_dates = []
+    for d in raw_dates:
+        if hasattr(d, "to_pydatetime"):
+            py_dates.append(d.to_pydatetime().date())
+        elif hasattr(d, "date"):
+            py_dates.append(d.date())
+        else:
+            py_dates.append(d)
+
+    if frequency == "D":
+        group_keys = py_dates
+    elif frequency == "W":
+        group_keys = [d - timedelta(days=d.weekday()) for d in py_dates]
+    else:  # M
+        group_keys = [date(d.year, d.month, 1) for d in py_dates]
+
+    series["_group_key"] = group_keys
+    grouped = series.groupby("_group_key")[target_column].mean().dropna()
+    grouped.index = pd.to_datetime(grouped.index)
     if len(grouped) < 6:
         raise ValueError(
             "Not enough observations remain after grouping by the selected frequency."
         )
 
-    t = np.arange(len(grouped)).reshape(-1, 1)
-    y = grouped.values.astype(float)
+    t = cast(Any, np.arange(len(grouped)).reshape(-1, 1))
+    y = cast(Any, grouped.values.astype(float))
     holdout = max(2, min(6, len(grouped) // 4))
     model = LinearRegression()
     model.fit(t[:-holdout], y[:-holdout])
     pred_test = model.predict(t[-holdout:])
     metrics = {
-        "mae": round(float(mean_absolute_error(y[-holdout:], pred_test)), 4),
-        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4)
-        if holdout >= 2
-        else 0.0,
+        "mae": round(mean_absolute_error(y[-holdout:], pred_test), 4),
+        "r2": round(r2_score(y[-holdout:], pred_test), 4) if holdout >= 2 else 0.0,
     }
 
     model.fit(t, y)
-    future_t = np.arange(len(grouped), len(grouped) + periods).reshape(-1, 1)
+    future_t = cast(Any, np.arange(len(grouped), len(grouped) + periods).reshape(-1, 1))
     future_values = model.predict(future_t)
     offset = _freq_offset(frequency)
     current = grouped.index[-1]
@@ -234,11 +254,11 @@ def run_time_series(
     for value in future_values:
         current = current + offset
         forecast.append(
-            {"date": current.date().isoformat(), "prediction": round(float(value), 4)}
+            {"date": current.date().isoformat(), "prediction": round(value, 4)}
         )
 
     history = [
-        {"date": index.date().isoformat(), "value": round(float(value), 4)}
+        {"date": cast(Any, index).date().isoformat(), "value": round(value, 4)}
         for index, value in grouped.tail(120).items()
     ]
     result = TimeSeriesResult(
@@ -251,7 +271,7 @@ def run_time_series(
         metrics=metrics,
         history=history,
         forecast=forecast,
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
     )
     _result_path(dataset_id, "time_series").write_text(
         result.model_dump_json(indent=2), encoding="utf-8"

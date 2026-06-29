@@ -15,7 +15,6 @@ import pytest
 
 from nexora import Nexora, NexoraReport, __version__
 
-
 # ───────── fixtures ─────────
 
 @pytest.fixture(scope="module")

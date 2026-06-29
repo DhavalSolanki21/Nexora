@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Target, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
-import { configureTarget } from "../api/client";
-import type { DatasetAnalysis } from "../types/dataset";
-import type { ConfigureTargetResponse, ProblemType } from "../types/pipeline";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Target, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { configureTarget } from '../api/client';
+import type { DatasetAnalysis } from '../types/dataset';
+import type { ConfigureTargetResponse, ProblemType } from '../types/pipeline';
 
 const PROBLEM_TYPES: { value: ProblemType; label: string; disabled?: boolean }[] = [
-  { value: "classification", label: "Classification" },
-  { value: "regression", label: "Regression" },
-  { value: "time_series", label: "Time Series → Exploration Modes (Overview)", disabled: true },
-  { value: "clustering", label: "Clustering → Exploration Modes (Overview)", disabled: true },
+  { value: 'classification', label: 'Classification' },
+  { value: 'regression', label: 'Regression' },
+  { value: 'time_series', label: 'Time Series → Exploration Modes (Overview)', disabled: true },
+  { value: 'clustering', label: 'Clustering → Exploration Modes (Overview)', disabled: true },
 ];
 
 interface Props {
@@ -19,10 +19,8 @@ interface Props {
 }
 
 export default function TargetSelector({ datasetId, analysis, onConfigured }: Props) {
-  const [target, setTarget] = useState(
-    analysis.prediction_suggestions[0]?.target_column ?? ""
-  );
-  const [problemType, setProblemType] = useState<ProblemType | "">("");
+  const [target, setTarget] = useState(analysis.prediction_suggestions[0]?.target_column ?? '');
+  const [problemType, setProblemType] = useState<ProblemType | ''>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +28,7 @@ export default function TargetSelector({ datasetId, analysis, onConfigured }: Pr
 
   const handleConfigure = async () => {
     if (!target) {
-      setError("Select a target column.");
+      setError('Select a target column.');
       return;
     }
     setLoading(true);
@@ -41,8 +39,8 @@ export default function TargetSelector({ datasetId, analysis, onConfigured }: Pr
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
-        "Configuration failed.";
-      setError(typeof msg === "string" ? msg : "Configuration failed.");
+        'Configuration failed.';
+      setError(typeof msg === 'string' ? msg : 'Configuration failed.');
     } finally {
       setLoading(false);
     }
@@ -80,8 +78,8 @@ export default function TargetSelector({ datasetId, analysis, onConfigured }: Pr
                 }}
                 className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${
                   target === s.target_column
-                    ? "border-emerald-400 bg-emerald-50 text-emerald-700 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? 'border-emerald-400 bg-emerald-50 text-emerald-700 font-medium'
+                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
                 }`}
               >
                 {s.target_column}
@@ -116,7 +114,7 @@ export default function TargetSelector({ datasetId, analysis, onConfigured }: Pr
           </label>
           <select
             value={problemType}
-            onChange={(e) => setProblemType(e.target.value as ProblemType | "")}
+            onChange={(e) => setProblemType(e.target.value as ProblemType | '')}
             className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100 transition-all"
           >
             <option value="">Auto-detect</option>

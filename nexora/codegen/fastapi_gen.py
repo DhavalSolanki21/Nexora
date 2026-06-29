@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from nexora.report import NexoraReport
 
 
-def generate_fastapi(report: "NexoraReport", model_name: str | None = None) -> str:
+def generate_fastapi(report: NexoraReport, model_name: str | None = None) -> str:
     """Generate a complete FastAPI application for model serving.
 
     Args:
@@ -31,11 +31,7 @@ def generate_fastapi(report: "NexoraReport", model_name: str | None = None) -> s
     dataset = Path(report.source_name).name
     metric = report.best_score_label if model_name is None else result.primary_metric
     score = result.primary_score
-    model_id = result.model_id
 
-    # Generate Pydantic input model from feature columns
-    pydantic_fields = _pydantic_fields(schema.numeric_features, schema.categorical_features)
-    
     # Generate imports for model class
     model_import = f"from {spec.import_path} import {spec.class_name}"
 
@@ -359,7 +355,7 @@ if __name__ == "__main__":
 # ─ Internal Helper Functions ────────────────────────────
 
 def _resolve_model(
-    report: "NexoraReport", model_name: str | None
+    report: NexoraReport, model_name: str | None
 ) -> tuple[ModelResult, ModelSpec]:
     """Resolve the target model from report."""
 

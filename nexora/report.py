@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -27,11 +27,11 @@ from nexora.types import (
     DatasetProfile,
     ModelResult,
     ModelSpec,
-    PreprocessingSchema,
     PredictionContribution,
     PredictionInputField,
     PredictionOutput,
     PredictionReceipt,
+    PreprocessingSchema,
     TaskType,
     TrainingSettings,
 )
@@ -852,6 +852,7 @@ class NexoraReport:
     def to_pdf(self, path: str | Path) -> Path:
         """Export PDF report using fpdf2 and matplotlib."""
         import tempfile
+
         import matplotlib.pyplot as plt
         from fpdf import FPDF
 
@@ -978,11 +979,9 @@ class NexoraReport:
 
     def serve(self, port: int = 8000) -> None:
         """Start a local prediction API (FastAPI server)."""
-        import uvicorn
-        from nexora.codegen.fastapi_gen import generate_fastapi
         import tempfile
-        import sys
-        import os
+
+        from nexora.codegen.fastapi_gen import generate_fastapi
         
         # Write to a temp file and run uvicorn
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as f:
@@ -1090,7 +1089,7 @@ class NexoraReport:
             labels = pipeline.classes_
         except Exception:
             return {}
-        return {str(label): round(float(prob), 4) for label, prob in zip(labels, proba)}
+        return {str(label): round(float(prob), 4) for label, prob in zip(labels, proba, strict=False)}
 
     def _consensus(self, outputs: list[PredictionOutput]) -> tuple[Any, str]:
         if self.task_type == "regression":
@@ -1127,12 +1126,12 @@ class NexoraReport:
             target_label=predicted_label,
         )
         contributions: list[PredictionContribution] = []
-        for field in fields:
-            baseline = field.default
-            if baseline is None or raw_row.get(field.name) == baseline:
+        for fld in fields:
+            baseline = fld.default
+            if baseline is None or raw_row.get(fld.name) == baseline:
                 continue
             replaced = dict(raw_row)
-            replaced[field.name] = baseline
+            replaced[fld.name] = baseline
             replaced_df = _row_dataframe(replaced, fields, self.schema.feature_columns)
             _, score = _prediction_score(
                 pipeline,
@@ -1149,8 +1148,8 @@ class NexoraReport:
                 direction = "neutral"
             contributions.append(
                 PredictionContribution(
-                    feature=field.name,
-                    submitted_value=_json_value(raw_row.get(field.name)),
+                    feature=fld.name,
+                    submitted_value=_json_value(raw_row.get(fld.name)),
                     baseline_value=_json_value(baseline),
                     contribution=contribution,
                     direction=direction,
@@ -1271,7 +1270,7 @@ class NexoraReport:
             new_df = new_df.drop(columns=[self.target])
         return full_monitoring_report(X_train, new_df)
         
-    def retrain(self, new_df: pd.DataFrame) -> "NexoraReport":
+    def retrain(self, new_df: pd.DataFrame) -> NexoraReport:
         """Retrain the best model pipeline on new data."""
         from nexora.core import Nexora
         # Since we just want to retrain the exact model, we could either:
@@ -1293,6 +1292,7 @@ class NexoraReport:
         """
         import os
         import tempfile
+
         import joblib
         from huggingface_hub import HfApi
         
@@ -1374,15 +1374,14 @@ The best model is **{self.best_model}** with a {self.best_score_label} of **{sel
         """
         if format.lower() == "marimo":
             # Very basic marimo code generator
-            import json
             
             # Create a simple python script that marimo uses natively
             cells = [
                 "import marimo",
                 "app = marimo.App()",
                 "@app.cell\ndef __():\n    import marimo as mo\n    import joblib\n    import pandas as pd\n    return joblib, mo, pd",
-                f"@app.cell\ndef __():\n    pipeline = joblib.load('pipeline.pkl')\n    return pipeline,",
-                f"@app.cell\ndef __(mo):\n    mo.md('# Nexora Interactive Model')\n    return",
+                "@app.cell\ndef __():\n    pipeline = joblib.load('pipeline.pkl')\n    return pipeline,",
+                "@app.cell\ndef __(mo):\n    mo.md('# Nexora Interactive Model')\n    return",
             ]
             return "\\n\\n".join(cells) + "\\n\\nif __name__ == '__main__':\\n    app.run()\\n"
         else:
@@ -1433,7 +1432,7 @@ The best model is **{self.best_model}** with a {self.best_score_label} of **{sel
         plt.tight_layout()
         return fig
 
-    def diff(self, other: "NexoraReport") -> dict[str, Any]:
+    def diff(self, other: NexoraReport) -> dict[str, Any]:
         """Compare this session with another report session.
         
         Args:
@@ -1567,31 +1566,31 @@ def _prepare_input_values(
     submitted: dict[str, Any] = {}
     assumed: dict[str, Any] = {}
     warnings: list[str] = []
-    for field in fields:
-        raw = inputs.get(field.name)
+    for fld in fields:
+        raw = inputs.get(fld.name)
         if raw in (None, ""):
-            assumed[field.name] = field.default
+            assumed[fld.name] = fld.default
             continue
 
-        if field.kind == "number":
+        if fld.kind == "number":
             try:
                 value: Any = float(raw)
             except (TypeError, ValueError) as exc:
-                raise ValueError(f"`{field.name}` must be a number.") from exc
-            if field.min_value is not None and value < field.min_value:
-                warnings.append(f"{field.name} is below the range seen during training.")
-            if field.max_value is not None and value > field.max_value:
-                warnings.append(f"{field.name} is above the range seen during training.")
-        elif field.kind == "date":
+                raise ValueError(f"`{fld.name}` must be a number.") from exc
+            if fld.min_value is not None and value < fld.min_value:
+                warnings.append(f"{fld.name} is below the range seen during training.")
+            if fld.max_value is not None and value > fld.max_value:
+                warnings.append(f"{fld.name} is above the range seen during training.")
+        elif fld.kind == "date":
             parsed = pd.to_datetime(raw, errors="coerce", format="mixed")
             if pd.isna(parsed):
-                raise ValueError(f"`{field.name}` must be a valid date.")
+                raise ValueError(f"`{fld.name}` must be a valid date.")
             value = parsed.date().isoformat()
         else:
             value = str(raw)
-            if field.kind == "category" and field.options and value not in field.options:
-                warnings.append(f"{field.name} value was not present in the training dataset.")
-        submitted[field.name] = value
+            if fld.kind == "category" and fld.options and value not in fld.options:
+                warnings.append(f"{fld.name} value was not present in the training dataset.")
+        submitted[fld.name] = value
     return submitted, assumed, warnings
 
 
@@ -1602,13 +1601,13 @@ def _row_dataframe(
 ) -> pd.DataFrame:
     row = {column: values.get(column) for column in feature_columns}
     df = pd.DataFrame([row])
-    field_map = {field.name: field for field in fields}
-    for column, field in field_map.items():
+    field_map = {fld.name: fld for fld in fields}
+    for column, fld in field_map.items():
         if column not in df.columns:
             continue
-        if field.kind == "number":
+        if fld.kind == "number":
             df[column] = pd.to_numeric(df[column], errors="coerce")
-        elif field.kind == "date":
+        elif fld.kind == "date":
             parsed = pd.to_datetime(df[column], errors="coerce", format="mixed")
             df[column] = parsed.dt.date.astype("string")
         else:
