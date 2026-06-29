@@ -22,8 +22,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
-        # Prefer prebuilt wheels for binary packages
-        pip install --upgrade --prefer-binary numpy pyarrow pandas scipy scikit-learn
+        # Explicitly prefer binary wheels and upgrade pip for Python 3.12 support
+        pip install --upgrade --prefer-binary 'numpy>=2.0.0' 'pyarrow>=15.0.0' pandas scipy scikit-learn
         # Then install editable dev extras, with build isolation ON so build deps are installed in a clean env
         python -m pip install -e ".[dev]"
     - name: Smoke-test C extensions
