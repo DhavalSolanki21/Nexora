@@ -138,7 +138,7 @@ class AnomalyScorer:
             random_state=42,
             n_jobs=-1,
         )
-        self._iso_forest.fit(X)
+        self._iso_forest.fit(X)  # pyright: ignore
 
         # Autoencoder
         self._autoencoder = _NumpyAutoencoder(
@@ -174,7 +174,9 @@ class AnomalyScorer:
             if col in df.columns:
                 if fit:
                     le = LabelEncoder()
-                    encoded = le.fit_transform(df[col].astype(str).to_list())
+                    encoded = np.asarray(
+                        le.fit_transform(df[col].astype(str).to_list())
+                    )
                     self._label_encoders[col] = le
                 else:
                     le = self._label_encoders[col]
