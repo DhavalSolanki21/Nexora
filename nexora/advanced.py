@@ -111,11 +111,30 @@ def run_forecast(
     freq = frequency.upper()
     if freq not in {"D", "W", "M"}:
         raise ValueError("frequency must be D, W, or M.")
-    # Bypass pd.Grouper/resample due to Python 3.12 segfaults in C-extensions
-    period_alias = {"D": "D", "W": "W", "M": "M"}[freq]
-    series["_period"] = series[date_column].dt.to_period(period_alias)
-    grouped = series.groupby("_period")[target_column].mean().dropna()
-    grouped.index = grouped.index.to_timestamp()
+    # Bypass pd.Grouper/resample due to Python 3.12 C-extension segfaults
+    # We group using Python's native datetime.date to avoid Cython period/resample bugs
+    from datetime import date, timedelta
+
+    raw_dates = series[date_column].tolist()
+    py_dates = []
+    for d in raw_dates:
+        if hasattr(d, "to_pydatetime"):
+            py_dates.append(d.to_pydatetime().date())
+        elif hasattr(d, "date"):
+            py_dates.append(d.date())
+        else:
+            py_dates.append(d)
+
+    if freq == "D":
+        group_keys = py_dates
+    elif freq == "W":
+        group_keys = [d - timedelta(days=d.weekday()) for d in py_dates]
+    else:  # M
+        group_keys = [date(d.year, d.month, 1) for d in py_dates]
+
+    series["_group_key"] = group_keys
+    grouped = series.groupby("_group_key")[target_column].mean().dropna()
+    grouped.index = pd.to_datetime(grouped.index)
     if len(grouped) < 6:
         raise ValueError("Not enough observations remain after date grouping.")
 
