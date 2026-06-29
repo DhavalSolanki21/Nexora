@@ -138,7 +138,7 @@ class AnomalyScorer:
             random_state=42,
             n_jobs=-1,
         )
-        self._iso_forest.fit(X)  # type: ignore[arg-type]
+        self._iso_forest.fit(X)
 
         # Autoencoder
         self._autoencoder = _NumpyAutoencoder(
@@ -160,12 +160,10 @@ class AnomalyScorer:
         # Numeric columns
         num_cols = [c for c in NUMERIC_FEATURES if c in df.columns]
         if fit:
-            # type: ignore
             num_data = np.asarray(
                 self._scaler.fit_transform(df[num_cols].values.astype(float))
             )
         else:
-            # type: ignore
             num_data = np.asarray(
                 self._scaler.transform(df[num_cols].values.astype(float))
             )
@@ -176,7 +174,7 @@ class AnomalyScorer:
             if col in df.columns:
                 if fit:
                     le = LabelEncoder()
-                    encoded = le.fit_transform(df[col].astype(str).to_list())  # type: ignore[assignment]
+                    encoded = le.fit_transform(df[col].astype(str).to_list())
                     self._label_encoders[col] = le
                 else:
                     le = self._label_encoders[col]
@@ -185,11 +183,10 @@ class AnomalyScorer:
                     mapped = []
                     for v in vals:
                         if v in le.classes_:
-                            # type: ignore
                             mapped.append(int(np.asarray(le.transform([v]))[0]))
                         else:
                             mapped.append(len(le.classes_))
-                    encoded: np.ndarray = np.array(mapped)
+                    encoded = np.array(mapped)
                 parts.append(encoded.reshape(-1, 1).astype(float))
 
         return np.hstack(parts)
