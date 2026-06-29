@@ -205,12 +205,11 @@ def run_time_series(
             "At least six dated numeric observations are required for forecasting."
         )
 
-    grouper = _grouper_freq(frequency)
-    grouped = (
-        series.groupby(pd.Grouper(key=date_column, freq=grouper))[target_column]
-        .mean()
-        .dropna()
-    )
+    # Bypass pd.Grouper/resample due to Python 3.12 C-extension segfaults
+    period_alias = {"D": "D", "W": "W", "M": "M"}.get(frequency, "M")
+    series["_period"] = series[date_column].dt.to_period(period_alias)
+    grouped = series.groupby("_period")[target_column].mean().dropna()
+    grouped.index = grouped.index.to_timestamp()
     if len(grouped) < 6:
         raise ValueError(
             "Not enough observations remain after grouping by the selected frequency."

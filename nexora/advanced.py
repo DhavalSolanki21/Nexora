@@ -31,7 +31,9 @@ def run_clustering(
     ]
     columns = [column for column in columns if column in df.columns]
     if not columns:
-        raise ValueError("At least one usable feature column is required for clustering.")
+        raise ValueError(
+            "At least one usable feature column is required for clustering."
+        )
     if len(df) < n_clusters:
         raise ValueError("Number of clusters cannot exceed row count.")
 
@@ -98,7 +100,9 @@ def run_forecast(
     if date_column not in df.columns or target_column not in df.columns:
         raise ValueError("Date and target columns must exist.")
     series = df[[date_column, target_column]].copy()
-    series[date_column] = pd.to_datetime(series[date_column], errors="coerce", format="mixed")
+    series[date_column] = pd.to_datetime(
+        series[date_column], errors="coerce", format="mixed"
+    )
     series[target_column] = pd.to_numeric(series[target_column], errors="coerce")
     series = series.dropna().sort_values(date_column)
     if len(series) < 6:
@@ -107,11 +111,11 @@ def run_forecast(
     freq = frequency.upper()
     if freq not in {"D", "W", "M"}:
         raise ValueError("frequency must be D, W, or M.")
-    grouped = (
-        series.groupby(pd.Grouper(key=date_column, freq=freq))[target_column]
-        .mean()
-        .dropna()
-    )
+    # Bypass pd.Grouper/resample due to Python 3.12 segfaults in C-extensions
+    period_alias = {"D": "D", "W": "W", "M": "M"}[freq]
+    series["_period"] = series[date_column].dt.to_period(period_alias)
+    grouped = series.groupby("_period")[target_column].mean().dropna()
+    grouped.index = grouped.index.to_timestamp()
     if len(grouped) < 6:
         raise ValueError("Not enough observations remain after date grouping.")
 
@@ -123,18 +127,26 @@ def run_forecast(
     pred_test = model.predict(t[-holdout:])
     metrics = {
         "mae": round(float(mean_absolute_error(y[-holdout:], pred_test)), 4),
-        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4) if holdout >= 2 else 0.0,
+        "r2": round(float(r2_score(y[-holdout:], pred_test)), 4)
+        if holdout >= 2
+        else 0.0,
     }
     model.fit(t, y)
     future_t = np.arange(len(grouped), len(grouped) + periods).reshape(-1, 1)
     future_values = model.predict(future_t)
 
     current = grouped.index[-1]
-    offset = {"D": pd.DateOffset(days=1), "W": pd.DateOffset(weeks=1), "M": pd.DateOffset(months=1)}[freq]
+    offset = {
+        "D": pd.DateOffset(days=1),
+        "W": pd.DateOffset(weeks=1),
+        "M": pd.DateOffset(months=1),
+    }[freq]
     forecast = []
     for value in future_values:
         current = current + offset
-        forecast.append({"date": current.date().isoformat(), "prediction": _safe(value)})
+        forecast.append(
+            {"date": current.date().isoformat(), "prediction": _safe(value)}
+        )
 
     return {
         "kind": "forecast",
