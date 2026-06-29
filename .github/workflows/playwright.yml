@@ -24,7 +24,18 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         # Prefer prebuilt wheels for binary packages
         pip install --upgrade --prefer-binary numpy pyarrow
-        # Disable build isolation so the preinstalled numpy/pyarrow are available to the build process
-        PIP_NO_BUILD_ISOLATION=1 pip install -e ".[dev]"
+        # Then install editable dev extras, with build isolation ON so build deps are installed in a clean env
+        python -m pip install -e ".[dev]"
+    - name: Smoke-test C extensions
+      run: |
+        python - <<'PY'
+        import sys
+        try:
+            import numpy, pyarrow
+            print("numpy", numpy.__version__, "pyarrow", pyarrow.__version__)
+        except Exception as e:
+            print("Import failed:", e, file=sys.stderr)
+            raise
+        PY
     - name: Run tests
       run: python -X faulthandler -m pytest -q --tb=short
