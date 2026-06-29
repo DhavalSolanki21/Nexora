@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import os
 from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
 import pytest
+
+os.environ["LOKY_MAX_CPU_COUNT"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
 
 
 def _date_strings(start: str, n: int) -> list[str]:
