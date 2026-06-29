@@ -17,7 +17,12 @@ import geoip2.errors
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
 
-from app.models.cyber_schemas import CyberStreamStatus, ScoredRow, ThreatLevel
+from app.models.cyber_schemas import (
+    CyberStreamStatus,
+    NetworkLogRow,
+    ScoredRow,
+    ThreatLevel,
+)
 from app.services.anomaly_scorer import AnomalyScorer
 from app.services.ring_buffer import RingBuffer
 
@@ -118,22 +123,22 @@ async def _sse_generator(
                 anomaly_score=result["anomaly_score"],
                 threat_level=ThreatLevel(result["threat_level"]),
                 top_features=result["top_features"],
-                raw={
-                    "timestamp": row.get("timestamp", ""),
-                    "src_ip": src_ip,
-                    "dst_ip": row.get("dst_ip", ""),
-                    "src_port": int(row.get("src_port", 0)),
-                    "dst_port": int(row.get("dst_port", 0)),
-                    "protocol": row.get("protocol", ""),
-                    "bytes_sent": int(row.get("bytes_sent", 0)),
-                    "bytes_received": int(row.get("bytes_received", 0)),
-                    "duration_ms": int(row.get("duration_ms", 0)),
-                    "packet_count": int(row.get("packet_count", 0)),
-                    "tcp_flags": row.get("tcp_flags", ""),
-                    "is_encrypted": int(row.get("is_encrypted", 0)),
-                    "src_lat": src_lat,
-                    "src_lon": src_lon,
-                },
+                raw=NetworkLogRow(
+                    timestamp=row.get("timestamp", ""),
+                    src_ip=src_ip,
+                    dst_ip=row.get("dst_ip", ""),
+                    src_port=int(row.get("src_port", 0)),
+                    dst_port=int(row.get("dst_port", 0)),
+                    protocol=row.get("protocol", ""),
+                    bytes_sent=int(row.get("bytes_sent", 0)),
+                    bytes_received=int(row.get("bytes_received", 0)),
+                    duration_ms=int(row.get("duration_ms", 0)),
+                    packet_count=int(row.get("packet_count", 0)),
+                    tcp_flags=row.get("tcp_flags", ""),
+                    is_encrypted=int(row.get("is_encrypted", 0)),
+                    src_lat=src_lat,
+                    src_lon=src_lon,
+                ),
             )
 
             payload = scored.model_dump_json()
