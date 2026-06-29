@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -138,7 +138,7 @@ class AnomalyScorer:
             random_state=42,
             n_jobs=-1,
         )
-        self._iso_forest.fit(X)  # pyright: ignore
+        self._iso_forest.fit(cast(Any, X))
 
         # Autoencoder
         self._autoencoder = _NumpyAutoencoder(
